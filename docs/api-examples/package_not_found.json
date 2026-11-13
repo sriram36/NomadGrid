@@ -1,0 +1,9 @@
+{
+  "_http_status": 404,
+  "body": {
+    "error": {
+      "code": "PACKAGE_NOT_FOUND",
+      "message": "We couldn't find that package."
+    }
+  }
+}

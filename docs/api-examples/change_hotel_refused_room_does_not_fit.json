@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "REFUSED",
+    "reason_code": "ROOM_DOES_NOT_FIT",
+    "reason": "Single Room at Namba Capsule Plus can't hold 2 adult(s) and 1 child(ren).",
+    "suggestion": "Pick a family room or a larger room type."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "outcome": "NO_PACKAGE",
+    "reason_code": "OUT_OF_WINDOW",
+    "message": "Our flights and rooms exist only from 1 to 20 April 2027. A 5-night trip starting 19 Apr 2027 would return on 24 Apr 2027; the first night must be on or after 1 Apr 2027 and the return flight on or before 20 Apr 2027.",
+    "details": []
+  }
+}

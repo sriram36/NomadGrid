@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "REFUSED",
+    "reason_code": "AIRPORT_MISMATCH",
+    "reason": "HND does not serve Osaka, where your holiday starts.",
+    "suggestion": "Pick a flight into an airport that serves your first city."
+  }
+}

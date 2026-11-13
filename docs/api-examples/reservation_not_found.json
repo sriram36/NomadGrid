@@ -1,0 +1,9 @@
+{
+  "_http_status": 404,
+  "body": {
+    "error": {
+      "code": "RESERVATION_NOT_FOUND",
+      "message": "Reservation not found. Check the 10-digit number and try again."
+    }
+  }
+}

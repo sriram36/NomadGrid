@@ -1,0 +1,34 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "BUDGET_EXCEEDED",
+    "new_total_inr": 225036,
+    "over_by_inr": 3712,
+    "message": "This change would take your total to ₹2,25,036, which is ₹3,712 over your ₹2,21,324 budget.",
+    "suggestion": "Pick a cheaper option, or raise your budget to apply it.",
+    "raise_budget_to_inr": 225036,
+    "cheaper_options": [
+      {
+        "hotel_id": "HTL-TYO-011",
+        "room_id": "RM-TYO-011-C",
+        "name": "Shinagawa Station Hotel",
+        "stars": 3,
+        "rating": 7.8,
+        "area": "Shinagawa",
+        "room_type": "TRIPLE",
+        "room_name": "Triple Room",
+        "rooms_needed": 1,
+        "price_inr": 56784,
+        "family_friendly": true,
+        "image": "/images/hotels/HOTEL-BUSINESS-2.jpg",
+        "current": false,
+        "available": true,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "price_delta_inr": 0,
+        "reason_unavailable": null,
+        "reason_code": null
+      }
+    ]
+  }
+}

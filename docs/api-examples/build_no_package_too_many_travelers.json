@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "outcome": "NO_PACKAGE",
+    "reason_code": "INSUFFICIENT_SEATS_ARRIVAL",
+    "message": "4 flight(s) from Bengaluru to Japan land on 10 Apr 2027, but none has 12 free seats (the best has 9).",
+    "details": []
+  }
+}

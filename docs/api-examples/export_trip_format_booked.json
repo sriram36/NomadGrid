@@ -1,0 +1,347 @@
+{
+  "_http_status": 200,
+  "body": {
+    "trip_id": "pkg_f5c870274360",
+    "traveler": {
+      "name": "Traveler",
+      "home_airport": "BLR",
+      "adults": 2,
+      "children": 1,
+      "child_ages": [
+        6
+      ]
+    },
+    "start_date": "2027-04-10",
+    "end_date": "2027-04-16",
+    "country": "Japan",
+    "budget_inr": 350000,
+    "total_inr": 297542,
+    "status": "BOOKED",
+    "items": [
+      {
+        "item_id": "i1",
+        "type": "flight",
+        "name": "AirVeda AV 832 BLR to KIX",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "FL-740",
+        "start": "2027-04-09T21:40",
+        "end": "2027-04-10T09:20",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 103320,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i2",
+        "type": "transfer",
+        "name": "Kansai limousine bus to Umeda",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "TR-KIX-UMD-BUS",
+        "start": "2027-04-10T10:20",
+        "end": "2027-04-10T11:35",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 2240,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i3",
+        "type": "attraction",
+        "name": "Shinsekai",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-007",
+        "start": "2027-04-10T12:05",
+        "end": "2027-04-10T13:05",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i4",
+        "type": "hotel",
+        "name": "Umeda Grand Hotel",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "HTL-OSA-003",
+        "start": "2027-04-10",
+        "end": "2027-04-14",
+        "room_id": "RM-OSA-003-B",
+        "quantity": 1,
+        "price_inr": 84672,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i5",
+        "type": "attraction",
+        "name": "Sumiyoshi Taisha",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-008",
+        "start": "2027-04-11T06:30",
+        "end": "2027-04-11T07:15",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i6",
+        "type": "attraction",
+        "name": "Kuromon Ichiba Market",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-002",
+        "start": "2027-04-11T09:00",
+        "end": "2027-04-11T10:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i7",
+        "type": "attraction",
+        "name": "Osaka Castle",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-003",
+        "start": "2027-04-11T10:30",
+        "end": "2027-04-11T12:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 672,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i8",
+        "type": "attraction",
+        "name": "Umeda Sky Building",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-006",
+        "start": "2027-04-12T09:30",
+        "end": "2027-04-12T10:30",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 2072,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i9",
+        "type": "attraction",
+        "name": "Dotonbori",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-001",
+        "start": "2027-04-12T11:00",
+        "end": "2027-04-12T12:30",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i10",
+        "type": "attraction",
+        "name": "Osaka Science Museum",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-009",
+        "start": "2027-04-13T09:30",
+        "end": "2027-04-13T11:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 448,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i11",
+        "type": "attraction",
+        "name": "Osaka Aquarium Kaiyukan",
+        "city": "Osaka",
+        "status": "BOOKED",
+        "catalog_id": "ATT-OSA-005",
+        "start": "2027-04-13T11:30",
+        "end": "2027-04-13T14:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 3808,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i12",
+        "type": "transfer",
+        "name": "Shinkansen Osaka to Kyoto",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "TR-OSA-KYO-01",
+        "start": "2027-04-14T08:00",
+        "end": "2027-04-14T08:15",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 2030,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i13",
+        "type": "attraction",
+        "name": "Nishiki Market",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "ATT-KYO-005",
+        "start": "2027-04-14T10:00",
+        "end": "2027-04-14T11:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i14",
+        "type": "hotel",
+        "name": "Sakura Garden Hotel",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "HTL-KYO-004",
+        "start": "2027-04-14",
+        "end": "2027-04-16",
+        "room_id": "RM-KYO-004-B",
+        "quantity": 1,
+        "price_inr": 16240,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i15",
+        "type": "attraction",
+        "name": "Fushimi Inari Taisha",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "ATT-KYO-002",
+        "start": "2027-04-15T08:30",
+        "end": "2027-04-15T10:30",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i16",
+        "type": "attraction",
+        "name": "Arashiyama Bamboo Grove",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "ATT-KYO-004",
+        "start": "2027-04-15T11:00",
+        "end": "2027-04-15T12:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 0,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i17",
+        "type": "transfer",
+        "name": "Kansai limousine bus to Kyoto",
+        "city": "Kyoto",
+        "status": "BOOKED",
+        "catalog_id": "TR-KIX-KYO-BUS",
+        "start": "2027-04-16T07:05",
+        "end": "2027-04-16T08:45",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 3920,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      },
+      {
+        "item_id": "i18",
+        "type": "flight",
+        "name": "AirVeda AV 515 KIX to BLR",
+        "city": "Bengaluru",
+        "status": "BOOKED",
+        "catalog_id": "FL-411",
+        "start": "2027-04-16T12:00",
+        "end": "2027-04-16T18:00",
+        "room_id": null,
+        "quantity": 3,
+        "price_inr": 78120,
+        "booking": {
+          "reference": "5824151414"
+        },
+        "sources": [],
+        "warnings": []
+      }
+    ]
+  }
+}

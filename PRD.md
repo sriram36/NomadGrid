@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Product** | NomadGrid — Build My Holiday (Hackathon Problem 1) |
-| **Version** | v3 — final for build, strictly aligned to the problem statement (audit in §3B) |
+| **Version** | v3.1 — core delivered and verified; Good-to-have and Stretch set aside (status in §0) |
 | **Team** | 2 people · ~9–10 h build · 12-minute demo |
 | **Backend owner** | **You** (with Claude's help) — rules engine, API, persistence, Docker |
 | **Frontend owner** | **Teammate** — UI that talks only to the backend API (see §8) |
@@ -12,6 +12,36 @@
 **Tags used below:** **[BE]** backend task · **[FE]** frontend task · **[BOTH]** shared.
 
 > **Rule zero — the problem statement is the contract.** We do not edit, reinterpret, shrink or skip anything in it. Every Must-have (M1–M8) and every travel rule (problem §4) is **compulsory** and is built first. Good-to-have and Stretch come only after. Anything we add (alternatives, raise-budget, warnings, undo) is *additive*: it never replaces or weakens a behavior the statement requires. See the traceability matrix in §3A.
+
+---
+
+## 0. Delivery status (wrap-up)
+
+**Delivered and verified:** every Must-have (M1–M8), the independent validator (FR-V), persistence (FR-P), JSON export, the budget-first flow,
+Docker packaging and the backend half of the API contract. **Set aside by decision:** all Good-to-have and Stretch features.
+
+| Requirement | Status | How it was verified |
+|---|---|---|
+| M1 Request form (7 fields, clear messages) | ✅ Built (API validation; UI is the frontend's) | ~60 invalid-value attacks → per-field 422 |
+| M2 Build one package, app chooses cities, explains failures | ✅ | ~9,000 fuzzed requests; 10 failure reasons checked |
+| M3 Every rule respected | ✅ | Independent validator on every package; 30+ mutation tests |
+| M4 Day-by-day plan in time order | ✅ `days[]` | golden Menon test |
+| M5 Total, budget, left/over, JSON export | ✅ | export re-validated; booked export carries the reference |
+| M6 Change hotel / flight / attractions | ✅ | every listed option applied or explained; refusal and budget cases |
+| M7 Confirm, 10-digit number, summary, restart, "not found" | ✅ | verified inside Docker across a container restart |
+| M8 Budget too small | ✅ cheapest total + built alternatives + raise-budget | alternatives re-validated and within budget |
+| FR-V Independent validator | ✅ | mutation suite; also gates confirm |
+| FR-P Persistence | ✅ SQLite on a volume | restart tests (app and container) |
+| Docker (1-command start) | ✅ 202 MB image, non-root, read-only catalog | cold build + health + restart |
+| Frontend (UX §8.4, FE-1…FE-11) | ⏳ the teammate's work | handoff guide + 24 real examples provided |
+| G1 Changes that affect other parts | ◐ partly exists (shifted arrival visits, check-in time, day-load warnings) — **not pursued further** | — |
+| G2 Price difference on every option | ◐ exists (`price_delta_inr`) — **not pursued further** | — |
+| G3 Change cities · G4 Three packages | ⏸ **Set aside** | — |
+| S1 Quick request · S2 Seats/rooms used up · S3 Own idea | ⏸ **Set aside** (S2: the engine's `Inventory` already accepts reduced counts) | — |
+
+**Implementation notes that refine this PRD:** out-of-window dates return `NO_PACKAGE` / `OUT_OF_WINDOW` (not a field error); both flight items carry the
+arrival city (Q4); the stay-quality and child-friendly scores are nights- and share-weighted (§6.10A); the validator enforces only statement rules.
+Supporting documents: `README.md`, `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/FRONTEND_HANDOFF.md`, `docs/break-it-log.md`, `docs/api-examples/`.
 
 ---
 
@@ -192,7 +222,7 @@ A separate module that takes a package + raw catalog and re-checks **every** rul
 #### FR-P — Persistence [BE]
 SQLite on a Docker named volume. Tables: `packages`, `reservations`, (S2) `inventory_used`. Catalog loaded read-only into memory at startup. A test hashes the `data/` files to prove they are untouched.
 
-### 5.2 STRETCH (priority order)
+### 5.2 STRETCH (priority order) — ⏸ SET ASIDE: not part of this delivery (kept as the roadmap)
 | Pri | # | Feature | Backend | Frontend |
 |---|---|---|---|---|
 | 1 | **G1** | Changes that affect other parts | After a change: re-time transfers; shift attractions that no longer fit (things the traveler chose are never dropped silently — user priority, §6.12); detect overlaps/double bookings; warn that a flight change moves hotel check-in time (display only). Warnings in `warnings[]` (package + item level) | Warning banner + per-item badges; show what was auto-fixed |
@@ -332,9 +362,9 @@ Deterministic tie-breaks everywhere: higher quality score → closer to (but not
 
 | Component | Points | How it is scored |
 |---|---|---|
-| **Stay** | 40 | `28 × (average stars per night − 2) / 3` · `6` if every hotel is `family_friendly` when children travel (awarded automatically when no children) · `6 × (average guest rating − 6.9) / 2.5` |
+| **Stay** | 40 | `28 × (average stars per night − 2) / 3` · up to `6` for family-friendly hotels, weighted by nights (full when no children travel) · `6 × (average guest rating − 6.9) / 2.5` |
 | **Flights** | 20 | `5` per direct leg (2 legs) · `5` if the arrival lands 06:00–20:00 local · `5` if the return departs 08:00–20:00 local |
-| **Experience** | 15 | `9 × attractions on full days / (2 × full days)` · `3 × min(distinct categories, 4) / 4` · `3` if every attraction is `child_friendly` when children travel (awarded automatically when no children) |
+| **Experience** | 15 | `9 × attractions on full days / (2 × full days)` · `3 × min(distinct categories, 4) / 4` · `3 × share of child-friendly attractions` (full when no children travel) |
 | **Time** | 15 | `9 × (1 − (transit − best transit) / (worst transit − best transit))` across the request's feasible candidates (full 9 if only one) · `6 × usable ground minutes / maximum possible for that plan` |
 | **Budget fit** | 10 | `10 × clamp((spend ÷ budget − 0.50) / 0.40, 0, 1)` — 0 at ≤ 50% spent, full points from 90% to 100% |
 
@@ -818,7 +848,7 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 - **Feature code is written during the event** (judges read Git history); provided data and docs are the only pre-existing content.
 - Never commit: `node_modules`, venvs, build output, `*.sqlite`, `.env`, zips (already in `.gitignore`).
 
-## 14. Delivery plan (≈ 9–10 h)
+## 14. Delivery plan (≈ 9–10 h) — *original plan; actual status in §0*
 
 | Phase | Time | **[BE] You (+ Claude)** | **[FE] Teammate** | Exit check |
 |---|---|---|---|---|

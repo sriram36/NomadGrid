@@ -1,0 +1,8 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "REFUSED",
+    "reason_code": "PACKAGE_LOCKED",
+    "reason": "This holiday is already booked, so it can't be changed."
+  }
+}

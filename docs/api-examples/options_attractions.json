@@ -1,0 +1,55 @@
+{
+  "_http_status": 200,
+  "body": {
+    "date": "2027-04-11",
+    "city": "Osaka",
+    "options": [
+      {
+        "attraction_id": "ATT-OSA-008",
+        "name": "Sumiyoshi Taisha",
+        "category": "SHRINE",
+        "duration_minutes": 45,
+        "price_inr": 0,
+        "price_delta_inr": 0,
+        "child_friendly": false,
+        "image": "/images/attractions/ATT-OSA-008.jpg",
+        "start_choices": [
+          "06:30",
+          "07:00",
+          "07:30",
+          "08:00",
+          "12:00",
+          "12:30",
+          "13:00",
+          "13:30",
+          "14:00",
+          "14:30",
+          "15:00",
+          "15:30",
+          "16:00"
+        ],
+        "available": true,
+        "fits_budget": true,
+        "budget_needed_inr": 0
+      },
+      {
+        "attraction_id": "ATT-OSA-004",
+        "name": "Universal Studios Japan",
+        "category": "THEME_PARK",
+        "duration_minutes": 480,
+        "price_inr": 12768,
+        "price_delta_inr": 12768,
+        "child_friendly": true,
+        "image": "/images/attractions/ATT-OSA-004.jpg",
+        "start_choices": [
+          "12:00",
+          "12:30",
+          "13:00"
+        ],
+        "available": true,
+        "fits_budget": true,
+        "budget_needed_inr": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,734 @@
+{
+  "_http_status": 200,
+  "body": {
+    "outcome": "PACKAGE",
+    "package": {
+      "package_id": "pkg_f5c870274360",
+      "status": "PLANNED",
+      "variant": "DEFAULT",
+      "traveler": {
+        "name": "Traveler",
+        "home_airport": "BLR",
+        "adults": 2,
+        "children": 1,
+        "child_ages": [
+          6
+        ]
+      },
+      "request": {
+        "departure_city": "Bengaluru",
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "nights": 6,
+        "adults": 2,
+        "child_ages": [
+          6
+        ],
+        "budget_inr": 350000,
+        "traveler_name": "Traveler"
+      },
+      "country": "Japan",
+      "start_date": "2027-04-10",
+      "end_date": "2027-04-16",
+      "city_plan": [
+        {
+          "city": "Osaka",
+          "nights": 4,
+          "check_in": "2027-04-10",
+          "check_out": "2027-04-14"
+        },
+        {
+          "city": "Kyoto",
+          "nights": 2,
+          "check_in": "2027-04-14",
+          "check_out": "2027-04-16"
+        }
+      ],
+      "pricing": {
+        "total_inr": 326662,
+        "budget_inr": 350000,
+        "remaining_inr": 23338,
+        "over_budget": false,
+        "breakdown": {
+          "flights": 181440,
+          "hotels": 130032,
+          "transfers": 8190,
+          "attractions": 7000
+        }
+      },
+      "metrics": {
+        "transit_minutes": 1075,
+        "usable_ground_minutes": 4450,
+        "avg_hotel_stars": 4.67,
+        "quality_score": 94.8,
+        "budget_used_pct": 93.3,
+        "total": 326662
+      },
+      "items": [
+        {
+          "type": "flight",
+          "name": "AirVeda AV 832 BLR to KIX",
+          "city": "Osaka",
+          "catalog_id": "FL-740",
+          "start": "2027-04-09T21:40",
+          "end": "2027-04-10T09:20",
+          "quantity": 3,
+          "price_inr": 103320,
+          "icon": "flight",
+          "leg": "ARRIVAL",
+          "title": "Flight Bengaluru → Osaka",
+          "subtitle": "AirVeda AV 832 · Direct · 8h 10m",
+          "badges": [
+            "DIRECT"
+          ],
+          "pinned": false,
+          "day": "2027-04-10",
+          "room_id": null,
+          "image": null,
+          "item_id": "i1",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "transfer",
+          "name": "Kansai limousine bus to Umeda",
+          "city": "Osaka",
+          "catalog_id": "TR-KIX-UMD-BUS",
+          "start": "2027-04-10T10:20",
+          "end": "2027-04-10T11:35",
+          "quantity": 3,
+          "price_inr": 2240,
+          "icon": "bus",
+          "leg": "AIRPORT_ARRIVAL",
+          "title": "Kansai limousine bus to Umeda",
+          "subtitle": "3 traveller(s) · priced per person",
+          "day": "2027-04-10",
+          "room_id": null,
+          "badges": [],
+          "image": null,
+          "item_id": "i2",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": [],
+          "pinned": false
+        },
+        {
+          "type": "attraction",
+          "name": "Shinsekai",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-007",
+          "start": "2027-04-10T12:05",
+          "end": "2027-04-10T13:05",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Shinsekai",
+          "subtitle": "60 min · District",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-007.jpg",
+          "pinned": false,
+          "day": "2027-04-10",
+          "room_id": null,
+          "item_id": "i3",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "hotel",
+          "name": "Umeda Grand Hotel",
+          "city": "Osaka",
+          "catalog_id": "HTL-OSA-003",
+          "room_id": "RM-OSA-003-B",
+          "start": "2027-04-10",
+          "end": "2027-04-14",
+          "quantity": 1,
+          "price_inr": 84672,
+          "icon": "hotel",
+          "leg": "STAY",
+          "title": "Umeda Grand Hotel",
+          "subtitle": "Family Room × 1 · 4 nights · 5★ · Umeda",
+          "badges": [
+            "FAMILY_FRIENDLY"
+          ],
+          "image": "/images/hotels/HOTEL-LUXURY-1.jpg",
+          "pinned": false,
+          "day": "2027-04-10",
+          "item_id": "i4",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Kuromon Ichiba Market",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-002",
+          "start": "2027-04-11T09:00",
+          "end": "2027-04-11T10:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Kuromon Ichiba Market",
+          "subtitle": "60 min · Market",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-002.jpg",
+          "pinned": false,
+          "day": "2027-04-11",
+          "room_id": null,
+          "item_id": "i5",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Osaka Castle",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-003",
+          "start": "2027-04-11T10:30",
+          "end": "2027-04-11T12:00",
+          "quantity": 3,
+          "price_inr": 672,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Osaka Castle",
+          "subtitle": "90 min · Castle",
+          "badges": [
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-003.jpg",
+          "pinned": false,
+          "day": "2027-04-11",
+          "room_id": null,
+          "item_id": "i6",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Umeda Sky Building",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-006",
+          "start": "2027-04-12T09:30",
+          "end": "2027-04-12T10:30",
+          "quantity": 3,
+          "price_inr": 2072,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Umeda Sky Building",
+          "subtitle": "60 min · Viewpoint",
+          "badges": [
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-006.jpg",
+          "pinned": false,
+          "day": "2027-04-12",
+          "room_id": null,
+          "item_id": "i7",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Dotonbori",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-001",
+          "start": "2027-04-12T11:00",
+          "end": "2027-04-12T12:30",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Dotonbori",
+          "subtitle": "90 min · District",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-001.jpg",
+          "pinned": false,
+          "day": "2027-04-12",
+          "room_id": null,
+          "item_id": "i8",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Osaka Science Museum",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-009",
+          "start": "2027-04-13T09:30",
+          "end": "2027-04-13T11:00",
+          "quantity": 3,
+          "price_inr": 448,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Osaka Science Museum",
+          "subtitle": "90 min · Museum",
+          "badges": [
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-009.jpg",
+          "pinned": false,
+          "day": "2027-04-13",
+          "room_id": null,
+          "item_id": "i9",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Osaka Aquarium Kaiyukan",
+          "city": "Osaka",
+          "catalog_id": "ATT-OSA-005",
+          "start": "2027-04-13T11:30",
+          "end": "2027-04-13T14:00",
+          "quantity": 3,
+          "price_inr": 3808,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Osaka Aquarium Kaiyukan",
+          "subtitle": "150 min · Aquarium",
+          "badges": [
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-OSA-005.jpg",
+          "pinned": false,
+          "day": "2027-04-13",
+          "room_id": null,
+          "item_id": "i10",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "transfer",
+          "name": "Shinkansen Osaka to Kyoto",
+          "city": "Kyoto",
+          "catalog_id": "TR-OSA-KYO-01",
+          "start": "2027-04-14T08:00",
+          "end": "2027-04-14T08:15",
+          "quantity": 3,
+          "price_inr": 2030,
+          "icon": "train",
+          "leg": "INTERCITY",
+          "title": "Osaka → Kyoto",
+          "subtitle": "3 traveller(s) · priced per person",
+          "day": "2027-04-14",
+          "room_id": null,
+          "badges": [],
+          "image": null,
+          "item_id": "i11",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": [],
+          "pinned": false
+        },
+        {
+          "type": "attraction",
+          "name": "Nishiki Market",
+          "city": "Kyoto",
+          "catalog_id": "ATT-KYO-005",
+          "start": "2027-04-14T10:00",
+          "end": "2027-04-14T11:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Nishiki Market",
+          "subtitle": "60 min · Market",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-KYO-005.jpg",
+          "pinned": false,
+          "day": "2027-04-14",
+          "room_id": null,
+          "item_id": "i12",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "hotel",
+          "name": "Arashiyama River Ryokan",
+          "city": "Kyoto",
+          "catalog_id": "HTL-KYO-006",
+          "room_id": "RM-KYO-006-B",
+          "start": "2027-04-14",
+          "end": "2027-04-16",
+          "quantity": 1,
+          "price_inr": 45360,
+          "icon": "hotel",
+          "leg": "STAY",
+          "title": "Arashiyama River Ryokan",
+          "subtitle": "Family Room × 1 · 2 nights · 4★ · Arashiyama",
+          "badges": [
+            "FAMILY_FRIENDLY"
+          ],
+          "image": "/images/hotels/HOTEL-RYOKAN-1.jpg",
+          "pinned": false,
+          "day": "2027-04-14",
+          "item_id": "i13",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Fushimi Inari Taisha",
+          "city": "Kyoto",
+          "catalog_id": "ATT-KYO-002",
+          "start": "2027-04-15T08:30",
+          "end": "2027-04-15T10:30",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Fushimi Inari Taisha",
+          "subtitle": "120 min · Shrine",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-KYO-002.jpg",
+          "pinned": false,
+          "day": "2027-04-15",
+          "room_id": null,
+          "item_id": "i14",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Arashiyama Bamboo Grove",
+          "city": "Kyoto",
+          "catalog_id": "ATT-KYO-004",
+          "start": "2027-04-15T11:00",
+          "end": "2027-04-15T12:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Arashiyama Bamboo Grove",
+          "subtitle": "60 min · Nature",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-KYO-004.jpg",
+          "pinned": false,
+          "day": "2027-04-15",
+          "room_id": null,
+          "item_id": "i15",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "transfer",
+          "name": "Kansai limousine bus to Kyoto",
+          "city": "Kyoto",
+          "catalog_id": "TR-KIX-KYO-BUS",
+          "start": "2027-04-16T07:05",
+          "end": "2027-04-16T08:45",
+          "quantity": 3,
+          "price_inr": 3920,
+          "icon": "bus",
+          "leg": "AIRPORT_DEPARTURE",
+          "title": "Kansai limousine bus to Kyoto",
+          "subtitle": "3 traveller(s) · priced per person",
+          "day": "2027-04-16",
+          "room_id": null,
+          "badges": [],
+          "image": null,
+          "item_id": "i16",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": [],
+          "pinned": false
+        },
+        {
+          "type": "flight",
+          "name": "AirVeda AV 515 KIX to BLR",
+          "city": "Bengaluru",
+          "catalog_id": "FL-411",
+          "start": "2027-04-16T12:00",
+          "end": "2027-04-16T18:00",
+          "quantity": 3,
+          "price_inr": 78120,
+          "icon": "flight",
+          "leg": "RETURN",
+          "title": "Flight Osaka → Bengaluru",
+          "subtitle": "AirVeda AV 515 · Direct · 9h 30m",
+          "badges": [
+            "DIRECT"
+          ],
+          "pinned": false,
+          "day": "2027-04-16",
+          "room_id": null,
+          "image": null,
+          "item_id": "i17",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        }
+      ],
+      "days": [
+        {
+          "date": "2027-04-10",
+          "weekday": "SAT",
+          "city": "Osaka",
+          "kind": "ARRIVAL",
+          "events": [
+            {
+              "item_id": "i1",
+              "time": "09:20",
+              "time_label": "9:20 am",
+              "type": "flight",
+              "icon": "flight",
+              "label": "Land at Kansai International Airport"
+            },
+            {
+              "item_id": "i2",
+              "time": "10:20",
+              "time_label": "10:20 am",
+              "type": "transfer",
+              "icon": "bus",
+              "label": "Kansai limousine bus to Umeda"
+            },
+            {
+              "item_id": "i3",
+              "time": "12:05",
+              "time_label": "12:05 pm",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Shinsekai"
+            },
+            {
+              "item_id": "i4",
+              "time": "15:00",
+              "time_label": "3:00 pm",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check in · Umeda Grand Hotel"
+            }
+          ],
+          "summary": "Arrival day · Osaka · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-11",
+          "weekday": "SUN",
+          "city": "Osaka",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i5",
+              "time": "09:00",
+              "time_label": "9:00 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Kuromon Ichiba Market"
+            },
+            {
+              "item_id": "i6",
+              "time": "10:30",
+              "time_label": "10:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Osaka Castle"
+            }
+          ],
+          "summary": "Full day · Osaka · 2 sight(s)"
+        },
+        {
+          "date": "2027-04-12",
+          "weekday": "MON",
+          "city": "Osaka",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i7",
+              "time": "09:30",
+              "time_label": "9:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Umeda Sky Building"
+            },
+            {
+              "item_id": "i8",
+              "time": "11:00",
+              "time_label": "11:00 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Dotonbori"
+            }
+          ],
+          "summary": "Full day · Osaka · 2 sight(s)"
+        },
+        {
+          "date": "2027-04-13",
+          "weekday": "TUE",
+          "city": "Osaka",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i9",
+              "time": "09:30",
+              "time_label": "9:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Osaka Science Museum"
+            },
+            {
+              "item_id": "i10",
+              "time": "11:30",
+              "time_label": "11:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Osaka Aquarium Kaiyukan"
+            }
+          ],
+          "summary": "Full day · Osaka · 2 sight(s)"
+        },
+        {
+          "date": "2027-04-14",
+          "weekday": "WED",
+          "city": "Kyoto",
+          "kind": "CITY_CHANGE",
+          "events": [
+            {
+              "item_id": "i4",
+              "time": "07:50",
+              "time_label": "7:50 am",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check out · Umeda Grand Hotel"
+            },
+            {
+              "item_id": "i11",
+              "time": "08:00",
+              "time_label": "8:00 am",
+              "type": "transfer",
+              "icon": "train",
+              "label": "Osaka → Kyoto"
+            },
+            {
+              "item_id": "i12",
+              "time": "10:00",
+              "time_label": "10:00 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Nishiki Market"
+            },
+            {
+              "item_id": "i13",
+              "time": "15:00",
+              "time_label": "3:00 pm",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check in · Arashiyama River Ryokan"
+            }
+          ],
+          "summary": "Moving day · Kyoto · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-15",
+          "weekday": "THU",
+          "city": "Kyoto",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i14",
+              "time": "08:30",
+              "time_label": "8:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Fushimi Inari Taisha"
+            },
+            {
+              "item_id": "i15",
+              "time": "11:00",
+              "time_label": "11:00 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Arashiyama Bamboo Grove"
+            }
+          ],
+          "summary": "Full day · Kyoto · 2 sight(s)"
+        },
+        {
+          "date": "2027-04-16",
+          "weekday": "FRI",
+          "city": "Kyoto",
+          "kind": "LAST",
+          "events": [
+            {
+              "item_id": "i13",
+              "time": "06:55",
+              "time_label": "6:55 am",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check out · Arashiyama River Ryokan"
+            },
+            {
+              "item_id": "i16",
+              "time": "07:05",
+              "time_label": "7:05 am",
+              "type": "transfer",
+              "icon": "bus",
+              "label": "Kansai limousine bus to Kyoto"
+            },
+            {
+              "item_id": "i17",
+              "time": "12:00",
+              "time_label": "12:00 pm",
+              "type": "flight",
+              "icon": "flight",
+              "label": "Fly home from Kansai International Airport"
+            }
+          ],
+          "summary": "Going home · Kyoto"
+        }
+      ],
+      "warnings": [
+        "CHECKIN_TIME: you reach Umeda Grand Hotel around 11:35 am, before check-in opens at 15:00."
+      ],
+      "reservation": null
+    }
+  }
+}

@@ -1,0 +1,63 @@
+# Frontend handoff
+
+For whoever builds the UI in `frontend/`. The backend is finished for the core features; this page says how to run it, what to call from
+each screen, and what to render. Full reference: [`API.md`](API.md). Real responses: [`api-examples/`](api-examples/). The UX
+requirements are in PRD §8.4.
+
+## 1. Run the backend
+
+```
+docker compose up --build        # http://localhost:8000   (interactive API docs: /docs)
+```
+or without Docker: `pip install -r backend/requirements.txt && cd backend && python -m app`.
+
+In development run your dev server separately and proxy `/api` and `/images` to `http://localhost:8000` (Vite: `server.proxy`). Never hard-code
+a host. The Dockerfile builds `frontend/` with `npm ci && npm run build` and serves `frontend/dist` from the backend, so **`npm run build` must
+produce `frontend/dist/index.html`**. Unknown non-API paths fall back to `index.html`, so client-side routes work on refresh.
+
+## 2. Ground rules
+
+- All data comes from `/api/*`. No catalog files, no travel rules, no price maths in the UI — show exactly what the API returns.
+- After any change, **replace your local package with the one returned** (single source of truth).
+- Never show raw JSON or a stack trace; use `message`, `reason` and `fields[]`.
+- Money is an integer in rupees: format with `Intl.NumberFormat('en-IN')` (₹3,50,000). Times are local to the place; `time_label` is ready to show ("9:20 am").
+- Keep state in the URL (`/packages/:id`, `/reservations/:number`) so a refresh keeps working.
+- The form has **exactly 7 fields** (departure city, country, first day, nights, adults, children's ages, budget). Fill the dropdowns from `GET /api/meta`.
+
+## 3. Screens → calls
+
+| Screen | Calls | Render |
+|---|---|---|
+| **Enter the trip** (form, empty at start) | `GET /api/meta` → `POST /api/packages` | On 422, put each `fields[].message` next to its input. Dates outside 1–20 Apr 2027 are *not* a field error — they come back as `NO_PACKAGE`. |
+| **Result of a build** | same response | `PACKAGE` → go to `/packages/:id`. `OVER_BUDGET` → over-budget page. `NO_PACKAGE` → show `message` and an "Edit the trip" button with the previous values. |
+| **Over-budget page** | `GET /api/packages/{alt.package_id}` | Plain sentence from `message`; cheapest total and shortfall; one card per `alternatives[]` (label, total, money left) that opens its package; a button for `raise_budget.label` that re-posts the request with the new budget; "Edit the trip". |
+| **Package page** | `GET /api/packages/{id}` | Sticky bar: `pricing.total_inr` of `budget_inr`, `remaining_inr` (green/amber/red **and** text). City strip from `city_plan`. One section per `days[]` with its `events` in order; card details from the matching `items[]` entry (`title`, `subtitle`, `icon`, `badges`, `image`, `price_inr`, `quantity`). Banner for `warnings[]`. Buttons: Export, Confirm. |
+| **Change hotel / flight / sights** | `GET …/options/hotels?city=` · `…/options/flights?leg=` · `…/options/attractions?date=` then `POST …/changes` | Drawer listing options. Pin the `current` one; show `price_delta_inr` as +₹/−₹; grey out `available:false` options and show `reason_unavailable`; mark `fits_budget:false` options "needs +₹{budget_needed_inr}". |
+| **After a change** | `POST …/changes` response | `APPLIED` → swap in `package`, toast `summary`, highlight `changed_item_ids`. `REFUSED` → show `reason` + `suggestion`. `BUDGET_EXCEEDED` → show `message`, `cheaper_options`, and a "Raise budget to ₹{raise_budget_to_inr} and apply" button that re-sends the same change with `raise_budget: true`. `PINNED_CONFLICT` → show `reason` and the two `options`; "apply and remove" re-sends with `remove_pinned_conflicts: true`. |
+| **Confirm** | `POST …/confirm` | Show `reservation_number` large with a copy button; link to `/reservations/:number`. Booked packages are read-only (`status: BOOKED`). |
+| **Reservation lookup** | `GET /api/reservations/{number}` | Read-only summary using the same timeline. 404 → "Reservation not found". |
+| **Export** | `GET …/export` | Plain link/button; the response downloads as a file. |
+| **Photo credits** | — | If you show photos, also show the credits from `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md` (a `/credits` page + footer link). |
+
+## 4. Reading a package
+
+```
+package.days[i]            → what to draw for that date (kind, city, summary, events[])
+package.days[i].events[j]  → { item_id, time, time_label, type, icon, label }
+package.items[k]           → the full detail for that item_id (title, subtitle, price_inr, image, badges, pinned, …)
+```
+`kind`: `ARRIVAL` (day 0), `FULL`, `CITY_CHANGE` (moving to the next city), `LAST` (going home, no hotel night, no sights).
+The arrival flight departs the evening before the first day, so it shows as "Land at …" on day 0. Item `pinned: true` means the
+traveler chose it — you may show a small "your choice" marker.
+
+## 5. Not available (set aside)
+
+The backend does **not** offer: choosing a different city plan, three alternative packages (cheapest/fastest/best rated), plain-text quick
+request, or seats/rooms being used up by bookings. Don't build UI for these. The price difference on every option and the
+"affects other parts" warnings *are* available.
+
+## 6. Quick manual check
+
+1. Open the form, submit the Menon request: Bengaluru · Japan · 2027-04-10 · 6 nights · 2 adults · child aged 6 · ₹3,50,000.
+2. You should get a `PACKAGE` near ₹3.27 lakh; open it, change a Kyoto hotel, add and remove a sight, confirm, then look the number up again.
+3. Try ₹2,00,000 to see the over-budget page, and 2027-04-19 + 5 nights for "no package".

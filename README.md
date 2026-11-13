@@ -1,52 +1,102 @@
 # NomadGrid — Build My Holiday
 
-Enter a trip (departure city, country, first day, nights, travelers, budget) and get one complete,
-rule-correct holiday package: flights, hotels, airport and city transfers and a day-by-day attraction plan.
-Change the hotel, a flight or the attractions; confirm to get a 10-digit reservation number.
+Enter a trip — departure city, destination country, first day, nights, adults, children's ages and a budget — and get **one complete,
+rule-correct holiday package**: flights, hotels, airport and city transfers, and a day-by-day plan of attractions, priced in INR.
+Change the hotel, a flight or the attractions and the whole package is re-checked. Confirm to get a **10-digit reservation number** that
+reopens the summary later, even after a restart.
 
-## Start
+> Hackathon "Problem 1 — Holiday Package". The problem statement is the contract; every must-have is built and verified.
+
+## Start it
 
 ```
-docker compose up --build        # app on http://localhost:8000  (API docs at /docs)
+docker compose up --build          # http://localhost:8000      API docs: http://localhost:8000/docs
 ```
 
 Without Docker (Python 3.12+):
-
 ```
 pip install -r backend/requirements.txt
-cd backend && python -m app      # API on http://localhost:8000
+cd backend && python -m app        # http://localhost:8000
 ```
 
-Tests: `pip install -r backend/requirements-dev.txt && cd backend && python -m pytest`  (checks: `ruff check .` and `pyright`)
+Try the Menon family: Bengaluru → Japan · 10 Apr 2027 · 6 nights · 2 adults + 1 child (6) · ₹3,50,000
+```
+curl -X POST localhost:8000/api/packages -H "content-type: application/json" \
+  -d '{"departure_city":"Bengaluru","country":"Japan","start_date":"2027-04-10","nights":6,"adults":2,"child_ages":[6],"budget_inr":350000}'
+```
 
-## Architecture
+## What it does
+
+| Statement item | Status |
+|---|---|
+| M1 Request form with the 7 fields, clear message for every invalid value | ✅ per-field errors |
+| M2 Builds one package; the app chooses the cities; says why when none is possible | ✅ 10 specific reasons |
+| M3 Every travel rule respected | ✅ built in, and re-checked by an independent validator |
+| M4 Day-by-day plan in time order | ✅ `days[]` with sorted events |
+| M5 Total, budget, amount left or over; export as shared-format JSON | ✅ |
+| M6 Change hotel, change flight, add/remove attractions — re-checked or refused with a reason | ✅ with price difference on every option |
+| M7 Confirm → unique 10-digit number → summary, survives restart, wrong number = "not found" | ✅ verified inside Docker |
+| M8 Budget too small → say so, show the cheapest total, suggest a change | ✅ plus ready-built alternatives and a raise-budget offer |
+
+**Set aside for now** (Good-to-have / Stretch): G3 change cities, G4 three packages, S1 quick request, S2 booking uses up seats and rooms, S3 own idea.
+Price differences (G2) and warnings when a change affects other parts (G1) already exist as part of change-the-package.
+
+## How it decides
+
+- **Budget first.** A package is shown only if it passes every rule *and* fits the budget. If the trip can't be done as asked, the app says so,
+  shows the cheapest total, offers fully built alternatives (drop a city, fewer nights, shift the date) and an "increase budget" option.
+- **Built near the budget.** A ₹4 lakh budget gets a ~₹3.6–4 lakh holiday (better hotels, direct flights, two sights a day), not the cheapest one.
+- **Our city rule.** A plan is an ordered list of distinct cities of the country, each at least 2 nights, nights adding up, consecutive cities linked;
+  the first city must be served by an arrival airport with a valid flight and the last by a return airport with a valid flight. We prefer about one
+  city per 3 nights, treat plans within 120 minutes of the best transit time as equal, then pick the best quality (stars, family fit, direct flights,
+  sights, time) that fits the budget.
+- **Your choices win.** Anything the traveler picks is never dropped silently; conflicts are explained and the traveler decides.
+
+## Project layout
 
 ```
-React frontend (frontend/, built into the same container)
-        │  /api/*
-FastAPI  ──  api/ (routes, request validation)
-        ├─ engine/    city plans · flights · hotels · transfers · attractions · builder · alternatives
-        ├─ changes/   change hotel / flight, add / remove attractions, options with price differences
-        ├─ validator/ independent rule checker (works only from the exported trip + raw catalog)
-        ├─ export/    package object and the shared trip-format JSON
-        ├─ store/     SQLite: packages and reservations (survive restarts)
-        └─ catalog/   read-only data/catalog/*.json
+backend/            FastAPI app (api · engine · changes · validator · export · store · catalog · core), tests, scripts
+frontend/           the UI (separate developer's work — not touched by the backend)
+docs/               ARCHITECTURE.md · API.md · FRONTEND_HANDOFF.md · break-it-log.md · api-examples/
+hackathon-problem-1-holiday-package/   the provided statement, data dictionary, catalog and photos (read-only)
+PRD.md              product requirements, rules and decisions
+Dockerfile · docker-compose.yml
 ```
-The backend holds all logic; the frontend only calls the API. The data files are never modified.
 
-## Our city rule
-A plan is an ordered list of distinct cities of the chosen country, each ≥ 2 nights, nights summing to the trip
-length, consecutive cities linked. The first city must be served by an arrival airport with a valid flight and the
-last city by a return airport with a valid flight. The default package keeps the budget first, then prefers about one
-city per 3 nights, treats plans within 120 minutes of the best transit time as equal, then picks the best quality
-(stars, family fit, direct flights, attractions, time) that fits — built near the budget, not the cheapest.
+## Documentation
 
-## Finished
-Must-have: M1 request validation, M2 build + reasons, M3 all rules (+ independent validator), M4 day plan,
-M5 total/budget/export, M6 change hotel / flight / attractions (price differences included), M7 confirm + lookup
-(survives restart, "not found"), M8 budget too small (cheapest total, built alternatives, raise budget).
-Also: G2 price difference on every option, G1 warnings (shifted arrivals, check-in time, day load).
+| Document | For |
+|---|---|
+| [PRD.md](PRD.md) | What we build and why; requirements, decisions, delivery status |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it works: modules, data, the search, the two rule engines, changes, deployment |
+| [docs/API.md](docs/API.md) | Every endpoint, outcome and error code |
+| [docs/FRONTEND_HANDOFF.md](docs/FRONTEND_HANDOFF.md) | How to build the UI against this API |
+| [docs/api-examples/](docs/api-examples) | 24 real responses (generated by `backend/scripts/generate_api_examples.py`) |
+| [docs/break-it-log.md](docs/break-it-log.md) | What we attacked, what broke, how it was fixed |
+
+## Develop and test
+
+```
+pip install -r backend/requirements-dev.txt
+cd backend
+python -m pytest        # 255 tests
+ruff check .            # lint: clean
+pyright                 # types: 0 errors
+python scripts/generate_api_examples.py    # refresh docs/api-examples
+```
+Editor setup is in `.vscode/settings.json` (uses `backend/.venv`). Commit messages are short, plain descriptions.
+
+## Quality
+
+255 tests (unit, the Menon golden case, 30+ validator mutations, ~120 API attacks, change and edge cases, seeded fuzz) · 0 type errors · lint clean ·
+~9,000 fuzzed requests with 0 crashes, 0 validator failures and 0 over-budget packages · the cheapest search matches a brute-force oracle ·
+Docker verified: build, confirm, container restart, lookup · the catalog is mounted read-only and never modified.
 
 ## Known limitations
-G3 change cities, G4 three packages, S1, S2 and S3 are not built yet. Docker was cold-started and checked (build, confirm, restart, lookup).
-See `docs/break-it-log.md` for what was attacked and what broke.
+
+- Good-to-have and Stretch features listed above are not built.
+- Typical build takes 0.04–0.7 s; the worst over-budget search (10 nights, alternatives) takes about 2 s.
+- The default plan favours the highest quality score, so the Menon family gets Osaka + Kyoto (direct flights, early landing, family rooms) rather than Tokyo;
+  changing the city plan is the set-aside G3 feature.
+- Photos are served from `/images`; whoever shows them must also show the credits in `images/ATTRIBUTIONS.md`.
+- All data is synthetic and covers 1–20 April 2027 only; requests outside that window correctly return "no package".

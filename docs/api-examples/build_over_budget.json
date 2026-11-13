@@ -1,0 +1,39 @@
+{
+  "_http_status": 200,
+  "body": {
+    "outcome": "OVER_BUDGET",
+    "cheapest_total_inr": 219324,
+    "over_by_inr": 19324,
+    "message": "This trip is not possible within ₹2,00,000 as requested. The cheapest version costs ₹2,19,324 (₹19,324 over your budget).",
+    "alternatives": [
+      {
+        "id": "alt1",
+        "levers": [
+          "FEWER_NIGHTS",
+          "SHIFT_DATE"
+        ],
+        "label": "3 nights, start on 13 Apr in Tokyo",
+        "changes": [
+          {
+            "field": "nights",
+            "from": 6,
+            "to": 3
+          },
+          {
+            "field": "start_date",
+            "from": "2027-04-10",
+            "to": "2027-04-13"
+          }
+        ],
+        "total_inr": 189840,
+        "remaining_inr": 10160,
+        "package_id": "pkg_d103155f4037"
+      }
+    ],
+    "raise_budget": {
+      "budget_inr": 219324,
+      "extra_needed_inr": 19324,
+      "label": "Increase budget to ₹2,19,324 (+₹19,324) and keep your original request"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "_http_status": 200,
+  "body": {
+    "departure_cities": [
+      {
+        "airport": "BLR",
+        "city": "Bengaluru"
+      },
+      {
+        "airport": "DEL",
+        "city": "Delhi"
+      },
+      {
+        "airport": "BOM",
+        "city": "Mumbai"
+      },
+      {
+        "airport": "MAA",
+        "city": "Chennai"
+      }
+    ],
+    "countries": [
+      {
+        "name": "Japan",
+        "code": "JP",
+        "cities": [
+          "Tokyo",
+          "Kyoto",
+          "Osaka"
+        ]
+      },
+      {
+        "name": "United Arab Emirates",
+        "code": "AE",
+        "cities": [
+          "Dubai",
+          "Abu Dhabi"
+        ]
+      }
+    ],
+    "rules": {
+      "min_nights": 3,
+      "max_nights": 10,
+      "first_night": "2027-04-01",
+      "last_departure": "2027-04-20",
+      "child_age_max": 17
+    }
+  }
+}

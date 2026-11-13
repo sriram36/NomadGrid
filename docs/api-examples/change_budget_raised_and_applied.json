@@ -1,0 +1,494 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "APPLIED",
+    "package": {
+      "package_id": "pkg_474b9d7cdfff",
+      "status": "PLANNED",
+      "variant": "DEFAULT",
+      "traveler": {
+        "name": "Traveler",
+        "home_airport": "BLR",
+        "adults": 2,
+        "children": 1,
+        "child_ages": [
+          6
+        ]
+      },
+      "request": {
+        "departure_city": "Bengaluru",
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "nights": 6,
+        "adults": 2,
+        "child_ages": [
+          6
+        ],
+        "budget_inr": 225036,
+        "traveler_name": "Traveler"
+      },
+      "country": "Japan",
+      "start_date": "2027-04-10",
+      "end_date": "2027-04-16",
+      "city_plan": [
+        {
+          "city": "Tokyo",
+          "nights": 6,
+          "check_in": "2027-04-10",
+          "check_out": "2027-04-16"
+        }
+      ],
+      "pricing": {
+        "total_inr": 225036,
+        "budget_inr": 225036,
+        "remaining_inr": 0,
+        "over_budget": false,
+        "breakdown": {
+          "flights": 156240,
+          "hotels": 62496,
+          "transfers": 6300,
+          "attractions": 0
+        }
+      },
+      "metrics": {
+        "transit_minutes": 1030,
+        "avg_hotel_stars": 3.0,
+        "usable_ground_minutes": null,
+        "quality_score": null,
+        "total": 225036,
+        "budget_used_pct": 100.0
+      },
+      "items": [
+        {
+          "type": "flight",
+          "name": "AirVeda AV 520 BLR to NRT",
+          "city": "Tokyo",
+          "catalog_id": "FL-401",
+          "start": "2027-04-09T23:50",
+          "end": "2027-04-10T10:30",
+          "quantity": 3,
+          "price_inr": 75600,
+          "icon": "flight",
+          "leg": "ARRIVAL",
+          "title": "Flight Bengaluru → Tokyo",
+          "subtitle": "AirVeda AV 520 · Direct · 7h 10m",
+          "badges": [
+            "DIRECT"
+          ],
+          "pinned": false,
+          "day": "2027-04-10",
+          "room_id": null,
+          "image": null,
+          "item_id": "i1",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "transfer",
+          "name": "Narita limousine bus to Asakusa",
+          "city": "Tokyo",
+          "catalog_id": "TR-NRT-ASA-BUS",
+          "start": "2027-04-10T11:30",
+          "end": "2027-04-10T13:05",
+          "quantity": 3,
+          "price_inr": 4480,
+          "icon": "bus",
+          "leg": "AIRPORT_ARRIVAL",
+          "title": "Narita limousine bus to Asakusa",
+          "subtitle": "3 traveller(s) · priced per person",
+          "day": "2027-04-10",
+          "room_id": null,
+          "badges": [],
+          "image": null,
+          "item_id": "i2",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": [],
+          "pinned": false
+        },
+        {
+          "type": "hotel",
+          "name": "Asakusa River Hotel",
+          "city": "Tokyo",
+          "catalog_id": "HTL-TYO-003",
+          "room_id": "RM-TYO-003-C",
+          "start": "2027-04-10",
+          "end": "2027-04-16",
+          "quantity": 1,
+          "price_inr": 62496,
+          "icon": "hotel",
+          "leg": "STAY",
+          "title": "Asakusa River Hotel",
+          "subtitle": "Family Room × 1 · 6 nights · 3★ · Asakusa",
+          "badges": [
+            "FAMILY_FRIENDLY"
+          ],
+          "image": "/images/hotels/HOTEL-BUSINESS-2.jpg",
+          "pinned": true,
+          "day": "2027-04-10",
+          "item_id": "i3",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Ueno Park",
+          "city": "Tokyo",
+          "catalog_id": "ATT-TYO-008",
+          "start": "2027-04-11T08:30",
+          "end": "2027-04-11T10:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Ueno Park",
+          "subtitle": "90 min · Park",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-TYO-008.jpg",
+          "pinned": false,
+          "day": "2027-04-11",
+          "room_id": null,
+          "item_id": "i4",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Senso-ji",
+          "city": "Tokyo",
+          "catalog_id": "ATT-TYO-004",
+          "start": "2027-04-12T08:30",
+          "end": "2027-04-12T09:30",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Senso-ji",
+          "subtitle": "60 min · Temple",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-TYO-004.jpg",
+          "pinned": false,
+          "day": "2027-04-12",
+          "room_id": null,
+          "item_id": "i5",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Shibuya Crossing",
+          "city": "Tokyo",
+          "catalog_id": "ATT-TYO-011",
+          "start": "2027-04-13T08:30",
+          "end": "2027-04-13T09:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Shibuya Crossing",
+          "subtitle": "30 min · District",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-TYO-011.jpg",
+          "pinned": false,
+          "day": "2027-04-13",
+          "room_id": null,
+          "item_id": "i6",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Ameyoko Market",
+          "city": "Tokyo",
+          "catalog_id": "ATT-TYO-009",
+          "start": "2027-04-14T10:00",
+          "end": "2027-04-14T11:00",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Ameyoko Market",
+          "subtitle": "60 min · Market",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-TYO-009.jpg",
+          "pinned": false,
+          "day": "2027-04-14",
+          "room_id": null,
+          "item_id": "i7",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "attraction",
+          "name": "Meiji Jingu",
+          "city": "Tokyo",
+          "catalog_id": "ATT-TYO-010",
+          "start": "2027-04-15T08:30",
+          "end": "2027-04-15T09:30",
+          "quantity": 3,
+          "price_inr": 0,
+          "icon": "attraction",
+          "leg": "VISIT",
+          "title": "Meiji Jingu",
+          "subtitle": "60 min · Shrine",
+          "badges": [
+            "FREE",
+            "CHILD_FRIENDLY"
+          ],
+          "image": "/images/attractions/ATT-TYO-010.jpg",
+          "pinned": false,
+          "day": "2027-04-15",
+          "room_id": null,
+          "item_id": "i8",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        },
+        {
+          "type": "transfer",
+          "name": "Haneda limousine bus to Asakusa",
+          "city": "Tokyo",
+          "catalog_id": "TR-HND-ASA-BUS",
+          "start": "2027-04-16T06:50",
+          "end": "2027-04-16T07:45",
+          "quantity": 3,
+          "price_inr": 1820,
+          "icon": "bus",
+          "leg": "AIRPORT_DEPARTURE",
+          "title": "Haneda limousine bus to Asakusa",
+          "subtitle": "3 traveller(s) · priced per person",
+          "day": "2027-04-16",
+          "room_id": null,
+          "badges": [],
+          "image": null,
+          "item_id": "i9",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": [],
+          "pinned": false
+        },
+        {
+          "type": "flight",
+          "name": "Nippon Sky NS 806 HND to BLR",
+          "city": "Bengaluru",
+          "catalog_id": "FL-412",
+          "start": "2027-04-16T11:00",
+          "end": "2027-04-16T17:30",
+          "quantity": 3,
+          "price_inr": 80640,
+          "icon": "flight",
+          "leg": "RETURN",
+          "title": "Flight Tokyo → Bengaluru",
+          "subtitle": "Nippon Sky NS 806 · Direct · 10h 00m",
+          "badges": [
+            "DIRECT"
+          ],
+          "pinned": false,
+          "day": "2027-04-16",
+          "room_id": null,
+          "image": null,
+          "item_id": "i10",
+          "status": "PLANNED",
+          "booking": null,
+          "sources": [],
+          "warnings": []
+        }
+      ],
+      "days": [
+        {
+          "date": "2027-04-10",
+          "weekday": "SAT",
+          "city": "Tokyo",
+          "kind": "ARRIVAL",
+          "events": [
+            {
+              "item_id": "i1",
+              "time": "10:30",
+              "time_label": "10:30 am",
+              "type": "flight",
+              "icon": "flight",
+              "label": "Land at Narita International Airport"
+            },
+            {
+              "item_id": "i2",
+              "time": "11:30",
+              "time_label": "11:30 am",
+              "type": "transfer",
+              "icon": "bus",
+              "label": "Narita limousine bus to Asakusa"
+            },
+            {
+              "item_id": "i3",
+              "time": "15:00",
+              "time_label": "3:00 pm",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check in · Asakusa River Hotel"
+            }
+          ],
+          "summary": "Arrival day · Tokyo"
+        },
+        {
+          "date": "2027-04-11",
+          "weekday": "SUN",
+          "city": "Tokyo",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i4",
+              "time": "08:30",
+              "time_label": "8:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Ueno Park"
+            }
+          ],
+          "summary": "Full day · Tokyo · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-12",
+          "weekday": "MON",
+          "city": "Tokyo",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i5",
+              "time": "08:30",
+              "time_label": "8:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Senso-ji"
+            }
+          ],
+          "summary": "Full day · Tokyo · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-13",
+          "weekday": "TUE",
+          "city": "Tokyo",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i6",
+              "time": "08:30",
+              "time_label": "8:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Shibuya Crossing"
+            }
+          ],
+          "summary": "Full day · Tokyo · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-14",
+          "weekday": "WED",
+          "city": "Tokyo",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i7",
+              "time": "10:00",
+              "time_label": "10:00 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Ameyoko Market"
+            }
+          ],
+          "summary": "Full day · Tokyo · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-15",
+          "weekday": "THU",
+          "city": "Tokyo",
+          "kind": "FULL",
+          "events": [
+            {
+              "item_id": "i8",
+              "time": "08:30",
+              "time_label": "8:30 am",
+              "type": "attraction",
+              "icon": "attraction",
+              "label": "Meiji Jingu"
+            }
+          ],
+          "summary": "Full day · Tokyo · 1 sight(s)"
+        },
+        {
+          "date": "2027-04-16",
+          "weekday": "FRI",
+          "city": "Tokyo",
+          "kind": "LAST",
+          "events": [
+            {
+              "item_id": "i3",
+              "time": "06:40",
+              "time_label": "6:40 am",
+              "type": "hotel",
+              "icon": "hotel",
+              "label": "Check out · Asakusa River Hotel"
+            },
+            {
+              "item_id": "i9",
+              "time": "06:50",
+              "time_label": "6:50 am",
+              "type": "transfer",
+              "icon": "bus",
+              "label": "Haneda limousine bus to Asakusa"
+            },
+            {
+              "item_id": "i10",
+              "time": "11:00",
+              "time_label": "11:00 am",
+              "type": "flight",
+              "icon": "flight",
+              "label": "Fly home from Haneda Airport"
+            }
+          ],
+          "summary": "Going home · Tokyo"
+        }
+      ],
+      "warnings": [
+        "CHECKIN_TIME: you reach Asakusa River Hotel around 1:05 pm, before check-in opens at 15:00."
+      ],
+      "reservation": null
+    },
+    "price_delta_inr": 5712,
+    "warnings": [
+      "BUDGET_RAISED: your budget is now ₹2,25,036.",
+      "CHECKIN_TIME: you reach Asakusa River Hotel around 1:05 pm, before check-in opens at 15:00."
+    ],
+    "changed_item_ids": [
+      "i2",
+      "i3",
+      "i9"
+    ],
+    "summary": "Hotel in Tokyo changed to Asakusa River Hotel (Family Room). Total is now ₹2,25,036 (+₹5,712)."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "_http_status": 200,
+  "body": {
+    "leg": "RETURN",
+    "options": [
+      {
+        "flight_id": "FL-411",
+        "airline": "AirVeda",
+        "flight_number": "AV 515",
+        "from": "KIX",
+        "to": "BLR",
+        "departure": "2027-04-16T12:00",
+        "arrival": "2027-04-16T18:00",
+        "stops": 0,
+        "duration_minutes": 570,
+        "price_inr": 78120,
+        "seats_left": 9,
+        "current": true,
+        "available": true,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "price_delta_inr": 0,
+        "reason_unavailable": null,
+        "reason_code": null
+      },
+      {
+        "flight_id": "FL-412",
+        "airline": "Nippon Sky",
+        "flight_number": "NS 806",
+        "from": "HND",
+        "to": "BLR",
+        "departure": "2027-04-16T11:00",
+        "arrival": "2027-04-16T17:30",
+        "stops": 0,
+        "duration_minutes": 600,
+        "price_inr": 80640,
+        "seats_left": 9,
+        "current": false,
+        "available": false,
+        "fits_budget": false,
+        "budget_needed_inr": 0,
+        "price_delta_inr": null,
+        "reason_unavailable": "HND does not serve Kyoto, where your holiday ends.",
+        "reason_code": "AIRPORT_MISMATCH"
+      }
+    ]
+  }
+}

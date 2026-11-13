@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "REFUSED",
+    "reason_code": "ATTRACTION_CLOSED",
+    "reason": "Osaka Science Museum is closed on Monday 12 Apr.",
+    "suggestion": "It is open on Saturday 10 Apr — add it there?"
+  }
+}

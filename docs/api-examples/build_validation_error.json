@@ -1,0 +1,27 @@
+{
+  "_http_status": 422,
+  "body": {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Please fix the highlighted fields.",
+      "fields": [
+        {
+          "field": "nights",
+          "message": "Nights must be a whole number between 3 and 10."
+        },
+        {
+          "field": "adults",
+          "message": "Adults must be a whole number between 1 and 20."
+        },
+        {
+          "field": "child_ages",
+          "message": "Child 1: age must be a whole number between 0 and 17."
+        },
+        {
+          "field": "budget_inr",
+          "message": "Budget must be a positive whole number of rupees."
+        }
+      ]
+    }
+  }
+}
