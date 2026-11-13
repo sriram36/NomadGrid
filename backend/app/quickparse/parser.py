@@ -46,6 +46,25 @@ def _safe_date(y: int, m: int, d: int) -> Optional[date]:
         return None
 
 
+DATE_PATTERNS = [
+    (r"\b(20\d\d)-(\d{1,2})-(\d{1,2})\b", lambda m: (int(m.group(1)), int(m.group(2)), int(m.group(3)))),
+    (r"\b(\d{1,2})/(\d{1,2})/(20\d\d)\b", lambda m: (int(m.group(3)), int(m.group(2)), int(m.group(1)))),   # day/month/year
+    (r"\b(\d{1,2})(?:st|nd|rd|th)?[\s\-/]*(?:of\s+)?(" + MONTH_RE + r")\b\.?(?:[\s,\-/]*(20\d\d))?",
+     lambda m: (int(m.group(3) or DEFAULT_YEAR), MONTHS[m.group(2)], int(m.group(1)))),
+    (r"\b(" + MONTH_RE + r")\b\.?\s*(\d{1,2})(?:st|nd|rd|th)?(?:[\s,]*(20\d\d))?",
+     lambda m: (int(m.group(3) or DEFAULT_YEAR), MONTHS[m.group(1)], int(m.group(2)))),
+]
+
+
+def _find_date(work: str):
+    for pattern, parts in DATE_PATTERNS:
+        for m in re.finditer(pattern, work):
+            d = _safe_date(*parts(m))
+            if d:
+                return d, m
+    return None, None
+
+
 def parse_quick_request(text: str) -> dict:
     """Returns {"fields", "understood", "missing", "unparsed", "notes", "ready"}."""
     original = text or ""
@@ -77,17 +96,7 @@ def parse_quick_request(text: str) -> dict:
                     take("budget_inr", int(digits), m.span(), m.group(0))
 
     # ---- date
-    m = re.search(r"\b(20\d\d)-(\d{1,2})-(\d{1,2})\b", work)
-    d = _safe_date(int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
-    if not d:
-        m = re.search(r"\b(\d{1,2})/(\d{1,2})/(20\d\d)\b", work)              # Indian order: day/month/year
-        d = _safe_date(int(m.group(3)), int(m.group(2)), int(m.group(1))) if m else None
-    if not d:
-        m = re.search(r"\b(\d{1,2})(?:st|nd|rd|th)?[\s\-/]*(?:of\s+)?(" + MONTH_RE + r")\b\.?(?:[\s,\-/]*(20\d\d))?", work)
-        d = _safe_date(int(m.group(3) or DEFAULT_YEAR), MONTHS[m.group(2)], int(m.group(1))) if m else None
-    if not d:
-        m = re.search(r"\b(" + MONTH_RE + r")\b\.?\s*(\d{1,2})(?:st|nd|rd|th)?(?:[\s,]*(20\d\d))?", work)
-        d = _safe_date(int(m.group(3) or DEFAULT_YEAR), MONTHS[m.group(1)], int(m.group(2))) if m else None
+    d, m = _find_date(work)
     if d and m:
         take("start_date", d.isoformat(), m.span(), m.group(0))
         if not re.search(r"20\d\d", m.group(0)):
@@ -103,6 +112,31 @@ def parse_quick_request(text: str) -> dict:
         if m and n and n >= 2:
             take("nights", n - 1, m.span(), m.group(0))
             notes.append(f"Read {n} days as {n - 1} nights (you land on day 1 and fly home on the last day).")
+    if "nights" not in fields:
+        m = re.search(r"\b(\d{1,2})\s*n\b", work)                     # shorthand: "6n"
+        if m and int(m.group(1)) > 0:
+            take("nights", int(m.group(1)), m.span(), m.group(0))
+    if "nights" not in fields and "start_date" in fields:                 # a date range: "10 Apr to 16 Apr"
+        d2, m2 = _find_date(work)
+        start = date.fromisoformat(str(fields["start_date"]))
+        if d2 and m2 and d2 > start:
+            take("nights", (d2 - start).days, m2.span(), m2.group(0))
+            notes.append(f"Read the dates as a range of {(d2 - start).days} nights (the second date is the day you fly home).")
+
+    # ---- adults ("2 adults", "couple", "solo")
+    m = re.search(r"\b" + NUM + r"\s*adults?\b", work)
+    if not (m and _num(m.group(1))):
+        m = re.search(r"\badults?\s*[:=\-]?\s*(\d{1,2})\b(?!\s*(?:\.|lakh|lac|l\b|k\b|night|day))", work)
+    if m and _num(m.group(1)):
+        take("adults", _num(m.group(1)), m.span(), m.group(0))
+    elif (m := re.search(r"\b" + NUM + r"\s*(?:pax|people|persons?|travell?ers|members)\b", work)) \
+            and _num(m.group(1)):
+        take("adults", _num(m.group(1)), m.span(), m.group(0))
+        notes.append(f"Read “{m.group(0).strip()}” as adults — tell us if any of them are children, please check.")
+    else:
+        m = re.search(r"\b(couple|honeymoon|solo|alone|myself|by myself)\b", work)
+        if m:
+            take("adults", 2 if m.group(1) in ("couple", "honeymoon") else 1, m.span(), m.group(0))
 
     # ---- children: "1 child 6", "2 kids aged 4 and 9", "child (7)", "a 6 year old child"
     ages: List[int] = []
@@ -125,6 +159,8 @@ def parse_quick_request(text: str) -> dict:
             m = y
     if m:
         span = m.span()
+        if count is None and ages and not re.search(r"aged?|year|yr|of age|\(", m.group(0)):
+            notes.append(f"Read “{m.group(0).strip()}” as one child aged {ages[0]} — please check the age.")
         if count is None:
             count = len(ages) if ages else 1
         if any(a > 17 for a in ages):
@@ -136,15 +172,6 @@ def parse_quick_request(text: str) -> dict:
         take("child_ages", ages, span, m.group(0))
         if len(ages) < count:
             fields["children_count"] = count          # told to the caller so the form can ask for the rest
-    # ---- adults ("2 adults", "couple", "solo")
-    m = re.search(r"\b" + NUM + r"\s*adults?\b", work)
-    if m and _num(m.group(1)):
-        take("adults", _num(m.group(1)), m.span(), m.group(0))
-    else:
-        m = re.search(r"\b(couple|honeymoon|solo|alone|myself|by myself)\b", work)
-        if m:
-            take("adults", 2 if m.group(1) in ("couple", "honeymoon") else 1, m.span(), m.group(0))
-
     # ---- where from / where to
     m = re.search(r"\bfrom\s+(new delhi|[a-z]+)\b", work)
     dep = DEPARTURE_ALIASES.get(m.group(1)) if m else None
@@ -176,4 +203,4 @@ def parse_quick_request(text: str) -> dict:
 
 
 def notes_blocking(notes: List[str]) -> bool:
-    return any("must be 0 to 17" in n or "only" in n and "age(s)" in n for n in notes)
+    return any("must be 0 to 17" in n or ("only" in n and "age(s)" in n) or "please check" in n for n in notes)
