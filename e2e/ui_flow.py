@@ -207,9 +207,14 @@ def main():
         # ---------------------------------------------------------------- confirm (M7)
         with step("confirm gives a 10-digit number and the holiday becomes read-only"):
             page.get_by_role("button", name=re.compile("Confirm & Book Holiday")).click()
-            page.get_by_text("RESERVATION CONFIRMED").wait_for()
-            number = page.locator("span.tracking-widest").inner_text().strip()
+            page.wait_for_url(re.compile(r"/reservations/\d{10}"))
+            page.get_by_text("Your holiday is confirmed!").wait_for()
+            number = page.locator("[data-testid=reservation-number]").inner_text().strip()
             assert re.fullmatch(r"[1-9]\d{9}", number), number
+            snap(page, "07_confirmed")
+            page.get_by_role("link", name=re.compile("View my itinerary")).click()
+            page.wait_for_url(re.compile(r"/packages/pkg_"))
+            page.get_by_text("RESERVATION CONFIRMED").wait_for()
             assert page.get_by_role("button", name="Change Flight").count() == 0
             assert page.get_by_role("button", name=re.compile("Confirm & Book Holiday")).count() == 0
             snap(page, "07_booked")
@@ -219,6 +224,9 @@ def main():
             page.reload()
             page.get_by_text("RESERVATION CONFIRMED").wait_for()
             assert page.locator("span.tracking-widest").inner_text().strip() == state["number"]
+            page.goto(BASE + "/reservations/" + state["number"])
+            page.get_by_text("Your holiday is confirmed!").wait_for()
+            assert page.locator("[data-testid=reservation-number]").inner_text().strip() == state["number"]
 
         with step("lookup by reservation number from the top bar; a wrong number says 'not found'"):
             page.goto(BASE)
@@ -231,12 +239,8 @@ def main():
             page.wait_for_url(re.compile(r"/packages/pkg_"))
             page.get_by_text("RESERVATION CONFIRMED").wait_for()
 
-        with step("My Bookings lists the reservation and opens it"):
-            page.get_by_role("link", name=re.compile("My Bookings")).click()
-            page.get_by_text(state["number"]).first.wait_for()
-            snap(page, "08_bookings")
-            page.get_by_role("button", name=re.compile("View Itinerary")).first.click()
-            page.wait_for_url(re.compile(r"/packages/pkg_"))
+        with step("the top bar no longer has a My Bookings link"):
+            assert page.get_by_role("link", name=re.compile("My Bookings")).count() == 0
 
         with step("export link downloads the shared-format JSON with the booking reference"):
             href = page.get_by_role("link", name="Export Package JSON").get_attribute("href")
