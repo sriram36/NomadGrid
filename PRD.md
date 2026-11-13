@@ -129,8 +129,10 @@ Each requirement lists what the **backend** must do, what the **frontend** must 
 |---|---|
 | `departure_city` | One of `destinations.json` `departure_cities[].city` (Bengaluru, Delhi, Mumbai, Chennai) → "Choose a departure city from the list" |
 | `country` | One of `countries[].name` (Japan, United Arab Emirates) |
-| `start_date` | Valid date, first night ≥ 2027-04-01 → "Holiday start must be on or after 1 Apr 2027" |
-| `nights` | Integer 3–10 and `start_date + nights ≤ 2027-04-20` → "Return date 22 Apr 2027 is after the last flight date (20 Apr 2027)" |
+| `start_date` | A real date (`YYYY-MM-DD`) → "Enter the first day of the holiday as a real date" |
+| `nights` | Whole number 3–10 → "Nights must be a whole number between 3 and 10" |
+
+*A valid date whose trip falls outside the data window (first night before 1 Apr 2027, or return after 20 Apr 2027) is **not** a field error: per the data dictionary ("a request outside the window has no package: say so") the app answers `NO_PACKAGE` / `OUT_OF_WINDOW` with a plain explanation.*
 | `adults` | Integer ≥ 1 |
 | `child_ages` | List of integers 0–17 (children count = list length) → "Child age must be between 0 and 17" |
 | `budget_inr` | Positive integer |
