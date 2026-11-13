@@ -46,6 +46,7 @@ class Leg:
     room: dict
     rooms: int
     price: int
+    pinned: bool = False
 
 
 @dataclass
@@ -81,6 +82,8 @@ class Itinerary:
     links: List[TransferUse]
     visits: List[Visit]
     metrics: Dict[str, float] = field(default_factory=dict)
+    arr_pinned: bool = False
+    ret_pinned: bool = False
 
     @property
     def cities(self) -> List[str]:

@@ -55,6 +55,7 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             subtitle=f"{flight['airline']} {flight['flight_number']} · {'Direct' if flight['stops'] == 0 else '1 stop'} · "
                      f"{_hours(flight['duration_minutes'])}",
             badges=["DIRECT" if flight["stops"] == 0 else "ONE_STOP"], time_dt=flight["_dep"],
+            pinned=(it.arr_pinned if tag == "ARRIVAL" else it.ret_pinned),
             day=(flight["_arr"].date() if tag == "ARRIVAL" else flight["_dep"].date()))
     for tu, city, tag in ((it.arr_transfer, it.legs[0].city, "AIRPORT_ARRIVAL"), (it.dep_transfer, it.legs[-1].city, "AIRPORT_DEPARTURE")):
         add(tu.pickup, type="transfer", name=tu.rec["name"], city=city, catalog_id=tu.rec["transfer_id"],
@@ -74,7 +75,7 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             end=leg.check_out.isoformat(), quantity=leg.rooms, price_inr=leg.price, icon="hotel", leg="STAY",
             title=h["name"], subtitle=f"{leg.room['name']} × {leg.rooms} · {leg.nights} nights · {h['stars']}★ · {h['area']}",
             badges=["FAMILY_FRIENDLY"] if h.get("family_friendly") else [],
-            image=("/" + h["image"]) if h.get("image") else None,
+            image=("/" + h["image"]) if h.get("image") else None, pinned=leg.pinned,
             time_dt=at(leg.check_in, hm(h["check_in_from"])), day=leg.check_in)
     for v in it.visits:
         a = v.attraction
@@ -88,6 +89,8 @@ def build_items(it: Itinerary, cat) -> List[dict]:
     items = []
     for i, (_, item) in enumerate(rows, start=1):
         item.pop("time_dt", None)   # sort helper only; not JSON
+        if isinstance(item.get("day"), date):
+            item["day"] = item["day"].isoformat()
         item.update(item_id=f"i{i}", status="PLANNED", booking=None, sources=[], warnings=[])
         item.setdefault("pinned", False)
         items.append(item)
@@ -141,7 +144,12 @@ def build_days(it: Itinerary, items: List[dict], cat) -> List[dict]:
             hotel = cat.hotels[item["catalog_id"]]
             ci, co = date.fromisoformat(item["start"]), date.fromisoformat(item["end"])
             event(ci, at(ci, hm(hotel["check_in_from"])), item, f"Check in · {item['title']}")
-            event(co, at(co, hm(hotel["check_out_until"])), item, f"Check out · {item['title']}")
+            out_at = at(co, hm(hotel["check_out_until"]))
+            pickups = [datetime.fromisoformat(x["start"]) for x in items
+                       if x["type"] == "transfer" and x["start"][:10] == co.isoformat()]
+            if pickups:                       # you check out before the morning transfer leaves
+                out_at = min(out_at, min(pickups) - timedelta(minutes=10))
+            event(co, out_at, item, f"Check out · {item['title']}")
     for day in days:
         day["events"].sort(key=lambda e: e["_t"])
         for e in day["events"]:
@@ -172,6 +180,20 @@ def soft_warnings(it: Itinerary) -> List[str]:
         for l in it.legs:
             if not l.hotel.get("family_friendly"):
                 out.append(f"NOT_FAMILY_FRIENDLY: {l.hotel['name']} is not marked family friendly.")
+        for v in it.visits:
+            if not v.attraction.get("child_friendly"):
+                out.append(f"NOT_FAMILY_FRIENDLY: {v.attraction['name']} is not marked child friendly.")
+    change_days = {l.day for l in it.links}
+    per_day = {}
+    for v in it.visits:
+        per_day[v.day] = per_day.get(v.day, 0) + 1
+    d = req.start_date + timedelta(days=1)
+    while d < req.end_date:
+        n = per_day.get(d, 0)
+        if d not in change_days and (n == 0 or n > 2):
+            out.append(f"ATTRACTION_DAY_LOAD: {d:%a %d %b} has "
+                       f"{'nothing planned' if n == 0 else f'{n} attractions planned'}.")
+        d += timedelta(days=1)
     return out
 
 

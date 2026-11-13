@@ -6,6 +6,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.api.requests import parse_request
+from app.changes.service import (
+    apply_change, attraction_options_for, flight_options_for, hotel_options_for,
+)
 from app.engine.alternatives import find_alternatives, inr
 from app.engine.builder import build
 from app.engine.inventory import Inventory
@@ -99,6 +102,55 @@ def get_package(package_id: str, request: Request):
     if pkg is None:
         return error(404, "PACKAGE_NOT_FOUND", "We couldn't find that package.")
     return pkg
+
+
+@router.post("/packages/{package_id}/changes")
+async def change_package(package_id: str, request: Request):
+    cat, store = request.app.state.cat, request.app.state.store
+    pkg = store.get_package(package_id)
+    if pkg is None:
+        return error(404, "PACKAGE_NOT_FOUND", "We couldn't find that package.")
+    try:
+        op = await request.json()
+    except Exception:
+        return error(422, "VALIDATION_ERROR", "The request body must be valid JSON.")
+    if not isinstance(op, dict):
+        return error(422, "VALIDATION_ERROR", "The change must be a JSON object with an 'op' field.")
+    res = apply_change(pkg, op, cat, request.app.state.inventory())
+    if res["result"] == "APPLIED":
+        store.save_package(res["package"])
+    return res
+
+
+@router.get("/packages/{package_id}/options/hotels")
+def hotel_options(package_id: str, city: str, request: Request):
+    pkg = request.app.state.store.get_package(package_id)
+    if pkg is None:
+        return error(404, "PACKAGE_NOT_FOUND", "We couldn't find that package.")
+    if city not in [l["city"] for l in pkg["city_plan"]]:
+        return error(422, "VALIDATION_ERROR", f"{city!r} is not one of the cities in this holiday.")
+    return {"city": city, "options": hotel_options_for(pkg, city, request.app.state.cat, request.app.state.inventory())}
+
+
+@router.get("/packages/{package_id}/options/flights")
+def flight_options(package_id: str, leg: str, request: Request):
+    pkg = request.app.state.store.get_package(package_id)
+    if pkg is None:
+        return error(404, "PACKAGE_NOT_FOUND", "We couldn't find that package.")
+    if leg not in ("ARRIVAL", "RETURN"):
+        return error(422, "VALIDATION_ERROR", "leg must be ARRIVAL or RETURN.")
+    return {"leg": leg, "options": flight_options_for(pkg, leg, request.app.state.cat, request.app.state.inventory())}
+
+
+@router.get("/packages/{package_id}/options/attractions")
+def attraction_options(package_id: str, date: str, request: Request):
+    pkg = request.app.state.store.get_package(package_id)
+    if pkg is None:
+        return error(404, "PACKAGE_NOT_FOUND", "We couldn't find that package.")
+    out = attraction_options_for(pkg, date, request.app.state.cat, request.app.state.inventory())
+    if out.get("error"):
+        return error(422, "VALIDATION_ERROR", "Choose a day from the trip (the last day is for going home).")
+    return out
 
 
 @router.get("/packages/{package_id}/export")

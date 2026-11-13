@@ -19,6 +19,7 @@ from app.core.pricing import (
 from app.core.timeutil import tod
 from app.engine import attractions as attr
 from app.engine.cityplan import Plan, generate_plans, preferred_city_count
+from app.engine.airport import best_airport_transfer
 from app.engine.hotels import hotel_options, pareto
 from app.engine.inventory import Inventory
 from app.engine.models import Itinerary, Leg, TransferUse, TripRequest, Visit
@@ -162,18 +163,7 @@ class PlanCtx:
         return self._dep_cache[key]
 
     def _best_airport(self, airport: str, city: str, area: str, schedule):
-        req, best = self.s.req, None
-        for t in self.s.cat.airport_transfers(airport, city):
-            if t["area"] not in (None, area):
-                continue
-            times = schedule(t)
-            if times is None:
-                continue
-            price = transfer_price(t, req.adults, req.children)
-            key = (price, t["transfer_id"])
-            if best is None or key < best[0]:
-                best = (key, (t, times[0], times[1], price, transfer_quantity(t, req.adults, req.children)))
-        return best[1] if best else None
+        return best_airport_transfer(self.s.cat, self.s.req, airport, city, area, schedule)
 
 
 # ============================================================================ session
