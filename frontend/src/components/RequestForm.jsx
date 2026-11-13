@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Wand2, Layers } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Wand2, Layers, Heart } from 'lucide-react';
 import { sampleTrips } from '../lib/samples';
 import { formatINR } from '../lib/format';
 import { api, NetworkError } from '../api/client';
 import { useApp } from '../context/AppContext';
+import { INTERESTS } from '../lib/interests';
 
 // Used only if the backend cannot be reached to tell us the real choices (these are the catalog's own).
 const FALLBACK_CITIES = [{ city: 'Bengaluru', airport: 'BLR' }, { city: 'Mumbai', airport: 'BOM' }, { city: 'Delhi', airport: 'DEL' }, { city: 'Chennai', airport: 'MAA' }];
@@ -23,7 +24,7 @@ export default function RequestForm({
   initialData = null,
   isLoading = false
 }) {
-  const { meta } = useApp();
+  const { meta, interests, setInterests } = useApp();
   const departureCities = meta?.departure_cities || FALLBACK_CITIES;
   const countries = meta?.countries || FALLBACK_COUNTRIES;
 
@@ -40,6 +41,8 @@ export default function RequestForm({
   });
 
   const [errors, setErrors] = useState({});
+  const [picked, setPicked] = useState(interests || []);
+  const toggleInterest = (key) => setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   const [quickText, setQuickText] = useState('');
   const [quick, setQuick] = useState(null);
   const [quickBusy, setQuickBusy] = useState(false);
@@ -175,6 +178,7 @@ export default function RequestForm({
 
   const submit = async (mode) => {
     if (!validate()) return;
+    setInterests(picked);
     const result = await onSubmit({
       departureCity: formData.departureCity,
       destinationCountry: formData.destinationCountry,
@@ -544,6 +548,34 @@ export default function RequestForm({
               </div>
             </div>
 
+          </div>
+
+          {/* S1: optional interests (used to highlight and sort sights when you add them) */}
+          <div className="mt-6 pt-5 border-t border-slate-200" data-testid="interests">
+            <p className="text-xs font-bold text-slate-700 flex items-center gap-1">
+              <Heart className="size-3.5 text-[#006ce4]" />
+              Interests <span className="font-medium text-slate-500">(optional)</span>
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">We will highlight matching sights and list them first when you add sightseeing.</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {INTERESTS.map(({ key, label }) => {
+                const on = picked.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleInterest(key)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-1 ${
+                      on ? 'bg-[#006ce4] text-white border-[#006ce4]' : 'bg-white text-slate-700 border-slate-300 hover:border-[#006ce4]'
+                    }`}
+                  >
+                    {on && <Check className="size-3" strokeWidth={3} />}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Submit Action */}
