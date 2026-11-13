@@ -188,7 +188,7 @@ def confirm_package(package_id: str, request: Request):
     return {"reservation_number": number, "package": booked}
 
 
-@router.get("/reservations/{number}")
+@router.get("/reservations/{number:path}")
 def get_reservation(number: str, request: Request):
     not_found = error(404, "RESERVATION_NOT_FOUND", "Reservation not found. Check the 10-digit number and try again.")
     if not re.fullmatch(r"[0-9]{10}", number):

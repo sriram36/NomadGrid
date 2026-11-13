@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import config
 from app.api.routes import router
@@ -26,6 +27,12 @@ def create_app(data_dir=None, db_path=None, images_dir=None, frontend_dist=None)
     async def _validation(request: Request, exc: RequestValidationError):
         return JSONResponse(status_code=422, content={"error": {
             "code": "VALIDATION_ERROR", "message": "The request could not be understood.", "fields": []}})
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http(request: Request, exc: StarletteHTTPException):
+        code = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}.get(exc.status_code, "HTTP_ERROR")
+        msg = {404: "Not found.", 405: "That method is not allowed here."}.get(exc.status_code, "Request failed.")
+        return JSONResponse(status_code=exc.status_code, content={"error": {"code": code, "message": msg}})
 
     @app.exception_handler(Exception)
     async def _unexpected(request: Request, exc: Exception):
