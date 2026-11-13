@@ -11,6 +11,8 @@
 
 **Tags used below:** **[BE]** backend task · **[FE]** frontend task · **[BOTH]** shared.
 
+> **Rule zero — the problem statement is the contract.** We do not edit, reinterpret, shrink or skip anything in it. Every Must-have (M1–M8) and every travel rule (problem §4) is **compulsory** and is built first. Good-to-have and Stretch come only after. Anything we add (alternatives, raise-budget, warnings, undo) is *additive*: it never replaces or weakens a behavior the statement requires. See the traceability matrix in §3A.
+
 ---
 
 ## Table of contents
@@ -55,6 +57,37 @@ Real payments, login/accounts, real supplier inventory, online deployment, curre
 
 ---
 
+## 3A. Problem-statement compliance (non-negotiable)
+
+Everything the statement asks for is built exactly as written. This matrix maps each statement item to where this PRD builds it. **Before every push, re-read the statement rows for the features just built and tick them off** (compliance check, alongside the break-it session).
+
+| Statement item | What it requires (short) | Built in | Owner |
+|---|---|---|---|
+| **M1** Request form | The 7 fields; departure cities and countries from `destinations.json`; invalid value → clear message | §5.1 M1, §6.1 · FE-2 | BE + FE |
+| **M2** Build one package | App chooses the city plan; builds a complete package; no package possible → says so **and why** | §5.1 M2, §6.3–6.11 · FE-3 | BE + FE |
+| **M3** Rules respected | Every rule in problem §4 true for the package | §6.4–6.8, validator §6.13 | BE |
+| **M4** Day-by-day plan | Each day in time order: flights, transfers, hotels, attractions | §5.1 M4, §7.4 `days[]` · FE-4 | BE + FE |
+| **M5** Total and budget | Total in INR, the budget, amount left **or over**; export JSON (shared trip format) | §5.1 M5, §6.15 · FE-4, FE-7 | BE + FE |
+| **M6** Change the package | Change hotel, change flight, add/remove attractions; whole package re-checked; total updated **or** change refused with a reason | §5.1 M6, §6.12 · FE-5. *An over-budget edit is returned as a refusal with a reason (`BUDGET_EXCEEDED`) that the traveler can override only by explicitly raising the budget; the UI still shows "left or over"* | BE + FE |
+| **M7** Confirm & summary | Unique 10-digit number; summary by number, also after backend restart; wrong number → "not found" | §5.1 M7, §6.14 · FE-6 | BE + FE |
+| **M8** Budget too small | Say so, show the cheapest total, suggest a change | §5.1 M8, §6.11 · FE-3 | BE + FE |
+| **G1** Changes affecting other parts | Fix or warn about the other bookings affected | §5.2, §6.12 | BE + FE |
+| **G2** Price difference | Each change option shows the difference vs. current | §5.2, §7.5 `price_delta_inr` | BE + FE |
+| **G3** Change cities | Choose another valid city plan; app rebuilds | §5.2, §7.5 city-plans | BE + FE |
+| **G4** Three packages | Cheapest, fastest (flights + city-to-city transfer minutes), best rated (average `stars`, within budget; guest `rating` ignored); traveler picks one | §5.2, §6.10 | BE + FE |
+| **S1** Quick request | Plain-words request read with rules (no AI) fills the form | §5.2 | BE + FE |
+| **S2** Booking uses seats/rooms | Confirmed reservation reduces seats and rooms in our own store; same last seats/rooms refused | §5.2, §6.14 | BE + FE |
+| **S3** Own idea | Any extra feature | §5.2 | BE + FE |
+| Export format | Shared trip format; `country`; hotel items have `room_id`; after confirm `status = BOOKED`, `booking.reference` = number as string | §6.15 | BE |
+| Technical rules | Any stack; catalog only (data files unchanged); backend holds the logic; state saved across refresh **and** restart; no AI in the app; start in 1–2 commands; built during the event (Git history) | §9, §10, §13 | BOTH |
+| Judging inputs | Unseen requests (other cities, UAE, dates, travelers, budgets) → package / over budget / none / invalid, each handled correctly | §7.3, §12 | BE |
+| Demo & submission | README (how to start, architecture, city rule, what is finished, known limitations); zip without `node_modules`/venvs/build output/keys; push to Git | §10.3, §13, §14 | BOTH |
+| Photo credits | If photos are shown, also show the credits in `images/ATTRIBUTIONS.md` | §5.2 S3, FE-8 | FE |
+
+**Clarifications we chose (they do not change the statement):** the form shows exactly the 7 fields and no extra required input (traveler name is not asked; the export uses a default); "1–2 attractions on every full day" is applied to the first system-built package, as the statement words it; we never pick something the statement forbids (e.g. Nara attractions, a hotel night on the last day).
+
+---
+
 ## 4. Scope tiers & ownership
 
 | Tier | Features | Backend [BE] (you) | Frontend [FE] (teammate) |
@@ -63,7 +96,7 @@ Real payments, login/accounts, real supplier inventory, online deployment, curre
 | **Stretch** (priority order) | G1 knock-on fixes · G2 price diffs · G4 three packages · G3 change cities · S2 inventory use · S1 quick request · S3 own idea | Engine/API support per feature | UI for each: warning badges, diff chips, variant tabs, city-plan chooser, quick-request box, credits page |
 | **Future** | See §15 | — | — |
 
-**Hard gate:** no stretch work starts until SC1–SC5 pass.
+**Hard gate:** no stretch work starts until SC1–SC5 pass. **Build order:** (1) the compulsory Must-haves M1–M8 exactly as the statement words them, (2) the independent validator and tests, (3) Good-to-have, (4) Stretch. Customer-friendly UX (§8.4) is part of the Must-haves' definition of done on the frontend side, not an afterthought.
 
 ---
 
@@ -86,6 +119,7 @@ Each requirement lists what the **backend** must do, what the **frontend** must 
 
 - **[BE]** Validates every field server-side with per-field messages (`fields[]` in the error response, §7.1). Serves dropdown values and rules at `GET /api/meta`.
 - **[FE]** Renders the 7 fields; dropdown values come **only** from `/api/meta`; mirrors validation for instant feedback; maps server `fields[]` errors to inputs. Form is empty on first load.
+- The form shows **exactly these 7 fields** (as the statement requires) — no extra required input.
 - **Done when:** every invalid value shows a clear message next to the field; valid input proceeds.
 
 #### M2 — Build one package (the app chooses the cities)
@@ -407,7 +441,7 @@ Base path `/api`. JSON everywhere. Money = integer INR. Dates `YYYY-MM-DD`; date
 Request:
 ```json
 { "departure_city":"Bengaluru","country":"Japan","start_date":"2027-04-10","nights":6,
-  "adults":2,"child_ages":[6],"budget_inr":350000,"traveler_name":"Menon family" }
+  "adults":2,"child_ages":[6],"budget_inr":350000 }
 ```
 Responses (HTTP 200, discriminated by `outcome`):
 ```json
@@ -468,6 +502,17 @@ After confirm: `status:"BOOKED"`, `reservation:{"number":"4829105736","confirmed
 ### 7.6 Contract handoff [BE]
 At the end of Phase 0 the backend commits `docs/api-examples/*.json` (one real example per response above, including the Menon package) and the live OpenAPI at `/docs`, so the frontend can build against fixtures before the engine is finished.
 
+### 7.7 Backend support for a friendly UI [BE → FE]
+The frontend should never have to invent wording or guess what changed. The backend therefore also returns:
+| Where | Fields |
+|---|---|
+| Every package item | `title` and `subtitle` in plain words (e.g. "Taxi from Narita Airport to your hotel" / "1 taxi · up to 4 people"), `icon` (`flight`,`hotel`,`taxi`,`bus`,`train`,`attraction`), `badges[]` (e.g. `DIRECT`, `ONE_STOP`, `FREE`, `FAMILY_FRIENDLY`, `CHILD_PRICE`, `CHEAPEST`, `BEST_RATED`), `time_label` (e.g. "9:20 am") |
+| Every day | `summary` one-liner (e.g. "Arrive in Tokyo · 2 sights"), `usable_ground_minutes` |
+| `POST …/changes` responses | `summary` sentence ("Hotel in Kyoto changed to Gion Corner Hotel. Total is now ₹3,12,400 (−₹2,400).") and `changed_item_ids[]` so the UI can highlight what moved; on refusal/over-budget also `suggestion` (what to do next, in plain words) |
+| Options | `reason_unavailable` text for options that can't be chosen (e.g. "Sold out on 14 Apr"), so unavailable choices can be shown greyed-out instead of hidden |
+| *(UX extra, after Core)* Undo | Backend keeps the last ≤ 20 versions of a package; `POST /api/packages/{id}/undo` restores the previous version (refused if `BOOKED`) |
+All wording is produced by the backend in one place so it stays consistent and testable.
+
 ---
 
 ## 8. Frontend work package [FE — teammate]
@@ -496,7 +541,7 @@ The frontend **only** talks to `/api/*` (and `/images/*`). It never reads catalo
 | **FE-6** | **Confirm & reservation (M7)** | Confirm dialog with total; success view with the 10-digit number (large, copy button, link to summary); lookup page; "Reservation not found" state; summary reuses the timeline, shows BOOKED badge |
 | **FE-7** | **Export (M5)** | Button downloads `nomadgrid-trip-<id>.json` from the export endpoint |
 | **FE-8** | **Stretch UI** | G2 `+₹X/−₹X` chips on options; G1 per-item warning badges and package warnings; G4 variant chooser; G3 city-plan chooser; S1 quick-request box; S2 conflict message; S3 rationale panel; credits page + footer link |
-| **FE-9** | **UX quality** | Responsive (phone → desktop), keyboard-navigable, visible focus, dialogs trap focus, WCAG-AA contrast, consistent INR format (`Intl.NumberFormat('en-IN')`), 24h local times shown with place label, empty/loading/error states for every list, print-friendly itinerary |
+| **FE-9** | **Customer-friendly UX** | Implements everything in **§8.4**: plain language, icons/colors/photos/badges for instant recognition, sticky budget bar, edit drawers with price differences and "what else moves", highlight + undo after every change, friendly errors, responsive, accessible, empty/loading/error states, print-friendly itinerary. **Accepted only when the task-based UX tests in §8.4 pass** |
 | **FE-10** | **Build & handoff** | `npm run build` outputs `frontend/dist` (consumed by the Dockerfile); `npm run dev` works against the running backend; lint passes; short `frontend/README.md` |
 | **FE-11** | **Demo readiness** | Menon request works end-to-end by clicking only; smoke e2e test (optional Playwright) for build → change → confirm → lookup |
 
@@ -505,6 +550,87 @@ The frontend **only** talks to `/api/*` (and `/images/*`). It never reads catalo
 - After any change, replace local state with the returned package (single source of truth = backend).
 - Never display a stack trace or raw error JSON; use `message` / `fields[]`.
 - Until the backend is ready, develop against `docs/api-examples/*.json`.
+
+### 8.4 Customer-friendly UX — design principles & edit experience [FE]
+The user is a family planner, not a travel agent. **Anyone should be able to build, understand and change a holiday without help, in under two minutes.** How the UI *looks*, how easily things are *identified*, and how easily a package is *edited* are first-class requirements.
+
+**Design principles**
+| # | Principle | In practice |
+|---|---|---|
+| 1 | **One obvious next step** | Each screen has one primary button: "Build my holiday", "Confirm booking" |
+| 2 | **Plain language, no jargon** | Never show catalog codes or enums (`PER_VEHICLE`, `AIRPORT_TAXI`, `area: null`). Say "Taxi from Narita Airport to your hotel · 1 taxi (up to 4 people) · ₹13,440". Codes only in a small grey "details" line |
+| 3 | **Recognize at a glance** | Distinct icon + color per item type (flight, hotel, taxi/bus/train, attraction); a color per city used on the city strip, day headers and cards; photos for hotels and attractions; badges such as "Direct", "1 stop", "Free", "Family friendly", "Child ₹X" |
+| 4 | **Money always visible** | Sticky bar: total · budget · amount left/over with a progress bar. Green = comfortable, amber = under 5% left, red = over. Color is never the only signal (always text too) |
+| 5 | **Show consequences before the click** | Every option shows its price change ("+₹2,400"/"−₹1,360") and what else moves ("Your airport pickup moves to 12:10 pm"); buttons say exactly what happens ("Choose this hotel") |
+| 6 | **Every edit is visible and reversible** | After a change the touched card is highlighted for a few seconds and a toast says what happened ("Hotel in Kyoto changed · Total ₹3,12,400 (−₹2,400)") with **Undo** |
+| 7 | **Helpful, never blaming, errors** | Say what's wrong, why, and what to do: "Tokyo Disneyland is closed on 12 Apr. It's open on 13 Apr — add it there?" |
+| 8 | **Progressive disclosure** | Day cards collapse to a one-line summary and expand for details; advanced details stay hidden until asked |
+| 9 | **Forgiving** | Nothing lost on refresh (URL holds state); "Edit trip" always available; a clear review step before confirm |
+| 10 | **Inclusive** | Mobile-first, tap targets ≥ 44 px, full keyboard use, screen-reader labels, WCAG-AA contrast |
+
+**Visual design system:** neutral background with one brand accent; 6 accessible city colors; 16 px base type and a clear heading scale; 8 px spacing grid; rounded cards with subtle shadows; one icon set (e.g. Lucide). Money in Indian grouping (`₹3,50,000`). Dates like "Sat, 10 Apr". Times in **12-hour with am/pm** and a place label ("9:20 am Japan time" on arrival day). Loading text is honest ("Finding flights, hotels and things to do…"); every list has empty, loading and error states.
+
+**Screen sketches**
+Trip form:
+```
+┌───────────────────────────────────────────────────┐
+│ NomadGrid · Build my holiday                      │
+│ Flying from        [ Bengaluru        ▾ ]         │
+│ Going to           [ Japan            ▾ ]         │
+│ First day there    [ 10 Apr 2027 ]                │
+│ Nights             [ − 6 + ]   → back home Fri 16 Apr │
+│ Adults [ − 2 + ]   Children [ − 1 + ]             │
+│   Child 1 age      [ 6 ▾ ]                        │
+│ Total budget       ₹ [ 3,50,000 ]                 │
+│            [ Build my holiday ]                   │
+└───────────────────────────────────────────────────┘
+```
+Package page:
+```
+┌ Sticky ─ ₹3,12,400 of ₹3,50,000 · ₹37,600 left ▓▓▓▓▓▓▓▓░░ ─ [Export] [Confirm booking] ┐
+│ ■ Tokyo · 3 nights  →  ■ Kyoto · 3 nights        [Edit trip] [Change cities]          │
+│ ▾ Sat 10 Apr · Tokyo · Arrival day                                                     │
+│   ✈ 9:20 am  Land at Narita · Direct · 7h 10m                    [Change flight]     │
+│   🚕 11:30 am Taxi to your hotel · 1 taxi · ₹13,440                                    │
+│   🏨 Ginza Pearl Hotel ★★★★ · Family room · 3 nights   [photo]   [Change hotel]       │
+│   🎟 3:00 pm Senso-ji · Free                                      [Remove]            │
+│   [ + Add something to do ]                                                            │
+│ ▸ Sun 11 Apr · Tokyo · 2 sights                                                        │
+```
+Edit drawer (hotel):
+```
+┌ Change hotel in Kyoto ────────────────────────── ✕ ┐
+│ Sort [Price ▾]   ☐ Family friendly  ☐ 4★ and up    │
+│ ● CURRENT  Sakura Garden Hotel ★★★★ 8.7 · Higashiyama│
+│            Family room · ₹8,120/night · ₹24,360     │
+│ ○ Kyoto Hills Hotel ★★★★ 8.4      +₹2,464 [Choose] │
+│ ○ Gion Corner Hotel ★★★ 7.8       −₹1,360 [Choose] │
+│ ✕ Gion Moon Ryokan — sold out on 14 Apr  (greyed)  │
+└─────────────────────────────────────────────────────┘
+```
+Over-budget page: a calm headline ("This trip doesn't fit ₹3,50,000 as planned"), the cheapest total, then **alternative cards** with a photo of the first city, what changed, the total and money left, and a prominent "Increase budget to ₹4,12,000 (+₹62,000)" button.
+
+**How editing feels**
+| To change… | Experience |
+|---|---|
+| A hotel | "Change hotel" on the hotel card → drawer; current choice pinned and marked; sort by price/stars/rating; filters; each option shows price difference and fit; unavailable options greyed with the reason |
+| A flight | "Change flight" on the flight card → drawer with times, duration, stops, seats, price difference, and "what moves" note |
+| Attractions | "+ Add something to do" on any day → list of what is open that day with "fits your day" start-time chips; "Remove" on every attraction card; conflicts explained in words |
+| Cities | "Change cities" → cards for each valid plan with total and warnings ("rushed: 2 nights each") |
+| Trip details | "Edit trip" → the form prefilled; a notice explains that rebuilding replaces manual edits |
+| Over budget | A change that would exceed the budget explains the gap and offers cheaper options or "Raise budget to ₹X and apply" |
+
+**UX acceptance tests (task-based "hallway test").** Ask 3 people who haven't seen the app to do these unaided. A task passes if at least 2 of 3 finish it within the time limit.
+| # | Task | Limit |
+|---|---|---|
+| 1 | Build the Menon holiday from the form | 1 min |
+| 2 | Say the total and how much budget is left | 10 s |
+| 3 | Change the Kyoto hotel to a cheaper one | 30 s |
+| 4 | Remove one attraction | 15 s |
+| 5 | Add an attraction on a chosen day | 45 s |
+| 6 | Explain why an over-budget request failed and pick an alternative | 30 s |
+| 7 | Confirm, then find the reservation by its number | 1 min |
+Failed tasks are logged (with the break-it findings) and the UI is revised before the cycle is pushed.
 
 ---
 
@@ -693,7 +819,7 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 | Q5 | Return pickup on the last day only | Yes (strict reading of "no hotel night on the last day") |
 | Q6 | Buffer between attractions / arrival-day settling | 30 min each (stricter than "no overlap") |
 | Q7 | `child_friendly: false` attractions when children travel | Soft preference only |
-| Q8 | Traveler name | Optional, defaults to "Traveler" |
+| Q8 | Traveler name | **Not a form field** (the statement's form has 7 fields). The API accepts an optional `traveler_name` (not sent by the UI); the export uses `"Traveler"` by default |
 | Q9 | Reservation number format | 10 digits, first digit 1–9, random, unique |
 | Q10 | Fastest/Best-rated when none within budget | Omit with an explanatory note |
 | Q11 | Day activity window | 08:30–21:30 for planned visits |
