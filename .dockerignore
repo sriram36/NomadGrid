@@ -1,12 +1,17 @@
 .git
 .claude
+.vscode
 **/node_modules
 **/.venv
 **/__pycache__
 **/*.pyc
 **/.pytest_cache
+**/.ruff_cache
 backend/storage
 backend/tests
 frontend/dist
+e2e
+docs
 doubts.md
 *.zip
+hackathon-problem-1-holiday-package/assets

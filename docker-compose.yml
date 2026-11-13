@@ -1,19 +1,18 @@
+# One command for everything:  docker compose up --build   ->   http://localhost:8000
 services:
-  app:
-    build: .
+  nomadgrid:
+    build:
+      context: .
+      args:
+        WITH_UI: "true"          # "false" = API-only image (no Node build)
+    image: nomadgrid
     ports:
-      - "8000:8000"
-    environment:
-      DATA_DIR: /app/data
-      IMAGES_DIR: /app/images
-      DB_PATH: /app/storage/nomadgrid.sqlite
-      PORT: "8000"
+      - "${PORT:-8000}:8000"
     volumes:
-      # the provided catalog is mounted read-only: the app can never change it
-      - ./hackathon-problem-1-holiday-package/data:/app/data:ro
-      - ./hackathon-problem-1-holiday-package/images:/app/images:ro
-      # reservations and packages survive restarts
-      - nomadgrid-db:/app/storage
+      - nomadgrid-db:/app/storage   # reservations survive restarts
+    read_only: true                 # the container filesystem is immutable ...
+    tmpfs:
+      - /tmp                        # ... except scratch space and the database volume
     restart: unless-stopped
 
 volumes:
