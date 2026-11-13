@@ -1,13 +1,12 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Wallet, Timer, Star, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Wallet, Star, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { formatINR, hoursMinutes } from '../lib/format';
 
 const CARDS = [
   { key: 'recommended', title: 'Recommended', blurb: 'The best holiday we can build near your budget.', icon: Sparkles },
   { key: 'cheapest', title: 'Cheapest', blurb: 'The lowest total price.', icon: Wallet },
-  { key: 'fastest', title: 'Fastest', blurb: 'The least time in flights and between cities.', icon: Timer },
   { key: 'best_rated', title: 'Best rated', blurb: 'The highest hotel stars within your budget.', icon: Star },
 ];
 
@@ -27,10 +26,10 @@ export default function ComparePage() {
       <div>
         <h2 className="text-xl font-extrabold text-[#003580]">Pick the holiday that suits you</h2>
         <p className="text-xs text-slate-600 mt-1">Every one is complete, follows every rule and fits your budget. Open one to change anything.</p>
-        {(variants.notes || []).map((n, i) => <p key={i} className="text-[11px] text-slate-500 mt-1">• {n}</p>)}
+        {(variants.notes || []).filter((n) => !/fastest/i.test(n)).map((n, i) => <p key={i} className="text-[11px] text-slate-500 mt-1">• {n}</p>)}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {CARDS.map(({ key, title, blurb, icon: Icon }) => {
           const p = pick(key);
           if (!p) return null;
