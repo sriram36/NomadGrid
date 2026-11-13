@@ -8,10 +8,15 @@ from app.engine.models import Itinerary, Leg, TransferUse, TripRequest, Visit
 from app.export.package import time_label
 
 
-def itinerary_from_package(pkg: dict, cat) -> Itinerary:
+def request_from_package(pkg: dict) -> TripRequest:
     r = pkg["request"]
-    req = TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
-                      r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"))
+    return TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
+                       r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"),
+                       tuple(r.get("interests", [])))
+
+
+def itinerary_from_package(pkg: dict, cat) -> Itinerary:
+    req = request_from_package(pkg)
     legs: List[Leg] = []
     links: List[TransferUse] = []
     visits: List[Visit] = []

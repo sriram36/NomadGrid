@@ -1,4 +1,4 @@
-"""Build a holiday: one recommended package, or the cheapest / fastest / best-rated trio; over-budget answers."""
+"""Build a holiday: one recommended package, or the recommended / cheapest / best-rated choices; over-budget answers."""
 from fastapi import APIRouter, Request
 
 from app.api.requests import parse_request
@@ -68,7 +68,7 @@ async def build_package(request: Request):
 
 @router.post("/packages/variants")
 async def build_three_packages(request: Request):
-    """G4: the cheapest, the fastest and the best-rated package (plus the recommended one). The traveler picks one."""
+    """G4: the cheapest and the best-rated package (plus the recommended one). The traveler picks one."""
     cat, store = request.app.state.cat, request.app.state.store
     req, failure = await read_trip_request(request)
     if failure is not None or req is None:

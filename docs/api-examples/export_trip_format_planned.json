@@ -1,10 +1,11 @@
 {
   "_http_status": 200,
   "body": {
-    "trip_id": "pkg_189d84cd78f6",
+    "trip_id": "pkg_90c061f118d2",
     "traveler": {
       "name": "Traveler",
       "home_airport": "BLR",
+      "departure_city": "Bengaluru",
       "adults": 2,
       "children": 1,
       "child_ages": [

@@ -3,6 +3,7 @@ import re
 from datetime import date
 from typing import List, Optional, Tuple
 
+from app import interests as interest_tags
 from app.engine.models import TripRequest
 
 MAX_ADULTS = 20
@@ -74,6 +75,21 @@ def parse_request(raw, cat) -> Tuple[Optional[TripRequest], List[dict]]:
     if budget is None or not 1 <= budget <= MAX_BUDGET:
         err("budget_inr", "Budget must be a positive whole number of rupees.")
 
+    chosen: List[str] = []
+    interests_raw = raw.get("interests", [])
+    if interests_raw is None:
+        interests_raw = []
+    if not isinstance(interests_raw, list) or len(interests_raw) > 20:
+        err("interests", "Interests must be a list of tags, for example [\"ART\", \"NATURE\"].")
+    else:
+        for tag in interests_raw:
+            key = interest_tags.normalise(tag)
+            if key is None:
+                known = ", ".join(t["id"] for t in interest_tags.tag_list())
+                err("interests", f"{tag!r} is not a known interest. Choose from: {known}.")
+            elif key not in chosen:
+                chosen.append(key)
+
     name = raw.get("traveler_name", "Traveler")
     if name is None or name == "":
         name = "Traveler"
@@ -84,4 +100,5 @@ def parse_request(raw, cat) -> Tuple[Optional[TripRequest], List[dict]]:
     if (errors or not isinstance(dep, str) or not isinstance(country, str) or start is None or nights is None
             or adults is None or budget is None):
         return None, errors
-    return TripRequest(dep, country, start, nights, adults, tuple(ages), budget, name.strip() or "Traveler"), []
+    return TripRequest(dep, country, start, nights, adults, tuple(ages), budget, name.strip() or "Traveler",
+                       tuple(chosen)), []

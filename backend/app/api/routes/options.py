@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Request
 
 from app.api.routes.shared import error
-from app.changes.ops import request_from_package
+from app.changes.rebuild import request_from_package
 from app.changes.service import attraction_options_for, flight_options_for, hotel_options_for
 from app.engine.variants import plan_options
 

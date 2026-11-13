@@ -5,6 +5,8 @@ from typing import List, Optional
 from app.core.pricing import flight_price
 from app.core.timeutil import at, fmt_dt, hm, tod, weekday_code
 from app.engine.models import Itinerary
+from app.interests import matched, tags_of
+from app.export.route import build_route
 
 EXPORT_FIELDS = ["item_id", "type", "name", "city", "status", "catalog_id", "start", "end", "room_id",
                  "quantity", "price_inr", "booking", "sources", "warnings"]
@@ -95,7 +97,9 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             time_dt=at(leg.check_in, hm(h["check_in_from"])), day=leg.check_in)
     for v in it.visits:
         a = v.attraction
+        mine = matched(a, it.request.interests)
         badges = (["FREE"] if v.price == 0 else []) + (["CHILD_FRIENDLY"] if a.get("child_friendly") else [])
+        badges += ["MATCHES_INTEREST"] if mine else []
         add(v.start, type="attraction", name=a["name"], city=a["city"], catalog_id=a["attraction_id"],
             start=fmt_dt(v.start), end=fmt_dt(v.end), quantity=n, price_inr=v.price, icon="attraction", leg="VISIT",
             title=a["name"], subtitle=f"{a['visit_minutes']} min · {a['category'].replace('_', ' ').title()}",
@@ -105,7 +109,8 @@ def build_items(it: Itinerary, cat) -> List[dict]:
                      "openHours": f"{a['open_from']} - {a['open_until']}",
                      "pricePerPerson": a["price_per_person"]["amount"],
                      "childPrice": a["child_price"]["amount"] if "child_price" in a else a["price_per_person"]["amount"],
-                     "childFriendly": bool(a.get("child_friendly"))})
+                     "childFriendly": bool(a.get("child_friendly")),
+                     "interestTags": list(tags_of(a)), "matchedInterests": list(mine)})
     rows.sort(key=lambda r: (r[0], r[1]["type"], r[1]["catalog_id"]))
     items = []
     for i, (_, item) in enumerate(rows, start=1):
@@ -246,6 +251,7 @@ def to_package(it: Itinerary, cat, package_id: str, traveler: dict, status: str 
                     "over_budget": total > req.budget_inr, "breakdown": by_type},
         "metrics": metrics, "items": items, "days": days, "warnings": soft_warnings(it),
         "rationale": _rationale(it, cat, total),
+        "route": build_route(it, cat),
         "reservation": reservation,
     }
 

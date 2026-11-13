@@ -28,10 +28,10 @@ def variants(client, **over):
 
 
 # ===================================================================== G4 three packages
-def test_three_packages_are_valid_within_budget_and_saved(client, cat):
+def test_the_packages_are_valid_within_budget_and_saved(client, cat):
     v = variants(client)
     assert v["outcome"] == "VARIANTS"
-    assert set(v["variants"]) == {"cheapest", "fastest", "best_rated"}
+    assert set(v["variants"]) == {"cheapest", "best_rated"}
     for name, p in v["variants"].items():
         assert p["variant"] == name.upper()
         assert validate_trip(to_trip_format(p), cat) == [], name
@@ -42,11 +42,11 @@ def test_three_packages_are_valid_within_budget_and_saved(client, cat):
 
 def test_each_package_wins_at_what_it_promises(client):
     v = variants(client)
-    c, f, b, r = v["variants"]["cheapest"], v["variants"]["fastest"], v["variants"]["best_rated"], v["recommended"]
-    totals = [p["pricing"]["total_inr"] for p in (c, f, b, r)]
+    c, b, r = v["variants"]["cheapest"], v["variants"]["best_rated"], v["recommended"]
+    totals = [p["pricing"]["total_inr"] for p in (c, b, r)]
     assert c["pricing"]["total_inr"] == min(totals)                                  # cheapest is the cheapest
-    assert f["metrics"]["transit_minutes"] <= min(p["metrics"]["transit_minutes"] for p in (c, b, r))
-    assert b["metrics"]["avg_hotel_stars"] >= max(p["metrics"]["avg_hotel_stars"] for p in (c, f, r))
+    assert b["metrics"]["avg_hotel_stars"] >= max(p["metrics"]["avg_hotel_stars"] for p in (c, r))
+    assert "fastest" not in v["variants"]
 
 
 def test_best_rated_ignores_guest_rating_and_uses_stars(client, cat):

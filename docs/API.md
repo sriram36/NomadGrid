@@ -14,7 +14,7 @@ Real request/response examples for every case are in [`api-examples/`](api-examp
 | `GET /api/health` | Liveness `{"status":"ok"}` | — |
 | `GET /api/meta` | Dropdown values and rules for the form | `meta.json` |
 | `POST /api/packages` | **Build** a package from the 7 request fields | `build_package_menon.json`, `build_over_budget.json`, `build_no_package_*.json`, `build_validation_error.json` |
-| `POST /api/packages/variants` | **Three packages**: cheapest, fastest, best rated (plus the recommended one) | `variants_three_packages.json` |
+| `POST /api/packages/variants` | **Package variants**: cheapest and best rated (plus the recommended one) | `variants_three_packages.json` |
 | `POST /api/parse-request` | **Quick request**: plain words → the 7 form fields (fixed rules, no AI) | `parse_request.json`, `parse_request_needs_check.json` |
 | `GET /api/packages/{id}` | Fetch a saved package | — |
 | `GET /api/packages/{id}/options/hotels?city=` | Hotel+room choices for a city, with price difference and availability | `options_hotels.json` |
@@ -26,6 +26,10 @@ Real request/response examples for every case are in [`api-examples/`](api-examp
 | `GET /api/packages/{id}/export` | Download the shared trip-format JSON (attachment) | `export_trip_format_planned.json`, `…_booked.json` |
 | `POST /api/packages/{id}/confirm` | Book it → 10-digit reservation number; **uses up seats and rooms** | `confirm.json`, `confirm_inventory_conflict.json` |
 | `GET /api/reservations/{number}` | Reopen a booked package | `reservation_lookup.json`, `reservation_not_found.json` |
+| `GET /api/cities/{city}/guide` | **Pocket city guide**: transit, etiquette, sightseeing and practical tips (static file, read-only) | — |
+| `GET /api/cities/{city}/restaurants?area=` | Dining suggestions for a city / area (estimated, not in the total) | — |
+| `GET /api/packages/{id}/guides` | Guides for every city in the holiday, in visit order | — |
+| `GET /api/packages/{id}/dining` | **3–4 nearby dining spots per hotel stay** (matched to the hotel's city and area) | — |
 | `GET /images/…` | Catalog photos (credits: `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md`) | — |
 
 ## Build — `POST /api/packages`
@@ -125,11 +129,11 @@ same number. A package that no longer passes every rule gets `409 PACKAGE_INVALI
 
 ## Extra features
 
-### Three packages — `POST /api/packages/variants`
-Same request body as build. Returns `{"outcome": "VARIANTS", "recommended": {…}, "variants": {"cheapest", "fastest", "best_rated"}, "notes": []}`;
-every package is complete, valid, within budget, saved with its own `package_id`, and carries `variant` (`CHEAPEST`, `FASTEST`, `BEST_RATED`,
+### Package variants — `POST /api/packages/variants`
+Same request body as build. Returns `{"outcome": "VARIANTS", "recommended": {…}, "variants": {"cheapest", "best_rated"}, "notes": []}`;
+every package is complete, valid, within budget, saved with its own `package_id`, and carries `variant` (`CHEAPEST`, `BEST_RATED`,
 `RECOMMENDED`). The traveler picks one and continues with its id. Over-budget and impossible requests return the same `OVER_BUDGET` / `NO_PACKAGE`
-bodies as build. *Cheapest* = lowest total; *fastest* = least flight + city-to-city transfer minutes; *best rated* = highest average hotel stars per
+bodies as build. *Cheapest* = lowest total; *best rated* = highest average hotel stars per
 night within budget (guest rating ignored). Ties are broken by the lower price. See `variants_three_packages.json`.
 
 ### Change cities — `GET …/options/city-plans`, then `CHANGE_CITY_PLAN`
@@ -163,3 +167,25 @@ flights and arrival, hotel quality, budget used, sights, and what the traveler c
 sentences about *other* bookings that moved because of it (e.g. "Your airport pickup on arrival moves from 10:20 am to 11:30 am").
 
 > **Fetch options again after every change.** Hotel, flight and city-plan options describe the package as it is *now*; a change (or a raised budget) can alter them.
+
+
+### Interest tags — optional `interests` on every build
+`GET /api/meta` returns `interests: [{id, label}]` (`HISTORY_CULTURE`, `NATURE`, `FAMILY`, `ART`, `FOOD_MARKETS`, `VIEWS_ADVENTURE`).
+Send `"interests": ["ART", "NATURE"]` (ids or labels, any case; duplicates dropped; unknown tag → 422 on field `interests`) with the 7 fields, on `POST /api/packages` or `/variants`.
+The engine uses fixed keyword rules on `attractions.json` (category, name, aliases; no AI) to prefer matching sights **after** child suitability and **before** variety and price; opening hours, overlaps and the budget are never relaxed.
+In the package: `request.interests`; on each sight `badges` gets `MATCHES_INTEREST` and `details.interestTags` / `details.matchedInterests`.
+`GET …/options/attractions` adds `matches_interests` / `matched_interests` to each option and lists matching ones first. Interests survive changes, undo, city-plan changes and variants; they are not part of the exported trip JSON.
+
+### Pocket city guide and nearby dining
+Both come from separate static files in `backend/app/content/` (never `data/catalog/`, never in the export, never in the price).
+`/api/cities/{city}/guide` → `{city, country, tagline, getting_around[], etiquette[], sightseeing_tips[], good_to_know[], source}`.
+`/api/packages/{id}/dining` → `{stays: [{item_id, hotel, city, area, restaurants: [{name, cuisine, dietary_tags[], estimated_price_per_person_inr, price_label, note}]}], disclaimer, included_in_total: false}`.
+Show `price_label` ("≈ ₹… per person (estimate)") and the disclaimer next to the list. Unknown city → 404 `CITY_NOT_FOUND`.
+
+### Route map — `package.route`
+Every package (and so every variant and every changed package) carries `route`: `{origin: {city, airport, lat, lng}, stops: [{order, city, nights, check_in, check_out, hotel, lat, lng}],
+legs: [{order, kind: FLIGHT|INTERCITY, direction, mode: FLIGHT|TRAIN|BUS|TAXI, from, to, label, duration_minutes, duration_label, …}], path: [city…], summary: {cities, nights, travel_minutes, travel_label, label}}`.
+Draw departure hub → stops (in `order`) → back, with each leg's mode and duration; re-render whenever you receive a new package.
+
+### Why this plan — extra sentences
+`rationale.reasons` now also states the airport safety margins actually achieved (pickup ≥ 60 min after landing, airport ≥ 180 min before the flight home), the rooms chosen for the party size, and how many sights match the traveler's interests.

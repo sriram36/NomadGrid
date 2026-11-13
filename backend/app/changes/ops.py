@@ -4,13 +4,13 @@ from datetime import date, timedelta
 from typing import List, Optional
 
 from app.changes.refusal import Refusal
-from app.changes.rebuild import (parse_date, ready_min, retime_arrival_day, night_city)
+from app.changes.rebuild import night_city, parse_date, ready_min, retime_arrival_day
 from app.config import DAY_END_MIN, DAY_START_MIN, SETTLE_MIN, VISIT_GAP_MIN
 from app.core.pricing import attraction_price, hotel_price, rooms_needed
 from app.core.timeutil import at, hm, tod
 from app.engine import attractions as attr
 from app.engine.airport import arrival_transfer, departure_transfer
-from app.engine.models import Itinerary, TransferUse, TripRequest, Visit
+from app.engine.models import Itinerary, TransferUse, Visit
 from app.engine.variants import build_for_plan
 from app.export.package import time_label
 
@@ -188,12 +188,6 @@ def op_remove_attraction(it, op, cat, inv) -> List[str]:
         raise Refusal("ITEM_NOT_FOUND", "We couldn't find that attraction in your holiday.")
     it.visits.remove(v)
     return []
-
-
-def request_from_package(pkg: dict) -> TripRequest:
-    r = pkg["request"]
-    return TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
-                       r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"))
 
 
 def _adopt(it: Itinerary, new: Itinerary) -> None:

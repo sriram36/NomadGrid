@@ -189,7 +189,7 @@ def finalize(ctx: PlanCtx, cand: dict, tr_range: Tuple[int, int], extras: bool) 
             if arrive.date() != d:
                 continue
             got = attr.extra_visit(cat, city, d, tod(arrive), taken, req.adults, req.children,
-                                   req.budget_inr - total)
+                                   req.budget_inr - total, req.interests)
             if got:
                 a, s_min, e_min = got
                 v = _visit(a, d, s_min, e_min, req)

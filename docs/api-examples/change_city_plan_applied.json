@@ -3,18 +3,20 @@
   "body": {
     "result": "APPLIED",
     "package": {
-      "package_id": "pkg_89a71cae94dc",
+      "package_id": "pkg_6a313bc1fac9",
       "status": "PLANNED",
       "variant": "DEFAULT",
       "traveler": {
         "name": "Traveler",
         "home_airport": "BLR",
+        "departure_city": "Bengaluru",
         "adults": 2,
         "children": 1,
         "child_ages": [
           6
         ]
       },
+      "nights": 6,
       "request": {
         "departure_city": "Bengaluru",
         "country": "Japan",
@@ -25,7 +27,8 @@
           6
         ],
         "budget_inr": 350000,
-        "traveler_name": "Traveler"
+        "traveler_name": "Traveler",
+        "interests": []
       },
       "country": "Japan",
       "start_date": "2027-04-10",
@@ -76,10 +79,103 @@
           "Flights and city-to-city travel add up to 18h 55m including Tokyo → Kyoto (2h 15m).",
           "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:10 pm.",
           "Hotels average 4.3★ (Ginza Imperial Suites in Tokyo, Arashiyama River Ryokan in Kyoto) and are all family friendly.",
+          "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+          "Rooms: 1 × Family Room in Tokyo, 1 × Family Room in Kyoto — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
           "The holiday costs ₹3,39,822 of your ₹3,50,000 budget (97%), leaving ₹10,178.",
           "10 sight(s) planned across 6 day(s) — a mix of castle, district, market, museum."
         ],
         "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
+      "route": {
+        "origin": {
+          "city": "Bengaluru",
+          "airport": "BLR",
+          "airport_name": "Kempegowda International Airport",
+          "lat": 13.1986,
+          "lng": 77.7066
+        },
+        "stops": [
+          {
+            "order": 1,
+            "city": "Tokyo",
+            "nights": 2,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-12",
+            "hotel": "Ginza Imperial Suites",
+            "lat": 35.6753,
+            "lng": 139.7595
+          },
+          {
+            "order": 2,
+            "city": "Kyoto",
+            "nights": 4,
+            "check_in": "2027-04-12",
+            "check_out": "2027-04-16",
+            "hotel": "Arashiyama River Ryokan",
+            "lat": 35.0094,
+            "lng": 135.6668
+          }
+        ],
+        "legs": [
+          {
+            "kind": "FLIGHT",
+            "direction": "OUT",
+            "mode": "FLIGHT",
+            "from": "Bengaluru",
+            "to": "Tokyo",
+            "from_code": "BLR",
+            "to_code": "NRT",
+            "label": "AirVeda AV 520",
+            "stops": 0,
+            "duration_minutes": 430,
+            "duration_label": "7h 10m",
+            "depart": "2027-04-09T23:50:00",
+            "arrive": "2027-04-10T10:30:00",
+            "side": "start",
+            "order": 1
+          },
+          {
+            "kind": "INTERCITY",
+            "direction": "ONWARD",
+            "mode": "TRAIN",
+            "from": "Tokyo",
+            "to": "Kyoto",
+            "label": "Shinkansen Tokyo to Kyoto",
+            "duration_minutes": 135,
+            "duration_label": "2h 15m",
+            "order": 2
+          },
+          {
+            "kind": "FLIGHT",
+            "direction": "BACK",
+            "mode": "FLIGHT",
+            "from": "Osaka",
+            "to": "Bengaluru",
+            "from_code": "KIX",
+            "to_code": "BLR",
+            "label": "AirVeda AV 515",
+            "stops": 0,
+            "duration_minutes": 570,
+            "duration_label": "9h 30m",
+            "depart": "2027-04-16T12:00:00",
+            "arrive": "2027-04-16T18:00:00",
+            "side": "end",
+            "order": 3
+          }
+        ],
+        "path": [
+          "Bengaluru",
+          "Tokyo",
+          "Kyoto",
+          "Bengaluru"
+        ],
+        "summary": {
+          "cities": 2,
+          "nights": 6,
+          "travel_minutes": 1135,
+          "travel_label": "18h 55m",
+          "label": "Bengaluru → Tokyo → Kyoto → Bengaluru"
+        }
       },
       "reservation": null
     },

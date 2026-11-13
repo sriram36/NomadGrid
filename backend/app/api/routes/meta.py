@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Request
 
 from app.api.routes.shared import error
+from app.interests import tag_list
 from app.quickparse.parser import parse_quick_request
 
 router = APIRouter()
@@ -23,6 +24,7 @@ def meta(request: Request):
         "rules": {"min_nights": r["min_nights"], "max_nights": r["max_nights"],
                   "first_night": r["data_window"]["first_night"], "last_departure": r["data_window"]["last_departure"],
                   "child_age_max": 17},
+        "interests": tag_list(),
     }
 
 
