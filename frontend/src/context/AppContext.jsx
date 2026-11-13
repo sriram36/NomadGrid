@@ -4,21 +4,8 @@ import { toView } from '../api/adapt';
 import { toApiRequest } from '../lib/request';
 
 const AppContext = createContext(null);
-const RESERVATIONS_KEY = 'normad_reservations';
-
-function readSavedNumbers() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(RESERVATIONS_KEY) || '[]');
-    return Array.isArray(saved) ? saved.filter((n) => /^\d{10}$/.test(n)) : [];
-  } catch {
-    return [];
-  }
-}
 
 export function AppProvider({ children }) {
-  // Reservation numbers remembered on this device (the reservations themselves live on the server).
-  const [reservationNumbers, setReservationNumbers] = useState(readSavedNumbers);
-
   const [meta, setMeta] = useState(null);
   const [currentPackage, setCurrentPackageRaw] = useState(null);
   const [lastRequest, setLastRequest] = useState(null);     // the last request sent, in the form's own shape
@@ -28,10 +15,6 @@ export function AppProvider({ children }) {
   const [undoAvailable, setUndoAvailable] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [swapModalState, setSwapModalState] = useState({ isOpen: false, modalType: null, targetItem: null, targetDate: null });
-
-  useEffect(() => {
-    try { localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(reservationNumbers)); } catch { /* storage full or blocked */ }
-  }, [reservationNumbers]);
 
   // Dropdown values and rules come from the backend, never from the UI.
   useEffect(() => {
@@ -102,8 +85,7 @@ export function AppProvider({ children }) {
       if (status === 200) {
         setPackage(data.package);
         setUndoAvailable(false);
-        setReservationNumbers((prev) => [data.reservation_number, ...prev.filter((n) => n !== data.reservation_number)]);
-        showToast(`Reservation #${data.reservation_number} confirmed! It is saved on the server.`);
+        showToast(`Reservation #${data.reservation_number} confirmed!`);
         return { ok: true, number: data.reservation_number };
       }
       const message = data?.error?.message || 'We could not confirm this booking.';
@@ -121,7 +103,6 @@ export function AppProvider({ children }) {
       if (status === 200) {
         setPackage(data);
         setUndoAvailable(false);
-        setReservationNumbers((prev) => (prev.includes(number) ? prev : [number, ...prev]));
         return data;
       }
       return null;
@@ -179,18 +160,12 @@ export function AppProvider({ children }) {
     setUndoAvailable(false);
   }, []);
 
-  // "Delete" only forgets the number on this device; a confirmed reservation stays on the server.
-  const handleForgetReservation = useCallback((number) => {
-    setReservationNumbers((prev) => prev.filter((n) => n !== number));
-    showToast(`Removed #${number} from this device's list. The reservation itself is still on the server.`);
-  }, [showToast]);
-
   return (
     <AppContext.Provider value={{
       meta, currentPackage, lastRequest, outcome, variants, isGenerating, undoAvailable, toastMessage,
-      reservationNumbers, swapModalState, setSwapModalState,
+      swapModalState, setSwapModalState,
       showToast, submitTrip, loadPackage, handleConfirmBooking, handleLookupReservation,
-      applyChange, handleRemoveAttraction, handleUndo, handleResetTrip, handleForgetReservation,
+      applyChange, handleRemoveAttraction, handleUndo, handleResetTrip,
     }}>
       {children}
     </AppContext.Provider>

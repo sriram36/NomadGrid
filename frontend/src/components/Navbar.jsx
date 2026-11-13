@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, PlaneTakeoff, Bookmark } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, PlaneTakeoff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Navbar() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { handleLookupReservation, reservationNumbers } = useApp();
-  const confirmedBookingsCount = reservationNumbers.length;
+  const { handleLookupReservation } = useApp();
   const [looking, setLooking] = useState(false);
 
   const [lookupId, setLookupId] = useState('');
   const [lookupError, setLookupError] = useState('');
-
-  const currentView = location.pathname === '/bookings' ? 'bookings' : 'planner';
 
   const handleLookupSubmit = async (e) => {
     e.preventDefault();
@@ -54,31 +50,10 @@ export default function Navbar() {
             <nav className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 border-l border-white/20">
               <Link
                 to="/"
-                className={`px-2 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
-                  currentView === 'planner'
-                    ? 'bg-white/20 text-white border-white'
-                    : 'text-white/90 hover:bg-white/10 border-transparent'
-                }`}
+                className="px-2 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border bg-white/20 text-white border-white"
               >
                 <PlaneTakeoff className="w-3.5 h-3.5 text-[#febb02]" />
                 <span>Build Package</span>
-              </Link>
-
-              <Link
-                to="/bookings"
-                className={`px-2 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
-                  currentView === 'bookings'
-                    ? 'bg-white/20 text-white border-white'
-                    : 'text-white/90 hover:bg-white/10 border-transparent'
-                }`}
-              >
-                <Bookmark className="w-3.5 h-3.5 text-[#febb02]" />
-                <span>My Bookings</span>
-                {confirmedBookingsCount > 0 && (
-                  <span className="ml-1 px-1.5 rounded-full text-[10px] font-extrabold bg-[#febb02] text-[#003580]">
-                    {confirmedBookingsCount}
-                  </span>
-                )}
               </Link>
             </nav>
           </div>

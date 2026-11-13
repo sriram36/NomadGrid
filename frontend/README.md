@@ -76,7 +76,7 @@ npm run preview
 ### 6. M7 — Confirm Booking & Persistent 10-Digit Reservation Lookup (`src/components/Navbar.jsx` & `BudgetSidebar.jsx`)
 - **"Confirm & Book"**: Generates a unique 10-digit numeric reservation number (e.g., `8492017463`), updates package status to `"BOOKED"`, and persists it in `localStorage` under `normad_bookings`.
 - **Navbar Lookup Bar:** Entering a valid 10-digit reservation number instantly reopens that full itinerary; unknown numbers display a clear `"Reservation not found"` alert.
-- **My Bookings Page:** Lists all saved bookings with 1-click itinerary view, export, and delete options.
+- **Confirmation Page:** After booking, a dedicated page shows the 10-digit reservation number with a copy button.
 
 ### 7. M8 — Insufficient Budget Handling (`src/App.jsx`)
 - When a valid package exists but exceeds target budget, normad-grid displays a prominent warning banner stating no package fits the budget, showing the cheapest compliant total, and suggesting concrete changes (e.g., increase budget by ₹XX,XXX or reduce duration by 1 night).

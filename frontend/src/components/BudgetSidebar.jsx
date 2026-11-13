@@ -226,7 +226,7 @@ export default function BudgetSidebar({
               </button>
             </div>
             <p className="text-[10px] text-[#008009] mt-2 font-bold">
-              ✓ Open anytime from the top bar or "My Bookings"
+              ✓ Open anytime from the top bar using this number
             </p>
           </div>
         ) : (
