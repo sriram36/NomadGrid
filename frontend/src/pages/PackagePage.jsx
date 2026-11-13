@@ -4,6 +4,8 @@ import { ArrowLeft, AlertTriangle, Lightbulb, ChevronDown, ChevronUp, SearchX } 
 import Timeline from '../components/Timeline';
 import BudgetSidebar from '../components/BudgetSidebar';
 import SwapModal from '../components/SwapModal';
+import RouteMap from '../components/RouteMap';
+import CityInfoDrawer from '../components/CityInfoDrawer';
 import { useApp } from '../context/AppContext';
 
 const VARIANT_LABEL = {
@@ -23,6 +25,7 @@ export default function PackagePage() {
   } = useApp();
   const [state, setState] = useState(currentPackage?.package_id === id ? 'ready' : 'loading');
   const [showWhy, setShowWhy] = useState(true);
+  const [info, setInfo] = useState(null);      // { kind: 'guide' | 'dining', city, itemId }
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +138,8 @@ export default function PackagePage() {
           </div>
         )}
 
+        <RouteMap route={pkg.route} />
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
             <Timeline
@@ -143,6 +148,7 @@ export default function PackagePage() {
               onOpenSwapHotel={booked ? undefined : (item) => open('hotel', { targetItem: item })}
               onRemoveAttraction={booked ? undefined : handleRemoveAttraction}
               onOpenAddAttraction={booked ? undefined : (date) => open('add_attraction', { targetDate: date })}
+              onOpenInfo={(kind, item) => setInfo({ kind, city: item.city, itemId: item.item_id })}
               readOnly={booked}
             />
           </div>
@@ -171,6 +177,8 @@ export default function PackagePage() {
         tripPackage={pkg}
         onApply={applyChange}
       />
+
+      <CityInfoDrawer info={info} packageId={pkg.package_id} onClose={() => setInfo(null)} />
     </div>
   );
 }

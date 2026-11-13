@@ -15,7 +15,7 @@ const FIELD_KEY = { departure_city: 'departureCity', country: 'destinationCountr
 const fromRequest = (r) => ({
   departureCity: r.departureCity || '', destinationCountry: r.destinationCountry || '', startDate: r.startDate || '',
   nights: r.nights ?? '', adults: r.adults ?? '', childrenCount: (r.children || []).length, childrenAges: [...(r.children || [])],
-  budget: r.budget ?? ''
+  budget: r.budget ?? '', interests: r.interests || []
 });
 
 export default function RequestForm({
@@ -36,7 +36,8 @@ export default function RequestForm({
     adults: '',
     childrenCount: 0,
     childrenAges: [],
-    budget: ''
+    budget: '',
+    interests: []
   });
 
   const [errors, setErrors] = useState({});
@@ -182,7 +183,8 @@ export default function RequestForm({
       nights: formData.nights,
       adults: formData.adults,
       children: formData.childrenAges,
-      budget: formData.budget
+      budget: formData.budget,
+      interests: formData.interests || []
     }, mode);
     if (result?.kind === 'INVALID') {
       const mapped = {};
@@ -545,6 +547,37 @@ export default function RequestForm({
             </div>
 
           </div>
+
+          {/* Optional interests: the backend prefers matching sights (never at the cost of a travel rule) */}
+          {(meta?.interests || []).length > 0 && (
+            <div className="mt-5 pt-4 border-t border-slate-200" data-testid="interests">
+              <label className="block text-xs font-bold text-slate-700 mb-2">
+                8. Interests (optional) — we will favour matching sights
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {meta.interests.map((t) => {
+                  const picked = formData.interests || [];
+                  const on = picked.includes(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setFormData({
+                        ...formData,
+                        interests: on ? picked.filter((x) => x !== t.id) : [...picked, t.id]
+                      })}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-full border-2 transition-colors ${
+                        on ? 'bg-[#003580] border-[#003580] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#006ce4]'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Submit Action */}
           <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">

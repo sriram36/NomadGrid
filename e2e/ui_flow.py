@@ -134,6 +134,35 @@ def main():
             why = page.locator("[data-testid=why-panel]").inner_text()
             assert re.search(r"\(\d+%\)", why) and "budget" in why, why
 
+        with step("route map: hub, cities in order, and each leg with its mode and duration"):
+            n = plan.count("N)")
+            assert page.locator("[data-testid=route-stop]").count() == n + 2
+            assert page.locator("[data-testid=route-leg]").count() == n + 1
+            legs = page.locator("[data-testid=route-leg]").all_inner_texts()
+            assert all("h " in t for t in legs), legs
+            snap(page, "03b_route")
+
+        with step("city guide drawer opens for a hotel stay and shows the tips"):
+            page.get_by_role("button", name="City Guide").first.click()
+            dlg = page.get_by_role("dialog")
+            dlg.get_by_text("Getting around").wait_for()
+            assert dlg.get_by_text("Etiquette").is_visible()
+            snap(page, "03c_guide")
+            dlg.get_by_role("button", name="Close").click()
+            assert page.get_by_role("dialog").count() == 0
+
+        with step("nearby dining: 3-4 estimated spots, clearly not in the total"):
+            before_total = rupees(total_text(page))
+            page.get_by_role("button", name="Nearby Dining").first.click()
+            dlg = page.get_by_role("dialog")
+            dlg.locator("[data-testid=dining-list] li").first.wait_for()
+            assert 3 <= dlg.locator("[data-testid=dining-list] li").count() <= 4
+            assert "NOT included" in dlg.locator("[data-testid=dining-disclaimer]").inner_text()
+            assert dlg.get_by_text("estimate").first.is_visible()
+            snap(page, "03d_dining")
+            dlg.get_by_role("button", name="Close").click()
+            assert rupees(total_text(page)) == before_total
+
         # ---------------------------------------------------------------- change things (M6, G2)
         with step("change hotel: real options with price differences; the cheapest applies and the total drops"):
             page.get_by_role("button", name="Change Room / Hotel").first.click()
@@ -274,9 +303,23 @@ def main():
             page.locator("[data-testid=no-package]").wait_for()
             assert "1 to 20 April 2027" in page.locator("[data-testid=no-package]").inner_text()
             snap(page, "10_no_package")
-            page.get_by_role("button", name="Edit the trip").click()
+            page.get_by_role("button", name="Modify Search").click()
             page.wait_for_url(BASE + "/")
             assert field(page, "4. Number of Nights").input_value() != ""
+
+        with step("interests: pick a tag; matching sights are marked and 'Why this plan' mentions it"):
+            page.goto(BASE)
+            page.wait_for_function("document.querySelector('[data-testid=interests]') !== null")
+            menon(page)
+            chip = page.get_by_role("button", name="Nature & Outdoors")
+            chip.click()
+            assert chip.get_attribute("aria-pressed") == "true"
+            search(page)
+            page.wait_for_url(re.compile(r"/packages/pkg_"))
+            page.get_by_text("Why this plan").first.wait_for()
+            assert "Your interests (Nature & Outdoors)" in page.locator("[data-testid=why-panel]").inner_text()
+            assert page.locator("[data-testid=matches-interest]").count() >= 1
+            snap(page, "03e_interests")
 
         # ---------------------------------------------------------------- compare three packages (G4)
         with step("compare: recommended, cheapest and best rated; open the best rated one"):

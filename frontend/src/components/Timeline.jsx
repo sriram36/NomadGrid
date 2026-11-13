@@ -25,6 +25,7 @@ export default function Timeline({
   onOpenSwapHotel,
   onRemoveAttraction,
   onOpenAddAttraction,
+  onOpenInfo,
   readOnly = false
 }) {
   const [selectedDayFilter, setSelectedDayFilter] = useState('ALL');
@@ -268,6 +269,11 @@ export default function Timeline({
                             <h5 className="text-base font-extrabold text-[#003580] mt-1.5 tracking-tight">
                               {item.name}
                             </h5>
+                            {isAttraction && item.badges?.includes('MATCHES_INTEREST') && (
+                              <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded bg-[#febb02]/30 text-[#003580] text-[10px] font-extrabold" data-testid="matches-interest">
+                                <Star className="w-3 h-3" /> Matches your interests
+                              </span>
+                            )}
                           </div>
 
                           {/* Price & Booking.com style rating badge */}
@@ -379,6 +385,23 @@ export default function Timeline({
                                 <RefreshCw className="w-3 h-3" />
                                 <span>Change Flight</span>
                               </button>
+                            )}
+
+                            {isHotel && onOpenInfo && (
+                              <>
+                                <button
+                                  onClick={() => onOpenInfo('guide', item)}
+                                  className="px-3 py-1.5 text-xs font-bold text-[#003580] hover:bg-slate-100 rounded border border-slate-300 transition-colors"
+                                >
+                                  City Guide
+                                </button>
+                                <button
+                                  onClick={() => onOpenInfo('dining', item)}
+                                  className="px-3 py-1.5 text-xs font-bold text-[#003580] hover:bg-slate-100 rounded border border-slate-300 transition-colors"
+                                >
+                                  Nearby Dining
+                                </button>
+                              </>
                             )}
 
                             {isHotel && !readOnly && (

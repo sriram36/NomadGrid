@@ -42,7 +42,7 @@ export default function OutcomePage() {
   const raiseBudget = async () => {
     setBusy(true);
     try {
-      const res = await submitTrip({ ...outcome.request, budget_inr: raise.budget_inr });
+      const res = await submitTrip({ ...outcome.request, budget: raise.budget_inr });
       if (res.kind === 'PACKAGE') navigate(`/packages/${res.id}`);
     } finally {
       setBusy(false);
