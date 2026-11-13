@@ -61,6 +61,10 @@ traveler chose it — you may show a small "your choice" marker.
 | **Undo** | `POST …/undo` | An "Undo" button/toast after every applied change (`undo_available`); replace the package with `package`. |
 | **"Why this plan"** (S3) | in the package: `rationale` | A short panel: `headline` and the `reasons` list. |
 | **Knock-on notes** (G1) | in `APPLIED` responses: `knock_on[]`, `warnings[]` | Show them in the change toast/banner ("Your airport pickup moves from … to …"). |
+| **Interest tags** | `meta.interests` → `interests: [...]` on the build body | Chips on the form. On sights show a "Matches your interests" mark when `badges` has `MATCHES_INTEREST`; in the Add-attraction list matching options come first (`matches_interests`). |
+| **Pocket city guide** | `GET /api/cities/{city}/guide` | A read-only drawer per city/hotel section with `getting_around`, `etiquette`, `sightseeing_tips`, `good_to_know`. |
+| **Nearby dining** | `GET /api/packages/{id}/dining` | 3–4 spots under each hotel with `dietary_tags` and `price_label`; always show the disclaimer: estimated, **not in the total**. |
+| **Route map** | in the package: `route` | Departure hub → cities in order with nights, and each leg's mode and duration (`legs[].mode`, `duration_label`). Redraw on every new package (variant switch, change). |
 | **Seats/rooms used up** (S2) | `POST …/confirm` | On `409 INVENTORY_CONFLICT` show `error.message` and offer to rebuild the holiday ("Choose another flight or hotel"). |
 
 ## 6. Quick manual check
