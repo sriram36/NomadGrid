@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { X, RefreshCw, AlertCircle, ShieldAlert, Star, Wallet, Undo2 } from 'lucide-react';
+import { X, RefreshCw, AlertCircle, ShieldAlert, Star, Wallet, Undo2, Sparkles } from 'lucide-react';
 import { api, NetworkError } from '../api/client';
 import { formatINR, signedINR, hoursMinutes } from '../lib/format';
+import { matchedInterests } from '../lib/interests';
 
 const TITLES = {
   flight: 'Change Flight (Rule Re-Validation)',
@@ -40,7 +41,7 @@ function Unavailable({ option }) {
   );
 }
 
-export default function SwapModal({ isOpen, onClose, modalType, targetItem, targetDate, tripPackage, onApply }) {
+export default function SwapModal({ isOpen, onClose, modalType, targetItem, targetDate, tripPackage, onApply, interests = [] }) {
   const [loaded, setLoaded] = useState(null);       // { key, list }: options are only shown for the dialog they were loaded for
   const [loadError, setLoadError] = useState(null);
   const [pending, setPending] = useState(null);       // { op, result } when a change needs the traveler's decision
@@ -152,7 +153,11 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     </li>
   ));
 
-  const optionAttractions = () => (options || []).map((o) => {
+  // S1: sights that match the traveler's interests come first (the original order is kept within each group).
+  const optionAttractions = () => [...(options || [])]
+    .map((o, idx) => ({ o, idx, match: matchedInterests(o, interests).length > 0 }))
+    .sort((a, b) => (Number(b.match) - Number(a.match)) || (a.idx - b.idx))
+    .map(({ o, match }) => {
     const start = startChoice[o.attraction_id] || o.start_choices[0];
     return (
       <li key={o.attraction_id} className="p-3.5 rounded-lg border text-xs border-slate-300 bg-white hover:border-[#008009]">
@@ -163,6 +168,11 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
                 <span className="font-extrabold text-[#003580]">{o.name}</span>
                 <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-[#008009] border border-emerald-200 text-[10px] font-bold">{o.category.replaceAll('_', ' ')}</span>
                 {o.child_friendly && <span className="text-[10px] font-bold text-slate-500">child friendly</span>}
+                {match && (
+                  <span data-testid="interest-match" className="px-1.5 py-0.5 rounded bg-[#006ce4]/10 text-[#006ce4] border border-[#006ce4]/30 text-[10px] font-bold flex items-center gap-1">
+                    <Sparkles className="size-3" /> Matches your interests
+                  </span>
+                )}
               </div>
               <div className="mt-1 text-slate-500 text-[11px]">Visit: {o.duration_minutes} min</div>
               <label className="mt-1.5 flex items-center gap-2 text-[11px] text-slate-700 font-semibold">
