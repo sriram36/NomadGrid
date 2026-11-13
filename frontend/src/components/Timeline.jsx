@@ -15,7 +15,8 @@ import {
   Calendar,
   Sparkles,
   ArrowRight,
-  Check
+  Check,
+  BookOpen
 } from 'lucide-react';
 import { formatINR, addDays } from '../lib/format';
 
@@ -23,6 +24,7 @@ export default function Timeline({
   tripPackage,
   onOpenSwapFlight,
   onOpenSwapHotel,
+  onOpenCityGuide,
   onRemoveAttraction,
   onOpenAddAttraction,
   readOnly = false
@@ -378,6 +380,16 @@ export default function Timeline({
                               >
                                 <RefreshCw className="w-3 h-3" />
                                 <span>Change Flight</span>
+                              </button>
+                            )}
+
+                            {isHotel && onOpenCityGuide && (
+                              <button
+                                onClick={() => onOpenCityGuide(item)}
+                                className="px-3 py-1.5 text-xs font-bold text-[#003580] hover:bg-[#003580]/10 rounded border border-[#003580]/40 transition-colors flex items-center gap-1"
+                              >
+                                <BookOpen className="size-3" />
+                                <span>City Guide</span>
                               </button>
                             )}
 
