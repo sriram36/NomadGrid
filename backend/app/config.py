@@ -9,7 +9,7 @@ PACK_DIR = REPO_DIR / "hackathon-problem-1-holiday-package"
 DATA_DIR = Path(os.environ.get("DATA_DIR", PACK_DIR / "data"))
 IMAGES_DIR = Path(os.environ.get("IMAGES_DIR", PACK_DIR / "images"))
 DB_PATH = Path(os.environ.get("DB_PATH", BACKEND_DIR / "storage" / "nomadgrid.sqlite"))
-FRONTEND_DIST = Path(os.environ.get("FRONTEND_DIST", REPO_DIR / "frontend" / "dist"))
+FRONTEND_DIST = Path(os.environ.get("FRONTEND_DIST", REPO_DIR / "NormadFrontend" / "normad-grid" / "dist"))
 
 # --- statement rules (never relax) ---
 ARRIVAL_PICKUP_BUFFER_MIN = 60     # pickup >= landing + 60

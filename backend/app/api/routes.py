@@ -27,6 +27,7 @@ def error(status: int, code: str, message: str, **extra):
 
 def _traveler(req, cat) -> dict:
     return {"name": req.traveler_name, "home_airport": cat.departure_airport(req.departure_city),
+            "departure_city": req.departure_city,
             "adults": req.adults, "children": req.children, "child_ages": list(req.child_ages)}
 
 

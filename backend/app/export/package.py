@@ -28,6 +28,12 @@ def _transfer_icon(rec: dict) -> str:
     return "taxi"
 
 
+def _transfer_details(rec: dict, airport: bool) -> dict:
+    return {"isAirportTransfer": airport, "transferType": rec["type"], "durationMinutes": rec["duration_minutes"],
+            "pricing": rec["pricing"], "fromPoint": rec.get("from_point"), "toPoint": rec.get("to_point"),
+            "maxPassengers": rec["max_passengers"]}
+
+
 def _transfer_sub(rec: dict, qty: int) -> str:
     if rec["pricing"] == "PER_VEHICLE":
         return f"{qty} vehicle(s) · up to {rec['max_passengers']} people each"
@@ -57,18 +63,22 @@ def build_items(it: Itinerary, cat) -> List[dict]:
                      f"{_hours(flight['duration_minutes'])}",
             badges=["DIRECT" if flight["stops"] == 0 else "ONE_STOP"], time_dt=flight["_dep"],
             pinned=(it.arr_pinned if tag == "ARRIVAL" else it.ret_pinned),
+            details={"isArrival": tag == "ARRIVAL", "isReturn": tag == "RETURN", "airline": flight["airline"],
+                     "flightNumber": flight["flight_number"], "from": flight["from"], "to": flight["to"],
+                     "durationMinutes": flight["duration_minutes"], "stops": flight["stops"],
+                     "pricePerSeat": flight["price_per_seat"]["amount"], "seatsLeft": flight["seats_left"]},
             day=(flight["_arr"].date() if tag == "ARRIVAL" else flight["_dep"].date()))
     for tu, city, tag in ((it.arr_transfer, it.legs[0].city, "AIRPORT_ARRIVAL"), (it.dep_transfer, it.legs[-1].city, "AIRPORT_DEPARTURE")):
         add(tu.pickup, type="transfer", name=tu.rec["name"], city=city, catalog_id=tu.rec["transfer_id"],
             start=fmt_dt(tu.pickup), end=fmt_dt(tu.arrive), quantity=tu.quantity, price_inr=tu.price,
             icon=_transfer_icon(tu.rec), leg=tag, title=tu.rec["name"], subtitle=_transfer_sub(tu.rec, tu.quantity),
-            time_dt=tu.pickup, day=tu.pickup.date())
+            details=_transfer_details(tu.rec, airport=True), time_dt=tu.pickup, day=tu.pickup.date())
     for l in it.links:
         add(l.pickup, type="transfer", name=l.rec["name"] if "name" in l.rec else f"{l.from_city} to {l.to_city}",
             city=l.to_city, catalog_id=l.rec["transfer_id"], start=fmt_dt(l.pickup), end=fmt_dt(l.arrive),
             quantity=l.quantity, price_inr=l.price, icon=_transfer_icon(l.rec), leg="INTERCITY",
             title=f"{l.from_city} → {l.to_city}", subtitle=_transfer_sub(l.rec, l.quantity),
-            time_dt=l.pickup, day=l.pickup.date())
+            details=_transfer_details(l.rec, airport=False), time_dt=l.pickup, day=l.pickup.date())
     for leg in it.legs:
         h = leg.hotel
         add(at(leg.check_in, hm(h["check_in_from"])), type="hotel", name=h["name"], city=leg.city,
@@ -77,6 +87,11 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             title=h["name"], subtitle=f"{leg.room['name']} × {leg.rooms} · {leg.nights} nights · {h['stars']}★ · {h['area']}",
             badges=["FAMILY_FRIENDLY"] if h.get("family_friendly") else [],
             image=("/" + h["image"]) if h.get("image") else None, pinned=leg.pinned,
+            details={"hotelName": h["name"], "roomType": leg.room["name"], "roomCategory": leg.room["room_type"],
+                     "area": h["area"], "stars": h["stars"], "rating": h["rating"],
+                     "pricePerNight": leg.room["price_per_night"]["amount"], "roomsNeeded": leg.rooms,
+                     "nights": leg.nights, "checkInFrom": h["check_in_from"], "checkOutUntil": h["check_out_until"],
+                     "familyFriendly": bool(h.get("family_friendly")), "refundable": bool(leg.room.get("refundable"))},
             time_dt=at(leg.check_in, hm(h["check_in_from"])), day=leg.check_in)
     for v in it.visits:
         a = v.attraction
@@ -85,7 +100,12 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             start=fmt_dt(v.start), end=fmt_dt(v.end), quantity=n, price_inr=v.price, icon="attraction", leg="VISIT",
             title=a["name"], subtitle=f"{a['visit_minutes']} min · {a['category'].replace('_', ' ').title()}",
             badges=badges, image=("/" + a["image"]) if a.get("image") else None,
-            pinned=v.pinned, time_dt=v.start, day=v.day)
+            pinned=v.pinned, time_dt=v.start, day=v.day,
+            details={"category": a["category"], "visitMinutes": a["visit_minutes"],
+                     "openHours": f"{a['open_from']} - {a['open_until']}",
+                     "pricePerPerson": a["price_per_person"]["amount"],
+                     "childPrice": a["child_price"]["amount"] if "child_price" in a else a["price_per_person"]["amount"],
+                     "childFriendly": bool(a.get("child_friendly"))})
     rows.sort(key=lambda r: (r[0], r[1]["type"], r[1]["catalog_id"]))
     items = []
     for i, (_, item) in enumerate(rows, start=1):
@@ -217,7 +237,7 @@ def to_package(it: Itinerary, cat, package_id: str, traveler: dict, status: str 
     metrics["total"] = total
     metrics["budget_used_pct"] = round(100.0 * total / req.budget_inr, 1)
     return {
-        "package_id": package_id, "status": status, "variant": variant, "traveler": traveler,
+        "package_id": package_id, "status": status, "variant": variant, "traveler": traveler, "nights": req.nights,
         "request": req.to_dict(), "country": req.country,
         "start_date": req.start_date.isoformat(), "end_date": req.end_date.isoformat(),
         "city_plan": [{"city": l.city, "nights": l.nights, "check_in": l.check_in.isoformat(),
