@@ -82,3 +82,6 @@ Thumbs.db
 *.rar
 tmp/
 temp/
+
+# Private notes (never pushed)
+doubts.md
