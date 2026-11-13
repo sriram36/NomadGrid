@@ -26,6 +26,10 @@ the fix, and the regression test that now guards it. (PRD section 12.1.)
 - **Some "no package" answers are correct but surprising.** 3-night trips allow one city only, so arriving at KIX and leaving from HND has no valid plan. A 10-night Abu Dhabi-only plan needs 9 distinct attractions but the city has 7.
 - **Menon default is Osaka (4) + Kyoto (2) via KIX, not Tokyo.** It scores highest under the current quality weights (direct flights, early landing, 5-star family rooms). The score has no "destination appeal" term; Tokyo plans are one change-cities click away (G3, not built yet). Worth a product decision.
 
+### Static analysis pass
+- pyright reported 74 type errors (None reaching places that need a value) and ruff 36 findings (unused imports/variables, `zip` strictness, loop variables, `raise from`). All fixed with no behaviour change: now **0 type errors, ruff clean, 255 tests passing**.
+- `backend/pyrightconfig.json`, `backend/ruff.toml` and `.vscode/settings.json` point the editor at `backend/.venv` so imports resolve.
+
 ### Lessons
 - Do not name scratch scripts after standard-library modules (`inspect.py` shadowed `inspect` and broke `dataclasses`).
 - Windows consoles cannot print `→`/`·`; set `PYTHONIOENCODING=utf-8` for probes (the API itself is UTF-8 clean).

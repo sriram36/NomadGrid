@@ -454,7 +454,7 @@ Top level: `trip_id`, `traveler{name, home_airport, adults, children, child_ages
 Item: `item_id`, `type` (`flight|hotel|transfer|attraction`), `name`, `city`, `status` (`PLANNED|BOOKED`), `catalog_id`, `start`, `end`, `room_id`, `quantity`, `price_inr`, `booking`, `sources` (`[]`), `warnings`.
 | Type | `start` | `end` | `city` | `room_id` | `quantity` |
 |---|---|---|---|---|---|
-| flight | departure (`YYYY-MM-DDTHH:MM`) | arrival | arrival city for the arrival flight; **last trip city** for the return flight (the city it departs from) — Q4 | null | travelers |
+| flight | departure (`YYYY-MM-DDTHH:MM`) | arrival | the **arrival city** (city of the arrival airport), exactly as the data dictionary says, for both flights — Q4 | null | travelers |
 | hotel | check-in date | check-out date | hotel city | room id | rooms |
 | transfer | pickup datetime | arrival datetime (or null) | transfer's city (intercity: destination city) | null | vehicles or travelers |
 | attraction | visit start | visit end | attraction city | null | travelers |
@@ -862,7 +862,7 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 | Q1 | Stack | **Decided:** Python + FastAPI + SQLite · React + Vite · Docker Compose (one container, no-Docker fallback) |
 | Q2 | Default package city preference | **Decided:** constraints first (hard rules, then budget), then time-based suggestion per §6.1A (`k* = clamp(⌊N/3⌋,1,#cities)`; plans within 120 min of the best transit time count as time-equal; then highest quality score (§6.10A); then most usable ground time); traveler can edit and the app raises warnings. *To confirm: is the 120-minute tolerance acceptable, and does "time" mean T1–T3 as defined in §6.1A?* |
 | Q3 | Attraction count after edits | **Decided:** 1–2 per full day applies to the first package only; edits are not count-capped and the **traveler's choices take priority** (pinned items, §6.12); UI warns on 0 or >2. No need to ask the organizers |
-| Q4 | `city` on the return-flight item | **Decided:** the **last trip city** (the city the flight departs from). Only plans whose last city has a valid return flight are ever suggested (§6.3). Residual risk: the dictionary literally says "arrival city"; the judges' checker most likely keys on `catalog_id` and airports |
+| Q4 | `city` on the flight items | **Decided (revised):** the data dictionary says "For a flight: the arrival city", so both flight items carry the city of their arrival airport (the return flight arrives in the home city, e.g. Bengaluru). This replaces the earlier "last trip city" reading. What stays from the original decision: only plans whose last city has a valid return flight are ever suggested (§6.3) |
 | Q5 | Return pickup on the last day only | **Decided:** yes (strict reading of "no hotel night on the last day") |
 | Q6 | Buffer between attractions / arrival-day settling | 30 min each, **for system-suggested visits only**; user edits and the validator use only the statement's rules (§6.8) |
 | Q7 | `child_friendly: false` attractions when children travel | Soft preference only |
