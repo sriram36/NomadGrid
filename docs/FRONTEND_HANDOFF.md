@@ -1,7 +1,7 @@
 # Frontend handoff
 
-For whoever builds the UI in `frontend/`. The backend is finished for the core features; this page says how to run it, what to call from
-each screen, and what to render. Full reference: [`API.md`](API.md). Real responses: [`api-examples/`](api-examples/). The UX
+For whoever works on the UI in `frontend/`. The UI is built and connected to every endpoint described here; this page says how to run it, what
+each screen calls, and what it renders. Full reference: [`API.md`](API.md). Real responses: [`api-examples/`](api-examples/). The UX
 requirements are in PRD §8.4.
 
 ## 1. Run the backend
@@ -11,7 +11,7 @@ docker compose up --build        # http://localhost:8000   (interactive API docs
 ```
 or without Docker: `pip install -r backend/requirements.txt && cd backend && python -m app`.
 
-In development run your dev server separately and proxy `/api` and `/images` to `http://localhost:8000` (Vite: `server.proxy`). Never hard-code
+For live editing run `docker compose -f docker-compose.dev.yml up --build` (UI :5173 and API :8000, both reload on save), or run `npm run dev` yourself and proxy `/api` and `/images` to `http://localhost:8000` (Vite: `server.proxy`, `API_TARGET` overrides it). Never hard-code
 a host. The Dockerfile builds `frontend/` with `npm ci && npm run build` and serves `frontend/dist` from the backend, so **`npm run build` must
 produce `frontend/dist/index.html`**. Unknown non-API paths fall back to `index.html`, so client-side routes work on refresh.
 
@@ -38,7 +38,7 @@ produce `frontend/dist/index.html`**. Unknown non-API paths fall back to `index.
 | **Confirm** | `POST …/confirm` | Show `reservation_number` large with a copy button; link to `/reservations/:number`. Booked packages are read-only (`status: BOOKED`). |
 | **Reservation lookup** | `GET /api/reservations/{number}` | Read-only summary using the same timeline. 404 → "Reservation not found". |
 | **Export** | `GET …/export` | Plain link/button; the response downloads as a file. |
-| **Photo credits** | — | The UI currently shows no photos (the API still serves them at `/images/...`). If photos are added, also show the credits from `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md`. |
+| **Photos and credits** | `item.image` (`/images/...`) · `GET /images/ATTRIBUTIONS.md` | Hotel and sight cards show their photo (hidden if it fails to load). Because photos are shown, a footer link opens `/credits`, a table read from the pack's `ATTRIBUTIONS.md`. |
 
 ## 4. Reading a package
 

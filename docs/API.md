@@ -145,7 +145,8 @@ that cannot carry over returns `PINNED_CONFLICT` with `options` (`KEEP_CURRENT` 
 Examples: `options_city_plans.json`, `change_city_plan_applied.json`, `change_city_plan_pinned_conflict.json`, `change_city_plan_refused_invalid.json`.
 
 ### Quick request — `POST /api/parse-request`
-Body `{"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh"}` → `{fields, understood[], missing[], unparsed[], notes[], ready}`.
+Body `{"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh, we like history and nature"}` → `{fields, understood[], missing[], unparsed[], notes[], ready}`.
+Interest words (history, culture, nature, parks, theme parks, art, food, markets, views, adventure …) fill `fields.interests` in the order typed; a bare "family" is not an interest.
 `fields` uses the same names as the build request, so a `ready: true` result can be posted as-is. Anything not understood is listed in `missing`;
 guesses are explained in `notes` (e.g. "No year given, so 2027 was assumed", "Read “kids 1” as one child aged 1 — please check the age");
 a note containing "please check" makes `ready` false. Understands dates (`10 Apr`, `April 10 2027`, `10/04/2027`, `2027-04-10`, ranges like `10 Apr to 16 Apr`),

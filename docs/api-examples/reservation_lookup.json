@@ -1,7 +1,7 @@
 {
   "_http_status": 200,
   "body": {
-    "package_id": "pkg_90c061f118d2",
+    "package_id": "pkg_b2bcabe9cdc5",
     "status": "BOOKED",
     "variant": "DEFAULT",
     "traveler": {
@@ -101,7 +101,7 @@
         "item_id": "i1",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -135,7 +135,7 @@
         "item_id": "i2",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": [],
@@ -177,7 +177,7 @@
         "item_id": "i3",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -220,7 +220,7 @@
         "item_id": "i4",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -260,7 +260,7 @@
         "item_id": "i5",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -301,7 +301,7 @@
         "item_id": "i6",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -341,7 +341,7 @@
         "item_id": "i7",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -381,7 +381,7 @@
         "item_id": "i8",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -422,7 +422,7 @@
         "item_id": "i9",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -462,7 +462,7 @@
         "item_id": "i10",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -502,7 +502,7 @@
         "item_id": "i11",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -536,7 +536,7 @@
         "item_id": "i12",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": [],
@@ -578,7 +578,7 @@
         "item_id": "i13",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -621,7 +621,7 @@
         "item_id": "i14",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -662,7 +662,7 @@
         "item_id": "i15",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -703,7 +703,7 @@
         "item_id": "i16",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -737,7 +737,7 @@
         "item_id": "i17",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": [],
@@ -778,7 +778,7 @@
         "item_id": "i18",
         "status": "BOOKED",
         "booking": {
-          "reference": "2318280646"
+          "reference": "8159656748"
         },
         "sources": [],
         "warnings": []
@@ -1121,8 +1121,8 @@
       }
     },
     "reservation": {
-      "number": "2318280646",
-      "confirmed_at": "2026-11-13T14:28:29+00:00"
+      "number": "8159656748",
+      "confirmed_at": "2026-11-13T16:10:56+00:00"
     }
   }
 }

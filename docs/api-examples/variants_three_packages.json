@@ -3,7 +3,7 @@
   "body": {
     "outcome": "VARIANTS",
     "recommended": {
-      "package_id": "pkg_67115144521f",
+      "package_id": "pkg_04077e8e1417",
       "status": "PLANNED",
       "variant": "RECOMMENDED",
       "traveler": {
@@ -181,7 +181,7 @@
     },
     "variants": {
       "cheapest": {
-        "package_id": "pkg_f63fa091f70e",
+        "package_id": "pkg_a136244a11f5",
         "status": "PLANNED",
         "variant": "CHEAPEST",
         "traveler": {
@@ -330,7 +330,7 @@
         "reservation": null
       },
       "best_rated": {
-        "package_id": "pkg_ac2ba829ec1b",
+        "package_id": "pkg_7b2d8aab9e2a",
         "status": "PLANNED",
         "variant": "BEST_RATED",
         "traveler": {

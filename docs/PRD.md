@@ -17,7 +17,7 @@
 
 ## 0. Delivery status (wrap-up)
 
-**Delivered and verified:** every Must-have (M1–M8), every Good-to-have (G1–G4), every Stretch feature (S1–S3), plus Undo; the independent validator (FR-V),
+**Delivered and verified:** every Must-have (M1–M8), every Good-to-have (G1–G4, with *fastest* dropped by decision), every Stretch feature (S1–S3), plus Undo, interest tags, the pocket city guide, nearby dining, the journey box and photos with credits; the independent validator (FR-V),
 persistence (FR-P), JSON export, the budget-first flow, Docker packaging and the backend half of the API contract.
 
 | Requirement | Status | How it was verified |
@@ -31,7 +31,7 @@ persistence (FR-P), JSON export, the budget-first flow, Docker packaging and the
 | M7 Confirm, 10-digit number, summary, restart, "not found" | ✅ | verified inside Docker across a container restart |
 | M8 Budget too small | ✅ cheapest total + built alternatives + raise-budget | alternatives re-validated and within budget |
 | FR-V Independent validator · FR-P Persistence | ✅ | mutation suite; restart tests (app and container) |
-| Docker (1-command start) | ✅ non-root, read-only catalog | cold build + health + restart |
+| Docker (1-command start) | ✅ one Dockerfile builds UI + API; non-root; catalog baked in read-only; fallbacks and `scripts/start.*` | cold build + health + restart + UI served |
 | **G1** Changes that affect other parts | ✅ shifted visits, moved airport pickups ("knock-on"), check-in time, day-load warnings | change and edge tests |
 | **G2** Price difference on every option | ✅ `price_delta_inr` | option tests |
 | **G3** Change cities | ✅ options for every valid plan, `CHANGE_CITY_PLAN`, the traveler's picks kept | every option applies at exactly its promised price (fuzz) |
@@ -40,7 +40,9 @@ persistence (FR-P), JSON export, the budget-first flow, Docker packaging and the
 | **S2** Booking uses up seats and rooms | ✅ atomic in the database | 8-way race → exactly one winner; 70-booking stream never oversold |
 | **S3** Own idea | ✅ "Why this plan" on every package | numbers checked against the package |
 | Undo (UX extra) | ✅ 20 steps, survives restarts | step-by-step undo tests |
-| Frontend (UX §8.4, FE-1…FE-11) | ⏳ the teammate's work | handoff guide + 33 real examples provided |
+| Frontend (UX §8.4, FE-1…FE-11) | ✅ built by the teammate, connected to the API, served from the same container | 30-step real-browser test; handoff guide + real examples |
+| Own extras: interest tags, pocket city guide, nearby dining, journey box, photos + credits | ✅ | 45 backend tests + browser steps; dining marked as estimates and kept out of the total |
+| Live-editing Docker (`docker-compose.dev.yml`) | ✅ | API reload and UI hot-update both observed |
 
 **Implementation notes that refine this PRD:** out-of-window dates return `NO_PACKAGE` / `OUT_OF_WINDOW` (not a field error); both flight items carry the
 arrival city (Q4); the stay-quality and child-friendly scores are nights- and share-weighted (§6.10A); the validator enforces only statement rules.
