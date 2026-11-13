@@ -1,91 +1,37 @@
-# normad-grid ✈️
+# normad-grid: the web app
 
-**normad-grid** is an international holiday package builder web application built with **React (Vite + JavaScript)**, **Tailwind CSS v4**, and **Lucide Icons**. It generates, customizes, validates, and books multi-city holiday packages complying 100% with all Problem 1 travel rules.
+React 19 + Vite 6 + Tailwind CSS v4 + lucide icons. The look is a Booking.com-style navy `#003580` / blue `#006ce4` / yellow `#febb02`.
+The app has **no business logic of its own**: every package, rule check, price and booking comes from the NomadGrid API (`../backend`).
 
----
+## Run it
 
-## 🚀 Quick Start (1 Command)
+| Way | Command | URL |
+|---|---|---|
+| Everything in one container | `docker compose up --build` (from the repo root) | http://localhost:8000 |
+| Live editing in Docker (auto-reload) | `docker compose -f docker-compose.dev.yml up --build` (repo root) | UI http://localhost:5173, API :8000 |
+| Without Docker | `scripts/start.sh` / `scripts/start.ps1` / `scripts/start.bat` (repo root) | http://localhost:8000 |
+| UI only, hot reload | `cd frontend && npm install && npm run dev` (needs the API on :8000, `cd backend && python -m app`) | http://localhost:5173 |
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+`npm run dev` proxies `/api` and `/images` to the API (`API_TARGET` overrides the address, `vite.config.js`). `npm run build` writes `dist/`, which the API serves.
 
-Open your browser at `http://localhost:5173`.
+## Screens (`src/pages`, `src/components`)
 
-To build and preview production assets:
-```bash
-npm run build
-npm run preview
-```
+| Route | What it shows |
+|---|---|
+| `/` | The request form: 7 fields (departure city, country, start date, nights, adults, children + ages, budget), optional interest chips, a "type your trip in plain words" box, and sample trips. Field messages come from the API. |
+| `/packages/:id` | A package: "Your journey" route box, "Why this plan", the day-by-day itinerary with hotel and sight photos, City Guide and Nearby Dining drawers, and the booking summary with total, budget bar, confirm, undo, compare city plans and JSON export. |
+| `/compare` | Cheapest, Best rated and Recommended side by side. |
+| `/outcome` | "Budget too small" (cheapest total, alternatives that fit, raise-budget button) and "no valid package" with the reason. |
+| `/reservations/:number` | The booking confirmation and summary; also opens from the top bar's 10-digit lookup, after a restart. |
+| `/credits` | Photo credits, read from the data pack's `images/ATTRIBUTIONS.md` (required when photos are shown). |
 
----
+## Where things live
 
-## 🌟 Feature Checklist (All 8 Must-Have Requirements Implemented)
+- `src/api/client.js`: the only place that calls the API. `src/api/adapt.js`: renames the API package into the shape the screens use.
+- `src/lib/request.js`: the only translator between the form's field names and the API's. `src/lib/planInsights.js`: the "rule and trade-off check" text.
+- `src/context/AppContext.jsx`: app state (current package, variants, outcome) and every action (build, change, undo, confirm, look up).
+- The API contract with examples: `../docs/API.md` and `../docs/api-examples/`. What each screen should call: `../docs/FRONTEND_HANDOFF.md`.
 
-### 1. M1 — 7-Field Trip Request Form (`src/components/RequestForm.jsx`)
-- **Direct landing view:** Opens directly to the 7-field builder without any blocking login wall.
-- **7 Traveler Fields:**
-  1. Departure City (`Bengaluru`, `Mumbai`, `Delhi`, `Hyderabad`, `Chennai`)
-  2. Destination Country (`Japan`, `United Arab Emirates`)
-  3. Holiday Start Date (`min="2027-04-01"` to `max="2027-04-17"`)
-  4. Number of Nights (`min="3"` to `max="10"`)
-  5. Adults Count (`min="1"`)
-  6. Children Count (`min="0"`) — dynamically renders an age input (`0–17`) for each child added
-  7. Total Budget in INR (`min="1"`)
-- **Quick-Fill Buttons:**
-  - `Fill Sample Trip`: Pre-fills the Menon family trip (Bengaluru → Japan, 10 Apr 2027, 6 nights, 2 adults, 1 child aged 6, ₹3,50,000 budget).
-  - `Test Over-Budget`: Tests budget constraint warning (₹1,20,000 budget).
-  - `Test Impossible Trip`: Tests rule cutoff and constraint violation explanations.
-- **Inline Error Feedback:** Displays clear red validation messages for dates, durations, capacities, and budgets.
+## Test it in a real browser
 
-### 2. M2 & M3 — Complete Package Generation & Rule Enforcement (`src/data/mockTripData.js`)
-- Generates end-to-end multi-city itineraries:
-  - Arrival flight from departure city landing on holiday start date
-  - Return flight on the last day back to India
-  - Airport ground transfers (satisfying the 60-minute post-landing and 180-minute pre-departure buffers)
-  - Inter-city bullet trains / transfers on city-change days
-  - Hotels & room capacity math: $k$ rooms fit travelers if $\text{adults} \le k \times \text{max\_adults}$, $\text{adults} + \text{children} \le k \times (\text{max\_adults} + \text{max\_children})$, and $\text{adults} \ge k$, with verified availability
-  - Non-overlapping daily attractions fitting within operating hours
-- **Impossible Trip State:** Explains exact conflict reasons when inputs cannot form a valid package (e.g. Hyderabad route absence, return flight exceeding 20 April 2027).
-
-### 3. M4 — Chronological Day-by-Day Plan (`src/components/Timeline.jsx`)
-- Groups the itinerary day-by-day (`Day 1` through `Day N+1`).
-- Strict chronological order with connector lines and semantic color coding:
-  - 🛫 **Flights:** Sky / Blue (`bg-sky-50 text-sky-700 border-sky-200`)
-  - 🚗 **Transfers:** Amber / Orange (`bg-amber-50 text-amber-700 border-amber-200`)
-  - 🏨 **Hotels:** Indigo / Purple (`bg-indigo-50 text-indigo-700 border-indigo-200`)
-  - ⛩️ **Attractions:** Emerald / Teal (`bg-emerald-50 text-emerald-700 border-emerald-200`)
-- Itemized times, durations, quantities, and INR prices.
-
-### 4. M5 — Total Cost, Budget Tracker & JSON Export (`src/components/BudgetSidebar.jsx`)
-- Sticky sidebar with itemized subtotals: Flights, Hotels, Ground Transfers, Sightseeing.
-- Real-time comparison against budget with green (`₹XX,XXX Remaining`) or red (`₹XX,XXX Over Budget`) badges.
-- **Export JSON:** 1-click download of `normad-grid-package.json` conforming strictly to `DATA_DICTIONARY.md` (`country`, `status`, `booking.reference`, `items` with `room_id`, `total_price_inr`).
-
-### 5. M6 — Customize Package with Live Rule Re-Validation (`src/components/SwapModal.jsx`)
-- Interactive customization options:
-  - `"Change Flight"` on flight cards
-  - `"Change Hotel"` on hotel cards
-  - `"+ Add Attraction"` and `"Remove"` on sightseeing items
-- **Live Rule Re-validation:**
-  - If valid: updates the timeline and recalculates total price immediately.
-  - If invalid: rejects the edit, preserves existing valid package, and displays a prominent red alert explaining the conflict (e.g., buffer violation, room capacity mismatch, or sightseeing overlap).
-
-### 6. M7 — Confirm Booking & Persistent 10-Digit Reservation Lookup (`src/components/Navbar.jsx` & `BudgetSidebar.jsx`)
-- **"Confirm & Book"**: Generates a unique 10-digit numeric reservation number (e.g., `8492017463`), updates package status to `"BOOKED"`, and persists it in `localStorage` under `normad_bookings`.
-- **Navbar Lookup Bar:** Entering a valid 10-digit reservation number instantly reopens that full itinerary; unknown numbers display a clear `"Reservation not found"` alert.
-- **Confirmation Page:** After booking, a dedicated page shows the 10-digit reservation number with a copy button.
-
-### 7. M8 — Insufficient Budget Handling (`src/App.jsx`)
-- When a valid package exists but exceeds target budget, normad-grid displays a prominent warning banner stating no package fits the budget, showing the cheapest compliant total, and suggesting concrete changes (e.g., increase budget by ₹XX,XXX or reduce duration by 1 night).
-
----
-
-## 🎨 Technology Stack
-- **Framework:** React 19 + Vite 6
-- **Styling:** Tailwind CSS v4 (using `@import "tailwindcss";` and `@tailwindcss/vite`)
-- **Icons:** Lucide React
-- **Persistence:** Browser `localStorage` (`normad_bookings`, `normad_users`, `normad_current_user`)
-- **Catalog Data:** Bundled from `destinations.json`, `airports.json`, `flights.json`, `hotels.json`, `rooms.json`, `availability.json`, `transfers.json`, `attractions.json`.
+With the app running on :8000: `python e2e/ui_flow.py http://localhost:8000` (repo root; needs `pip install playwright` and Edge). It walks the whole journey in 30 steps and fails on any console or server error.

@@ -64,3 +64,11 @@ single-city plan has no transfer and uses the same flights, so a two-city plan c
 - **Found:** with the UI built, a catch-all route turned `GET /api/packages` into a 404 instead of 405. **Fixed:** the SPA fallback now lives in the 404 handler and never touches `/api/*` or `/images/*`.
 - **Added tests** (14): UI served, deep links, path traversal attempts, API answers unchanged, no-UI page, unwritable database fallback, missing catalog message.
 - **Not re-run after the last fix:** the full browser flow (`e2e/ui_flow.py`, last result 17/23 before the dialog fix). Run it with `python e2e/ui_flow.py http://localhost:8000`.
+
+## Cycle: stretch features, photos and packaging
+- **Found:** "Increase budget" on the over-budget screen did nothing: it overrode `budget_inr`, but the form-shaped request keeps the budget in `budget`, so the rebuild stayed over budget. **Fixed** (`OutcomePage.jsx`), covered by the browser flow.
+- **Found:** the sample buttons replace the whole form state, so the new `interests` field was `undefined` and the form crashed. **Fixed** by tolerating a missing value.
+- **Found:** a merge-conflict leftover (`useState(interests)` with no such prop) blanked the home page with `interests is not defined`. **Fixed**; the 30-step browser flow now guards the form, so a blank page fails the very first step.
+- **Found:** the interest keyword matcher lost its word boundaries twice while editing (it matched "art" inside "start"). **Fixed** with look-around matching, and tests cover odd sentences (`"art " * 300`, `"ARTART art-art"`).
+- **Found:** the "unwritable database" test shared one temp database across runs, so earlier bookings used up the seats. **Fixed** (per-test temp folder).
+- **Considered and left:** hotel photos are generic room photos (the hotels are fictional); the dining spots are illustrative names; the city guides are general tips, not live-checked.
