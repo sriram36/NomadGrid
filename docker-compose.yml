@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_DIR: /app/data
+      IMAGES_DIR: /app/images
+      DB_PATH: /app/storage/nomadgrid.sqlite
+      PORT: "8000"
+    volumes:
+      # the provided catalog is mounted read-only: the app can never change it
+      - ./hackathon-problem-1-holiday-package/data:/app/data:ro
+      - ./hackathon-problem-1-holiday-package/images:/app/images:ro
+      # reservations and packages survive restarts
+      - nomadgrid-db:/app/storage
+    restart: unless-stopped
+
+volumes:
+  nomadgrid-db:
