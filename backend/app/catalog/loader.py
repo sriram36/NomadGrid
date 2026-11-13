@@ -24,7 +24,12 @@ class Catalog:
         base = Path(data_dir) / "catalog"
 
         def load(name):
-            return json.loads((base / name).read_text(encoding="utf-8"))
+            path = base / name
+            if not path.is_file():
+                raise FileNotFoundError(
+                    f"Catalog file not found: {path}. Set the DATA_DIR environment variable to the folder that "
+                    f"contains catalog/destinations.json, flights.json, hotels.json ... (the provided data pack).")
+            return json.loads(path.read_text(encoding="utf-8"))
 
         self.destinations = load("destinations.json")
         self.airports: Dict[str, dict] = {a["code"]: a for a in load("airports.json")}
