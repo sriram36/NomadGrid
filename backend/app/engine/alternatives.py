@@ -7,7 +7,9 @@ from dataclasses import dataclass, replace
 from datetime import timedelta
 from typing import List
 
-from app.engine.builder import BuildResult, WINDOW_FIRST, WINDOW_LAST, build
+from app.config import WINDOW_FIRST, WINDOW_LAST
+from app.engine.builder import build
+from app.engine.results import BuildResult
 from app.engine.cityplan import preferred_city_count
 from app.engine.models import TripRequest
 

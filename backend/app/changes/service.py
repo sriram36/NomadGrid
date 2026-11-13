@@ -1,429 +1,23 @@
-"""M6: change a package (hotel, flight, add/remove attractions) and list the options.
+"""Apply one change to a stored package and list the options for a change (with price differences).
 
-Every change: rebuild an editable itinerary from the stored package -> apply the edit -> recompute
-dependent parts (airport transfers, arrival-day visits) -> re-run the independent validator ->
-check the budget. The result is APPLIED, REFUSED (a hard rule would break), BUDGET_EXCEEDED
-(legal but over budget; needs the traveler's consent) or PINNED_CONFLICT (the traveler decides).
-
-User choices take priority: anything the traveler picked is `pinned` and never dropped silently.
+Every change: rebuild an editable itinerary from the stored package -> apply the edit (ops.py) -> recompute
+dependent parts -> re-run the independent validator -> check the budget. The result is APPLIED, REFUSED
+(a hard rule would break), BUDGET_EXCEEDED (legal but over budget; needs the traveler's consent) or
+PINNED_CONFLICT (the traveler decides). Anything the traveler picked is `pinned` and never dropped silently.
 """
 from dataclasses import replace
-from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional
+from datetime import date, datetime
+from typing import List
 
-from app.config import DAY_END_MIN, DAY_START_MIN, SETTLE_MIN, VISIT_GAP_MIN
+from app.changes.refusal import Refusal
+from app.changes.ops import OPS, free_start_choices
+from app.changes.rebuild import parse_date, recompute_metrics, itinerary_from_package, night_city
 from app.core.pricing import attraction_price, flight_price, hotel_price, rooms_needed
-from app.core.timeutil import at, hm, tod
 from app.engine import attractions as attr
-from app.engine.airport import arrival_transfer, departure_transfer
 from app.engine.alternatives import inr
-from app.engine.models import Itinerary, Leg, TransferUse, TripRequest, Visit
+from app.engine.models import Itinerary
 from app.export.package import time_label, to_package, to_trip_format
 from app.validator.validate import validate_trip
-from app.engine.variants import build_for_plan
-
-
-class Refusal(Exception):
-    def __init__(self, code: str, reason: str, suggestion: Optional[str] = None, options: Optional[list] = None):
-        self.code, self.reason, self.suggestion, self.options = code, reason, suggestion, options
-
-    def to_response(self, result: str = "REFUSED") -> dict:
-        out: dict = {"result": result, "reason_code": self.code, "reason": self.reason}
-        if self.suggestion:
-            out["suggestion"] = self.suggestion
-        if self.options is not None:
-            out["options"] = self.options
-        return out
-
-
-# ============================================================================ rebuild from a stored package
-def itinerary_from_package(pkg: dict, cat) -> Itinerary:
-    r = pkg["request"]
-    req = TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
-                      r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"))
-    legs: List[Leg] = []
-    links: List[TransferUse] = []
-    visits: List[Visit] = []
-    arr = ret = arr_t = dep_t = None
-    arr_pinned = ret_pinned = False
-    visit_by_item: Dict[str, Visit] = {}
-    for i in pkg["items"]:
-        t, tag = i["type"], i.get("leg")
-        if t == "flight":
-            rec = cat.flights[i["catalog_id"]]
-            if tag == "ARRIVAL":
-                arr, arr_pinned = rec, bool(i.get("pinned"))
-            else:
-                ret, ret_pinned = rec, bool(i.get("pinned"))
-        elif t == "transfer":
-            rec = cat.transfers[i["catalog_id"]]
-            p = datetime.fromisoformat(i["start"])
-            use = TransferUse(rec, p, datetime.fromisoformat(i["end"]), i["price_inr"], i["quantity"], p.date(),
-                              rec.get("from_city"), rec.get("to_city"))
-            if tag == "AIRPORT_ARRIVAL":
-                arr_t = use
-            elif tag == "AIRPORT_DEPARTURE":
-                dep_t = use
-            else:
-                links.append(use)
-        elif t == "hotel":
-            ci, co = date.fromisoformat(i["start"]), date.fromisoformat(i["end"])
-            legs.append(Leg(i["city"], (co - ci).days, ci, co, cat.hotels[i["catalog_id"]], cat.rooms[i["room_id"]],
-                            i["quantity"], i["price_inr"], bool(i.get("pinned"))))
-        elif t == "attraction":
-            s = datetime.fromisoformat(i["start"])
-            v = Visit(cat.attractions[i["catalog_id"]], s, datetime.fromisoformat(i["end"]), i["price_inr"],
-                      s.date(), bool(i.get("pinned")))
-            visits.append(v)
-            visit_by_item[i["item_id"]] = v
-    legs.sort(key=lambda l: l.check_in)
-    links.sort(key=lambda l: l.pickup)
-    assert arr and ret and arr_t and dep_t, "package is missing a flight or an airport transfer"
-    it = Itinerary(req, legs, arr, ret, arr_t, dep_t, links, visits, {}, arr_pinned, ret_pinned)
-    it.visit_by_item = visit_by_item   # type: ignore[attr-defined]
-    return it
-
-
-def _recompute_metrics(it: Itinerary):
-    req = it.request
-    stars = sum(l.hotel["stars"] * l.nights for l in it.legs) / req.nights
-    it.metrics = {
-        "transit_minutes": it.arr_flight["duration_minutes"] + it.ret_flight["duration_minutes"]
-        + sum(l.rec["duration_minutes"] for l in it.links),
-        "avg_hotel_stars": round(stars, 2), "usable_ground_minutes": None, "quality_score": None,
-    }
-
-
-# ============================================================================ helpers
-def night_city(it: Itinerary, day: date) -> Optional[str]:
-    for l in it.legs:
-        if l.check_in <= day < l.check_out:
-            return l.city
-    return None
-
-
-def _ready_min(it: Itinerary, day: date) -> int:
-    """Minutes after midnight on `day` when the traveler is in that day's city (0 = from the start)."""
-    if day == it.request.start_date:
-        arrive = it.arr_transfer.arrive
-    else:
-        arrive = next((l.arrive for l in it.links if l.day == day), None)
-    if arrive is None:
-        return 0
-    return tod(arrive) if arrive.date() == day else 1440
-
-
-def _retime_arrival_day(it: Itinerary, allow_remove: bool) -> List[str]:
-    """After the arrival moved: shift arrival-day visits that no longer fit; never drop a pinned one silently."""
-    day = it.request.start_date
-    ready = _ready_min(it, day)
-    todays = sorted((v for v in it.visits if v.day == day), key=lambda v: v.start)
-    cursor, warnings, conflicts, drop = ready, [], [], []
-    for v in todays:
-        a = v.attraction
-        start = max(tod(v.start), cursor)
-        end = start + a["visit_minutes"]
-        if start >= 1440 or end > hm(a["open_until"]):
-            (conflicts if v.pinned else drop).append(v)
-            continue
-        if start != tod(v.start):
-            v.start, v.end = at(day, start), at(day, end)
-            warnings.append(f"ARRIVAL_SHIFTED: {a['name']} now starts at {time_label(v.start)} because you arrive later.")
-        cursor = end
-    if conflicts and not allow_remove:
-        names = ", ".join(v.attraction["name"] for v in conflicts)
-        raise Refusal(
-            "PINNED_CONFLICT",
-            f"With this change you reach your hotel around {time_label(it.arr_transfer.arrive)}, which leaves no "
-            f"time for {names} on {day:%d %b}.",
-            "Keep your current choice, or apply the change and remove it from the plan.",
-            [{"action": "KEEP_CURRENT"},
-             {"action": "APPLY_AND_REMOVE", "remove": [v.attraction["name"] for v in conflicts],
-              "resend_with": {"remove_pinned_conflicts": True}}])
-    for v in conflicts + drop:
-        it.visits.remove(v)
-        warnings.append(f"ARRIVAL_SHIFTED: {v.attraction['name']} no longer fits on {day:%d %b} and was removed.")
-    return warnings
-
-
-def _parse_date(text) -> Optional[date]:
-    try:
-        return date.fromisoformat(text)
-    except Exception:
-        return None
-
-
-# ============================================================================ operations
-def op_change_hotel(it, op, cat, inv) -> List[str]:
-    req = it.request
-    city = op.get("city")
-    leg = next((l for l in it.legs if l.city == city), None)
-    if leg is None:
-        raise Refusal("INVALID_CITY", f"{city!r} is not one of the cities in this holiday: {', '.join(it.cities)}.")
-    hotel, room = cat.hotels.get(op.get("hotel_id")), cat.rooms.get(op.get("room_id"))
-    if hotel is None or hotel["city"] != city:
-        raise Refusal("HOTEL_NOT_FOUND", f"That hotel is not in {city}.")
-    if room is None or room["hotel_id"] != hotel["hotel_id"]:
-        raise Refusal("ROOM_NOT_FOUND", f"That room type does not belong to {hotel['name']}.")
-    k = rooms_needed(room, req.adults, req.children)
-    if k is None:
-        raise Refusal("ROOM_DOES_NOT_FIT", f"{room['name']} at {hotel['name']} can't hold {req.adults} adult(s) and "
-                                           f"{req.children} child(ren).", "Pick a family room or a larger room type.")
-    for n in range(leg.nights):
-        d = leg.check_in + timedelta(days=n)
-        if inv.rooms_left(room["room_id"], d) < k:
-            raise Refusal("ROOMS_UNAVAILABLE", f"{hotel['name']} ({room['name']}) is sold out on {d:%d %b}.",
-                          "Choose another room type or hotel.")
-    leg.hotel, leg.room, leg.rooms, leg.pinned = hotel, room, k, True
-    leg.price = hotel_price(room, k, leg.nights)
-    warnings: List[str] = []
-    idx = it.legs.index(leg)
-    if idx == 0:
-        got = arrival_transfer(cat, req, it.arr_flight, city, hotel["area"])
-        if got is None:
-            raise Refusal("NO_AIRPORT_TRANSFER", f"No airport transfer from {it.arr_flight['to']} serves {hotel['area']} "
-                                                 f"at a time that works with your arrival flight.",
-                          "Choose a hotel in another area, or another arrival flight.")
-        it.arr_transfer = TransferUse(got[0], got[1], got[2], got[3], got[4], req.start_date)
-    if idx == len(it.legs) - 1:
-        got = departure_transfer(cat, req, it.ret_flight, city, hotel["area"], req.end_date)
-        if got is None:
-            raise Refusal("NO_AIRPORT_TRANSFER", f"No airport transfer from {hotel['area']} reaches "
-                                                 f"{it.ret_flight['from']} 3 hours before your flight.",
-                          "Choose a hotel in another area, or another return flight.")
-        it.dep_transfer = TransferUse(got[0], got[1], got[2], got[3], got[4], req.end_date)
-    if idx == 0:
-        warnings += _retime_arrival_day(it, bool(op.get("remove_pinned_conflicts")))
-    return warnings
-
-
-def op_change_flight(it, op, cat, inv) -> List[str]:
-    req = it.request
-    leg = op.get("leg")
-    f = cat.flights.get(op.get("flight_id"))
-    if leg not in ("ARRIVAL", "RETURN"):
-        raise Refusal("INVALID_LEG", "Choose the ARRIVAL or the RETURN flight to change.")
-    if f is None:
-        raise Refusal("FLIGHT_NOT_FOUND", "We couldn't find that flight.")
-    code, dep = cat.country_code(req.country), cat.departure_airport(req.departure_city)
-    warnings: List[str] = []
-    if leg == "ARRIVAL":
-        if f["from"] != dep or cat.country_of_airport(f["to"]) != code or f["_arr"].date() != req.start_date:
-            raise Refusal("FLIGHT_MISMATCH", f"That flight does not fly {req.departure_city} → {req.country} and land "
-                                             f"on {req.start_date:%d %b}.")
-        if it.cities[0] not in cat.airports[f["to"]].get("serves_cities", []):
-            raise Refusal("AIRPORT_MISMATCH", f"{f['to']} does not serve {it.cities[0]}, where your holiday starts.",
-                          "Pick a flight into an airport that serves your first city.")
-        if inv.seats_left(f) < req.travelers:
-            raise Refusal("SEATS_UNAVAILABLE", f"Only {inv.seats_left(f)} seat(s) left on that flight; you need {req.travelers}.")
-        it.arr_flight, it.arr_pinned = f, True
-        first = it.legs[0]
-        got = arrival_transfer(cat, req, f, first.city, first.hotel["area"])
-        if got is None:
-            raise Refusal("NO_AIRPORT_TRANSFER", f"No transfer from {f['to']} to {first.hotel['name']} can run at least "
-                                                 f"60 minutes after that flight lands, inside its service hours.",
-                          "Pick an earlier flight or a hotel in another area.")
-        it.arr_transfer = TransferUse(got[0], got[1], got[2], got[3], got[4], req.start_date)
-        warnings += _retime_arrival_day(it, bool(op.get("remove_pinned_conflicts")))
-    else:
-        if f["to"] != dep or cat.country_of_airport(f["from"]) != code or f["_dep"].date() != req.end_date:
-            raise Refusal("FLIGHT_MISMATCH", f"That flight does not fly {req.country} → {req.departure_city} and leave "
-                                             f"on {req.end_date:%d %b}.")
-        if it.cities[-1] not in cat.airports[f["from"]].get("serves_cities", []):
-            raise Refusal("AIRPORT_MISMATCH", f"{f['from']} does not serve {it.cities[-1]}, where your holiday ends.",
-                          "Pick a flight from an airport that serves your last city.")
-        if inv.seats_left(f) < req.travelers:
-            raise Refusal("SEATS_UNAVAILABLE", f"Only {inv.seats_left(f)} seat(s) left on that flight; you need {req.travelers}.")
-        it.ret_flight, it.ret_pinned = f, True
-        last = it.legs[-1]
-        got = departure_transfer(cat, req, f, last.city, last.hotel["area"], req.end_date)
-        if got is None:
-            raise Refusal("NO_AIRPORT_TRANSFER", f"No transfer from {last.hotel['name']} can get you to {f['from']} "
-                                                 f"3 hours before that flight, inside its service hours.",
-                          "Pick a later flight or a hotel in another area.")
-        it.dep_transfer = TransferUse(got[0], got[1], got[2], got[3], got[4], req.end_date)
-    return warnings
-
-
-def _free_start_choices(it: Itinerary, a: dict, day: date, step: int = 30) -> List[int]:
-    """Start minutes (statement rules only) at which `a` fits on `day` without overlapping other visits."""
-    ready = _ready_min(it, day)
-    lo, hi = max(hm(a["open_from"]), ready), hm(a["open_until"]) - a["visit_minutes"]
-    others = [(tod(v.start), tod(v.end)) for v in it.visits if v.day == day]
-    out, s = [], lo
-    s = ((s + step - 1) // step) * step if s % step else s
-    while s <= hi:
-        e = s + a["visit_minutes"]
-        if all(e <= os or s >= oe for os, oe in others):
-            out.append(s)
-        s += step
-    return out
-
-
-def _auto_start(it: Itinerary, a: dict, day: date) -> Optional[int]:
-    """Earliest comfortable start (08:30-21:30, 30-min gaps, settling time); else any rule-valid start."""
-    ready = _ready_min(it, day)
-    lo = max(DAY_START_MIN, hm(a["open_from"]), (ready + SETTLE_MIN) if ready else 0)
-    others = [(tod(v.start), tod(v.end)) for v in it.visits if v.day == day]
-    s = lo
-    while s + a["visit_minutes"] <= min(hm(a["open_until"]), DAY_END_MIN):
-        e = s + a["visit_minutes"]
-        if all(e + VISIT_GAP_MIN <= os or s >= oe + VISIT_GAP_MIN for os, oe in others):
-            return s
-        s += 15
-    choices = _free_start_choices(it, a, day, step=15)
-    return choices[0] if choices else None
-
-
-def op_add_attraction(it, op, cat, inv) -> List[str]:
-    req = it.request
-    a = cat.attractions.get(op.get("attraction_id"))
-    if a is None:
-        raise Refusal("ATTRACTION_NOT_FOUND", "We couldn't find that attraction.")
-    day = _parse_date(op.get("date"))
-    if day is None or not (req.start_date <= day < req.end_date):
-        raise Refusal("INVALID_DAY", f"Attractions can be added on {req.start_date:%d %b} to "
-                                     f"{(req.end_date - timedelta(days=1)):%d %b}. The last day is for going home.")
-    city = night_city(it, day)
-    if a["city"] != city:
-        raise Refusal("ATTRACTION_WRONG_CITY", f"{a['name']} is in {a['city']}, but you stay in {city} on {day:%d %b}.",
-                      f"Add it on a day you are in {a['city']}." if a["city"] in it.cities else None)
-    if not attr.is_open_on(a, day):
-        nxt = next((d for d in (req.start_date + timedelta(days=n) for n in range(req.nights))
-                    if night_city(it, d) == a["city"] and attr.is_open_on(a, d)), None)
-        raise Refusal("ATTRACTION_CLOSED", f"{a['name']} is closed on {day:%A %d %b}.",
-                      f"It is open on {nxt:%A %d %b} — add it there?" if nxt else None)
-    if any(v.attraction["attraction_id"] == a["attraction_id"] for v in it.visits):
-        raise Refusal("ATTRACTION_DUPLICATE", f"{a['name']} is already in your holiday.")
-    given = op.get("start")
-    if given:
-        try:
-            s = hm(given)
-        except Exception:
-            raise Refusal("INVALID_TIME", "Start time must look like 14:30.") from None
-        if s < hm(a["open_from"]) or s + a["visit_minutes"] > hm(a["open_until"]):
-            raise Refusal("ATTRACTION_OUTSIDE_HOURS", f"{a['name']} is open {a['open_from']}–{a['open_until']} and the "
-                                                      f"visit takes {a['visit_minutes']} minutes.")
-        if s < _ready_min(it, day):
-            raise Refusal("ATTRACTION_OUTSIDE_HOURS", f"You only reach this city around {time_label(at(day, _ready_min(it, day)))} "
-                                                      f"on {day:%d %b}.")
-        if s not in _free_start_choices(it, a, day, step=1):
-            raise Refusal("ATTRACTION_OVERLAP", f"That time overlaps another visit on {day:%d %b}.",
-                          "Pick another time or remove the other visit first.")
-    else:
-        s = _auto_start(it, a, day)
-        if s is None:
-            raise Refusal("ATTRACTION_OVERLAP", f"There is no free slot for {a['name']} on {day:%d %b}.",
-                          "Try another day or remove a visit.")
-    it.visits.append(Visit(a, at(day, s), at(day, s + a["visit_minutes"]), attraction_price(a, req.adults, req.children),
-                           day, True))
-    return []
-
-
-def op_remove_attraction(it, op, cat, inv) -> List[str]:
-    v = getattr(it, "visit_by_item", {}).get(op.get("item_id"))
-    if v is None or v not in it.visits:
-        raise Refusal("ITEM_NOT_FOUND", "We couldn't find that attraction in your holiday.")
-    it.visits.remove(v)
-    return []
-
-
-def request_from_package(pkg: dict) -> TripRequest:
-    r = pkg["request"]
-    return TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
-                       r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"))
-
-
-def _adopt(it: Itinerary, new: Itinerary) -> None:
-    """Replace the contents of `it` with a freshly built itinerary (same request)."""
-    it.legs, it.arr_flight, it.ret_flight = new.legs, new.arr_flight, new.ret_flight
-    it.arr_transfer, it.dep_transfer, it.links, it.visits = new.arr_transfer, new.dep_transfer, new.links, new.visits
-    it.arr_pinned, it.ret_pinned = new.arr_pinned, new.ret_pinned
-    it.visit_by_item = {}   # type: ignore[attr-defined]
-
-
-def _carry_pinned(old: Itinerary, new: Itinerary, cat, inv, allow_remove: bool) -> List[str]:
-    """Keep what the traveler chose (hotels, flights, attractions) wherever it is still valid in the new plan.
-
-    Anything that cannot be kept is never dropped silently: the traveler is asked (PINNED_CONFLICT).
-    """
-    conflicts: List[str] = []
-    warnings: List[str] = []
-    for leg in old.legs:
-        if not leg.pinned:
-            continue
-        same = next((x for x in new.legs if x.city == leg.city and x.nights == leg.nights
-                     and x.check_in == leg.check_in), None)
-        if same is None:
-            conflicts.append(f"your stay at {leg.hotel['name']} in {leg.city}")
-            continue
-        try:
-            warnings += op_change_hotel(new, {"city": leg.city, "hotel_id": leg.hotel["hotel_id"],
-                                              "room_id": leg.room["room_id"]}, cat, inv)
-        except Refusal:
-            conflicts.append(f"your stay at {leg.hotel['name']} in {leg.city}")
-    for tag, pinned, flight in (("ARRIVAL", old.arr_pinned, old.arr_flight), ("RETURN", old.ret_pinned, old.ret_flight)):
-        if pinned:
-            try:
-                warnings += op_change_flight(new, {"leg": tag, "flight_id": flight["flight_id"]}, cat, inv)
-            except Refusal:
-                conflicts.append(f"your {tag.lower()} flight {flight['flight_number']}")
-    for v in sorted(old.visits, key=lambda x: x.start):
-        if not v.pinned:
-            continue
-        a = v.attraction
-        start = f"{tod(v.start) // 60:02d}:{tod(v.start) % 60:02d}"
-        for given in (start, None):
-            op = {"attraction_id": a["attraction_id"], "date": v.day.isoformat()}
-            if given:
-                op["start"] = given
-            try:
-                op_add_attraction(new, op, cat, inv)
-                break
-            except Refusal as r:
-                if r.code == "ATTRACTION_DUPLICATE":     # the new plan already includes it: keep it as the traveler's pick
-                    for x in new.visits:
-                        if x.attraction["attraction_id"] == a["attraction_id"]:
-                            x.pinned = True
-                    break
-        else:
-            conflicts.append(f"{a['name']} on {v.day:%d %b}")
-    if conflicts and not allow_remove:
-        raise Refusal(
-            "PINNED_CONFLICT",
-            "Switching the city plan can't keep: " + "; ".join(conflicts) + ".",
-            "Keep your current plan, or switch and let those choices go.",
-            [{"action": "KEEP_CURRENT"},
-             {"action": "APPLY_AND_REMOVE", "remove": conflicts, "resend_with": {"remove_pinned_conflicts": True}}])
-    warnings += [f"PINNED_DROPPED: {c} could not be kept in the new plan." for c in conflicts]
-    return warnings
-
-
-def op_change_city_plan(it, op, cat, inv) -> List[str]:
-    raw = op.get("plan")
-    hint = 'Give the plan as a list like [{"city": "Tokyo", "nights": 3}, {"city": "Kyoto", "nights": 3}].'
-    if not isinstance(raw, list) or not raw:
-        raise Refusal("INVALID_PLAN", "No city plan was given.", hint)
-    try:
-        plan = tuple((str(x["city"]), x["nights"]) for x in raw)
-    except Exception:
-        raise Refusal("INVALID_PLAN", "Each plan entry needs a city and a number of nights.", hint) from None
-    if any(isinstance(n, bool) or not isinstance(n, int) for _, n in plan):
-        raise Refusal("INVALID_PLAN", "Nights must be whole numbers.", hint)
-    if sum(n for _, n in plan) != it.request.nights:
-        raise Refusal("INVALID_PLAN", f"The nights in the plan must add up to your {it.request.nights} nights.", hint)
-    new, _fits, err = build_for_plan(it.request, cat, inv, plan)
-    if new is None:
-        raise Refusal("INVALID_PLAN", err or "That city plan is not possible.",
-                      "Pick one of the plans from the city-plan options.")
-    warnings = _carry_pinned(it, new, cat, inv, bool(op.get("remove_pinned_conflicts")))
-    _adopt(it, new)
-    return warnings
-
-
-OPS = {"CHANGE_HOTEL": op_change_hotel, "CHANGE_FLIGHT": op_change_flight,
-       "ADD_ATTRACTION": op_add_attraction, "REMOVE_ATTRACTION": op_remove_attraction,
-       "CHANGE_CITY_PLAN": op_change_city_plan}
 
 
 # ============================================================================ apply
@@ -478,7 +72,7 @@ def apply_change(pkg: dict, op: dict, cat, inv, with_cheaper: bool = True) -> di
         extra_warnings = handler(it, op, cat, inv)
     except Refusal as r:
         return r.to_response("PINNED_CONFLICT" if r.code == "PINNED_CONFLICT" else "REFUSED")
-    _recompute_metrics(it)
+    recompute_metrics(it)
     old_total, budget = pkg["pricing"]["total_inr"], pkg["pricing"]["budget_inr"]
     new_pkg = to_package(it, cat, pkg["package_id"], pkg["traveler"], variant=pkg.get("variant", "DEFAULT"))
     new_total = new_pkg["pricing"]["total_inr"]
@@ -587,7 +181,7 @@ def flight_options_for(pkg: dict, leg: str, cat, inv, _nested: bool = False) -> 
 
 
 def attraction_options_for(pkg: dict, day_text: str, cat, inv) -> dict:
-    day = _parse_date(day_text)
+    day = parse_date(day_text)
     it = itinerary_from_package(pkg, cat)
     req = it.request
     if day is None or not (req.start_date <= day < req.end_date):
@@ -599,7 +193,7 @@ def attraction_options_for(pkg: dict, day_text: str, cat, inv) -> dict:
     for a in cat.attractions_in(city):
         if a["attraction_id"] in used or not attr.is_open_on(a, day):
             continue
-        choices = _free_start_choices(it, a, day)
+        choices = free_start_choices(it, a, day)
         if not choices:
             continue
         price = attraction_price(a, req.adults, req.children)

@@ -10,10 +10,10 @@ from itertools import product
 from typing import Dict, List, Optional, Tuple
 
 from app.core.pricing import flight_price
-from app.engine.builder import (
-    FULL_DAY_MINUTES, BuildResult, PlanCtx, _cand, best_min_cost, best_recommended, experience_points,
-    finalize, fit_points, flight_points, prepare_all, time_points,
-)
+from app.engine.builder import candidate, best_min_cost, best_recommended, finalize, prepare_all
+from app.engine.context import PlanCtx
+from app.engine.results import BuildResult
+from app.engine.scoring import FULL_DAY_MINUTES, experience_points, fit_points, flight_points, time_points
 from app.engine.cityplan import Plan, preferred_city_count
 from app.engine.inventory import Inventory
 from app.engine.models import Itinerary, TripRequest
@@ -114,7 +114,7 @@ def _best_stars_for(ctx: PlanCtx) -> Optional[dict]:
         star_nights = sum(p["hotel"]["stars"] * n for p, n in zip(picks, nights, strict=True))
         key = (-star_nights, total, a["flight_id"], r["flight_id"], tuple(p["room"]["room_id"] for p in picks))
         if best is None or key < best[0]:
-            cand = _cand(ctx, a, r, picks, arr, dep, "MIN", core, total, 0.0, 0, _transit(ctx, a, r))
+            cand = candidate(ctx, a, r, picks, arr, dep, "MIN", core, total, 0.0, 0, _transit(ctx, a, r))
             cand["star_nights"] = star_nights
             best = (key, cand)
 

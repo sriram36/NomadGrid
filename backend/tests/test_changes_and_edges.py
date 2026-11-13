@@ -3,9 +3,9 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from app.changes.service import (
-    Refusal, _retime_arrival_day, apply_change, itinerary_from_package,
-)
+from app.changes.rebuild import itinerary_from_package, retime_arrival_day
+from app.changes.refusal import Refusal
+from app.changes.service import apply_change
 from app.core.timeutil import at
 from app.engine.hotels import hotel_options
 from app.engine.inventory import Inventory
@@ -301,10 +301,10 @@ def test_pinned_attraction_that_no_longer_fits_stops_the_change_and_asks(cat):
     # the traveler now reaches the hotel very late
     it.arr_transfer.arrive = D("2027-04-10T20:00")
     with pytest.raises(Refusal) as e:
-        _retime_arrival_day(it, allow_remove=False)
+        retime_arrival_day(it, allow_remove=False)
     assert e.value.code == "PINNED_CONFLICT" and e.value.options and rec["name"] in e.value.reason
     assert any(v.pinned for v in it.visits)             # nothing was silently dropped
-    warnings = _retime_arrival_day(it, allow_remove=True)
+    warnings = retime_arrival_day(it, allow_remove=True)
     assert not any(v.attraction["attraction_id"] == rec["attraction_id"] for v in it.visits)
     assert any("removed" in w for w in warnings)
 
@@ -322,7 +322,7 @@ def test_unpinned_arrival_visit_is_shifted_not_lost(cat):
         pytest.skip("no arrival-day visit in this package")
     v = todays[0]
     it.arr_transfer.arrive = v.start + timedelta(minutes=20)
-    _retime_arrival_day(it, allow_remove=False)
+    retime_arrival_day(it, allow_remove=False)
     kept = [x for x in it.visits if x.day == it.request.start_date]
     assert all(x.start >= it.arr_transfer.arrive for x in kept)
 
