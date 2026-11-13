@@ -20,6 +20,7 @@ from app.engine.alternatives import inr
 from app.engine.models import Itinerary, Leg, TransferUse, TripRequest, Visit
 from app.export.package import time_label, to_package, to_trip_format
 from app.validator.validate import validate_trip
+from app.engine.variants import build_for_plan
 
 
 class Refusal(Exception):
@@ -327,8 +328,102 @@ def op_remove_attraction(it, op, cat, inv) -> List[str]:
     return []
 
 
+def request_from_package(pkg: dict) -> TripRequest:
+    r = pkg["request"]
+    return TripRequest(r["departure_city"], r["country"], date.fromisoformat(r["start_date"]), r["nights"],
+                       r["adults"], tuple(r["child_ages"]), r["budget_inr"], r.get("traveler_name", "Traveler"))
+
+
+def _adopt(it: Itinerary, new: Itinerary) -> None:
+    """Replace the contents of `it` with a freshly built itinerary (same request)."""
+    it.legs, it.arr_flight, it.ret_flight = new.legs, new.arr_flight, new.ret_flight
+    it.arr_transfer, it.dep_transfer, it.links, it.visits = new.arr_transfer, new.dep_transfer, new.links, new.visits
+    it.arr_pinned, it.ret_pinned = new.arr_pinned, new.ret_pinned
+    it.visit_by_item = {}   # type: ignore[attr-defined]
+
+
+def _carry_pinned(old: Itinerary, new: Itinerary, cat, inv, allow_remove: bool) -> List[str]:
+    """Keep what the traveler chose (hotels, flights, attractions) wherever it is still valid in the new plan.
+
+    Anything that cannot be kept is never dropped silently: the traveler is asked (PINNED_CONFLICT).
+    """
+    conflicts: List[str] = []
+    warnings: List[str] = []
+    for leg in old.legs:
+        if not leg.pinned:
+            continue
+        same = next((x for x in new.legs if x.city == leg.city and x.nights == leg.nights
+                     and x.check_in == leg.check_in), None)
+        if same is None:
+            conflicts.append(f"your stay at {leg.hotel['name']} in {leg.city}")
+            continue
+        try:
+            warnings += op_change_hotel(new, {"city": leg.city, "hotel_id": leg.hotel["hotel_id"],
+                                              "room_id": leg.room["room_id"]}, cat, inv)
+        except Refusal:
+            conflicts.append(f"your stay at {leg.hotel['name']} in {leg.city}")
+    for tag, pinned, flight in (("ARRIVAL", old.arr_pinned, old.arr_flight), ("RETURN", old.ret_pinned, old.ret_flight)):
+        if pinned:
+            try:
+                warnings += op_change_flight(new, {"leg": tag, "flight_id": flight["flight_id"]}, cat, inv)
+            except Refusal:
+                conflicts.append(f"your {tag.lower()} flight {flight['flight_number']}")
+    for v in sorted(old.visits, key=lambda x: x.start):
+        if not v.pinned:
+            continue
+        a = v.attraction
+        start = f"{tod(v.start) // 60:02d}:{tod(v.start) % 60:02d}"
+        for given in (start, None):
+            op = {"attraction_id": a["attraction_id"], "date": v.day.isoformat()}
+            if given:
+                op["start"] = given
+            try:
+                op_add_attraction(new, op, cat, inv)
+                break
+            except Refusal as r:
+                if r.code == "ATTRACTION_DUPLICATE":     # the new plan already includes it: keep it as the traveler's pick
+                    for x in new.visits:
+                        if x.attraction["attraction_id"] == a["attraction_id"]:
+                            x.pinned = True
+                    break
+        else:
+            conflicts.append(f"{a['name']} on {v.day:%d %b}")
+    if conflicts and not allow_remove:
+        raise Refusal(
+            "PINNED_CONFLICT",
+            "Switching the city plan can't keep: " + "; ".join(conflicts) + ".",
+            "Keep your current plan, or switch and let those choices go.",
+            [{"action": "KEEP_CURRENT"},
+             {"action": "APPLY_AND_REMOVE", "remove": conflicts, "resend_with": {"remove_pinned_conflicts": True}}])
+    warnings += [f"PINNED_DROPPED: {c} could not be kept in the new plan." for c in conflicts]
+    return warnings
+
+
+def op_change_city_plan(it, op, cat, inv) -> List[str]:
+    raw = op.get("plan")
+    hint = 'Give the plan as a list like [{"city": "Tokyo", "nights": 3}, {"city": "Kyoto", "nights": 3}].'
+    if not isinstance(raw, list) or not raw:
+        raise Refusal("INVALID_PLAN", "No city plan was given.", hint)
+    try:
+        plan = tuple((str(x["city"]), x["nights"]) for x in raw)
+    except Exception:
+        raise Refusal("INVALID_PLAN", "Each plan entry needs a city and a number of nights.", hint) from None
+    if any(isinstance(n, bool) or not isinstance(n, int) for _, n in plan):
+        raise Refusal("INVALID_PLAN", "Nights must be whole numbers.", hint)
+    if sum(n for _, n in plan) != it.request.nights:
+        raise Refusal("INVALID_PLAN", f"The nights in the plan must add up to your {it.request.nights} nights.", hint)
+    new, _fits, err = build_for_plan(it.request, cat, inv, plan)
+    if new is None:
+        raise Refusal("INVALID_PLAN", err or "That city plan is not possible.",
+                      "Pick one of the plans from the city-plan options.")
+    warnings = _carry_pinned(it, new, cat, inv, bool(op.get("remove_pinned_conflicts")))
+    _adopt(it, new)
+    return warnings
+
+
 OPS = {"CHANGE_HOTEL": op_change_hotel, "CHANGE_FLIGHT": op_change_flight,
-       "ADD_ATTRACTION": op_add_attraction, "REMOVE_ATTRACTION": op_remove_attraction}
+       "ADD_ATTRACTION": op_add_attraction, "REMOVE_ATTRACTION": op_remove_attraction,
+       "CHANGE_CITY_PLAN": op_change_city_plan}
 
 
 # ============================================================================ apply
@@ -349,7 +444,25 @@ def _summary(op: dict, it: Itinerary, delta: int, total: int) -> str:
     if kind == "ADD_ATTRACTION":
         v = next(v for v in it.visits if v.attraction["attraction_id"] == op["attraction_id"])
         return f"Added {v.attraction['name']} on {v.day:%a %d %b} at {time_label(v.start)}. {money}"
+    if kind == "CHANGE_CITY_PLAN":
+        plan = " → ".join(f"{l.city} ({l.nights} nights)" for l in it.legs)
+        return f"City plan changed to {plan}. {money}"
     return f"Attraction removed. {money}"
+
+
+def _knock_on(old_items: List[dict], new_items: List[dict]) -> List[str]:
+    """G1: plain sentences about OTHER bookings that moved because of this change."""
+    labels = {"AIRPORT_ARRIVAL": "Your airport pickup on arrival", "AIRPORT_DEPARTURE": "Your pickup for the flight home"}
+    old = {i.get("leg"): i for i in old_items if i["type"] == "transfer"}
+    new = {i.get("leg"): i for i in new_items if i["type"] == "transfer"}
+    out = []
+    for leg, label in labels.items():
+        a, b = old.get(leg), new.get(leg)
+        if a and b and (a["start"] != b["start"] or a["catalog_id"] != b["catalog_id"]):
+            out.append(f"{label} moves from {time_label(datetime.fromisoformat(a['start']))} to "
+                       f"{time_label(datetime.fromisoformat(b['start']))}"
+                       + (f" ({b['name']})." if a["catalog_id"] != b["catalog_id"] else "."))
+    return out
 
 
 def apply_change(pkg: dict, op: dict, cat, inv, with_cheaper: bool = True) -> dict:
@@ -358,8 +471,8 @@ def apply_change(pkg: dict, op: dict, cat, inv, with_cheaper: bool = True) -> di
         return Refusal("PACKAGE_LOCKED", "This holiday is already booked, so it can't be changed.").to_response()
     handler = OPS.get(op.get("op", "")) if isinstance(op, dict) else None
     if handler is None:
-        return Refusal("UNKNOWN_OP", "Unknown change. Use CHANGE_HOTEL, CHANGE_FLIGHT, ADD_ATTRACTION or "
-                                     "REMOVE_ATTRACTION.").to_response()
+        return Refusal("UNKNOWN_OP", "Unknown change. Use CHANGE_HOTEL, CHANGE_FLIGHT, ADD_ATTRACTION, "
+                                     "REMOVE_ATTRACTION or CHANGE_CITY_PLAN.").to_response()
     it = itinerary_from_package(pkg, cat)
     try:
         extra_warnings = handler(it, op, cat, inv)
@@ -394,6 +507,7 @@ def apply_change(pkg: dict, op: dict, cat, inv, with_cheaper: bool = True) -> di
     delta = new_total - old_total
     return {"result": "APPLIED", "package": new_pkg, "price_delta_inr": delta,
             "warnings": extra_warnings + new_pkg["warnings"], "changed_item_ids": changed,
+            "knock_on": _knock_on(pkg["items"], new_pkg["items"]),
             "summary": _summary(op, it, delta, new_total)}
 
 

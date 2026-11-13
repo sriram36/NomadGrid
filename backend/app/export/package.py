@@ -198,6 +198,11 @@ def soft_warnings(it: Itinerary) -> List[str]:
     return out
 
 
+def _rationale(it: Itinerary, cat, total: int) -> dict:
+    from app.export.rationale import build_rationale   # local import: rationale.py reuses helpers from this module
+    return build_rationale(it, cat, total)
+
+
 def to_package(it: Itinerary, cat, package_id: str, traveler: dict, status: str = "PLANNED",
                reservation: Optional[dict] = None, variant: str = "DEFAULT") -> dict:
     req = it.request
@@ -220,6 +225,7 @@ def to_package(it: Itinerary, cat, package_id: str, traveler: dict, status: str 
         "pricing": {"total_inr": total, "budget_inr": req.budget_inr, "remaining_inr": req.budget_inr - total,
                     "over_budget": total > req.budget_inr, "breakdown": by_type},
         "metrics": metrics, "items": items, "days": days, "warnings": soft_warnings(it),
+        "rationale": _rationale(it, cat, total),
         "reservation": reservation,
     }
 

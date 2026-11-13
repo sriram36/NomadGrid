@@ -280,8 +280,11 @@ def plan_transit_lo(ctx: PlanCtx) -> int:
         + ctx.link_minutes
 
 
-def best_min_cost(ctx: PlanCtx) -> Optional[dict]:
-    """Cheapest valid candidate for this plan (exact, separable search)."""
+def best_min_cost(ctx: PlanCtx, pair_ok=None) -> Optional[dict]:
+    """Cheapest valid candidate for this plan (exact, separable search).
+
+    `pair_ok(arrival_flight, return_flight)` optionally restricts which flight pairs may be used.
+    """
     req = ctx.s.req
     attr_cost = ctx.attr_min[1]
     k = len(ctx.legs)
@@ -300,6 +303,8 @@ def best_min_cost(ctx: PlanCtx) -> Optional[dict]:
     if k == 1:
         for A in ctx.arr_flights:
             for R in ctx.ret_flights:
+                if pair_ok and not pair_ok(A, R):
+                    continue
                 for o in ctx.opts[0]:
                     arr, dep = ctx.arr_transfer(A, o), ctx.dep_transfer(R, o)
                     if arr and dep:
@@ -323,7 +328,7 @@ def best_min_cost(ctx: PlanCtx) -> Optional[dict]:
             if A["flight_id"] not in first_best:
                 continue
             for R in ctx.ret_flights:
-                if R["flight_id"] not in last_best:
+                if R["flight_id"] not in last_best or (pair_ok and not pair_ok(A, R)):
                     continue
                 f, l = first_best[A["flight_id"]][3], last_best[R["flight_id"]][3]
                 consider(A, R, [f] + mids + [l], ctx.arr_transfer(A, f), ctx.dep_transfer(R, l),
@@ -474,20 +479,22 @@ def _transit_range(by_k) -> Tuple[int, int]:
     return (min(vals), max(vals)) if vals else (0, 0)
 
 
-def build(req: TripRequest, cat, inv: Optional[Inventory] = None, mode: str = "RECOMMENDED",
-          max_cities: Optional[int] = None) -> BuildResult:
+def prepare_all(req: TripRequest, cat, inv: Optional[Inventory] = None, max_cities: Optional[int] = None):
+    """The first half of every build: prechecks, every plan context, and the cheapest candidate overall.
+
+    Returns (early_result, None) when the request ends here (NO_PACKAGE), otherwise
+    (None, (session, plans_by_city_count, transit_range, cheapest_ctx, cheapest_candidate)).
+    """
     inv = inv or Inventory(cat)
     s = Session(req, cat, inv)
     pre = s.precheck()
     if pre:
-        return pre
+        return pre, None
     by_k = _all_ctx(s, max_cities)
     if not by_k:
         return BuildResult("NO_PACKAGE", reason_code=s.diag.code or "NO_CITY_PLAN_FOR_FLIGHTS",
-                           message=s.diag.message or "No city plan fits these dates.")
+                           message=s.diag.message or "No city plan fits these dates."), None
     tr_range = _transit_range(by_k)
-
-    # cheapest across everything: needed to tell OVER_BUDGET from NO_PACKAGE and for the CHEAPEST mode
     cheapest = None
     for ctxs in by_k.values():
         for c in ctxs:
@@ -496,8 +503,17 @@ def build(req: TripRequest, cat, inv: Optional[Inventory] = None, mode: str = "R
                 cheapest = (c, cand)
     if cheapest is None:
         return BuildResult("NO_PACKAGE", reason_code=s.diag.code or "NO_AIRPORT_TRANSFER",
-                           message=s.diag.message or "No package can be built for this request.")
-    c0, cand0 = cheapest
+                           message=s.diag.message or "No package can be built for this request."), None
+    return None, (s, by_k, tr_range, cheapest[0], cheapest[1])
+
+
+def build(req: TripRequest, cat, inv: Optional[Inventory] = None, mode: str = "RECOMMENDED",
+          max_cities: Optional[int] = None) -> BuildResult:
+    early, prep = prepare_all(req, cat, inv, max_cities)
+    if early is not None:
+        return early
+    assert prep is not None
+    s, by_k, tr_range, c0, cand0 = prep
     if cand0["total"] > req.budget_inr:
         it = finalize(c0, cand0, tr_range, extras=False)
         return BuildResult("OVER_BUDGET", itinerary=it, cheapest_total=cand0["total"])

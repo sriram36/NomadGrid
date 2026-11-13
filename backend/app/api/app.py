@@ -21,7 +21,7 @@ def create_app(data_dir=None, db_path=None, images_dir=None, frontend_dist=None)
     app = FastAPI(title="NomadGrid - Build My Holiday", version="1.0")
     app.state.cat = Catalog(data_dir or config.DATA_DIR)
     app.state.store = Store(db_path or config.DB_PATH)
-    app.state.inventory = lambda: Inventory(app.state.cat)
+    app.state.inventory = lambda: Inventory(app.state.cat, *app.state.store.used_maps())
 
     @app.exception_handler(RequestValidationError)
     async def _validation(request: Request, exc: RequestValidationError):
