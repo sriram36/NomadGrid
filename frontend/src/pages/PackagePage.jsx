@@ -4,14 +4,13 @@ import { ArrowLeft, AlertTriangle, SearchX } from 'lucide-react';
 import Timeline from '../components/Timeline';
 import BudgetSidebar from '../components/BudgetSidebar';
 import SwapModal from '../components/SwapModal';
-import VariantBar from '../components/VariantBar';
 import VisualRoute from '../components/VisualRoute';
 import WhyThisPlan from '../components/WhyThisPlan';
 import CityGuideDrawer from '../components/CityGuideDrawer';
 import { useApp } from '../context/AppContext';
 
 const VARIANT_LABEL = {
-  CHEAPEST: 'Cheapest', FASTEST: 'Fastest', BEST_RATED: 'Best rated', RECOMMENDED: 'Recommended',
+  CHEAPEST: 'Cheapest', BEST_RATED: 'Best rated', RECOMMENDED: 'Recommended',
   ALTERNATIVE: 'Fits your budget',
 };
 
@@ -109,8 +108,6 @@ export default function PackagePage() {
             </button>
           </div>
         </div>
-
-        {!booked && <VariantBar pkg={pkg} />}
 
         {pkg.warnings?.length > 0 && (
           <div className="bg-[#fff9e6] border border-[#febb02] rounded-xl p-4 text-xs text-slate-800" role="status" data-testid="warnings">
