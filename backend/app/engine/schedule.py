@@ -8,7 +8,7 @@ from typing import Optional, Tuple
 from app.config import (
     AIRPORT_ARRIVE_BEFORE_MIN, ARRIVAL_PICKUP_BUFFER_MIN, EARLIEST_INTERCITY_DEPARTURE_MIN,
 )
-from app.core.timeutil import at, hm, in_window_dt
+from app.core.timeutil import at, earliest_in_window, hm, latest_in_window
 
 ONE_MIN = timedelta(minutes=1)
 
@@ -29,12 +29,10 @@ def arrival_pickup(transfer: dict, landing: datetime) -> Optional[Tuple[datetime
     base = _minute(landing)
     if landing.second or landing.microsecond:   # round a stray seconds value up to the next minute
         base += ONE_MIN
-    p = base + timedelta(minutes=ARRIVAL_PICKUP_BUFFER_MIN)
-    while p <= limit:
-        if in_window_dt(p, start, end):
-            return p, p + timedelta(minutes=transfer["duration_minutes"])
-        p += ONE_MIN
-    return None
+    p = earliest_in_window(base + timedelta(minutes=ARRIVAL_PICKUP_BUFFER_MIN), start, end)
+    if p is None or p > limit:
+        return None
+    return p, p + timedelta(minutes=transfer["duration_minutes"])
 
 
 def departure_pickup(transfer: dict, departure: datetime, last_day: date,
@@ -48,11 +46,10 @@ def departure_pickup(transfer: dict, departure: datetime, last_day: date,
     start, end = hm(transfer["service_from"]), hm(transfer["service_until"])
     floor_dt = at(last_day, 0)
     for cushion in (cushion_min, 0):
-        p = _minute(departure) - timedelta(minutes=AIRPORT_ARRIVE_BEFORE_MIN + transfer["duration_minutes"] + cushion)
-        while p >= floor_dt:
-            if in_window_dt(p, start, end):
-                return p, p + timedelta(minutes=transfer["duration_minutes"])
-            p -= ONE_MIN
+        deadline = _minute(departure) - timedelta(minutes=AIRPORT_ARRIVE_BEFORE_MIN + transfer["duration_minutes"] + cushion)
+        p = latest_in_window(deadline, start, end)
+        if p is not None and p >= floor_dt:
+            return p, p + timedelta(minutes=transfer["duration_minutes"])
     return None
 
 
