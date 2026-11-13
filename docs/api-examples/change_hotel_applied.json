@@ -3,7 +3,7 @@
   "body": {
     "result": "APPLIED",
     "package": {
-      "package_id": "pkg_f5c870274360",
+      "package_id": "pkg_189d84cd78f6",
       "status": "PLANNED",
       "variant": "DEFAULT",
       "traveler": {
@@ -728,6 +728,19 @@
       "warnings": [
         "CHECKIN_TIME: you reach Umeda Grand Hotel around 11:35 am, before check-in opens at 15:00."
       ],
+      "rationale": {
+        "headline": "Osaka (4 nights) → Kyoto (2 nights)",
+        "reasons": [
+          "6 nights suits 2 cities — about one city per 3 nights, so you are not rushing around.",
+          "Flights and city-to-city travel add up to 17h 55m including Osaka → Kyoto (0h 15m).",
+          "You land at 9:20 am on day 1 (both flights are direct); you are at your hotel around 11:35 am.",
+          "Hotels average 4.7★ (Umeda Grand Hotel in Osaka, Sakura Garden Hotel in Kyoto) and are all family friendly.",
+          "The holiday costs ₹2,97,542 of your ₹3,50,000 budget (85%), leaving ₹52,458.",
+          "10 sight(s) planned across 6 day(s) — a mix of aquarium, castle, district, market.",
+          "Kept exactly as you chose: your hotel in Kyoto."
+        ],
+        "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
       "reservation": null
     },
     "price_delta_inr": -29120,
@@ -737,6 +750,8 @@
     "changed_item_ids": [
       "i13"
     ],
-    "summary": "Hotel in Kyoto changed to Sakura Garden Hotel (Family Room). Total is now ₹2,97,542 (−₹29,120)."
+    "knock_on": [],
+    "summary": "Hotel in Kyoto changed to Sakura Garden Hotel (Family Room). Total is now ₹2,97,542 (−₹29,120).",
+    "undo_available": true
   }
 }

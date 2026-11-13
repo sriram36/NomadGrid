@@ -3,7 +3,7 @@
   "body": {
     "result": "APPLIED",
     "package": {
-      "package_id": "pkg_474b9d7cdfff",
+      "package_id": "pkg_92f9cbe005f3",
       "status": "PLANNED",
       "variant": "DEFAULT",
       "traveler": {
@@ -477,6 +477,19 @@
       "warnings": [
         "CHECKIN_TIME: you reach Asakusa River Hotel around 1:05 pm, before check-in opens at 15:00."
       ],
+      "rationale": {
+        "headline": "Tokyo (6 nights)",
+        "reasons": [
+          "6 nights would normally suit 2 city(ies), but a 1-city plan fits your budget, flights and rooms best.",
+          "Flights and city-to-city travel add up to 17h 10m.",
+          "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:05 pm.",
+          "Hotels average 3.0★ (Asakusa River Hotel in Tokyo) and are all family friendly.",
+          "The holiday costs ₹2,25,036 of your ₹2,25,036 budget (100%), leaving ₹0.",
+          "5 sight(s) planned across 5 day(s) — a mix of district, market, park, shrine.",
+          "Kept exactly as you chose: your hotel in Tokyo."
+        ],
+        "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
       "reservation": null
     },
     "price_delta_inr": 5712,
@@ -489,6 +502,11 @@
       "i3",
       "i9"
     ],
-    "summary": "Hotel in Tokyo changed to Asakusa River Hotel (Family Room). Total is now ₹2,25,036 (+₹5,712)."
+    "knock_on": [
+      "Your airport pickup on arrival moves from 11:30 am to 11:30 am (Narita limousine bus to Asakusa).",
+      "Your pickup for the flight home moves from 6:50 am to 6:50 am (Haneda limousine bus to Asakusa)."
+    ],
+    "summary": "Hotel in Tokyo changed to Asakusa River Hotel (Family Room). Total is now ₹2,25,036 (+₹5,712).",
+    "undo_available": true
   }
 }

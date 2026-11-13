@@ -22,6 +22,7 @@ produce `frontend/dist/index.html`**. Unknown non-API paths fall back to `index.
 - Never show raw JSON or a stack trace; use `message`, `reason` and `fields[]`.
 - Money is an integer in rupees: format with `Intl.NumberFormat('en-IN')` (₹3,50,000). Times are local to the place; `time_label` is ready to show ("9:20 am").
 - Keep state in the URL (`/packages/:id`, `/reservations/:number`) so a refresh keeps working.
+- **Re-fetch options after every change** — hotel, flight and city-plan options describe the package as it is now.
 - The form has **exactly 7 fields** (departure city, country, first day, nights, adults, children's ages, budget). Fill the dropdowns from `GET /api/meta`.
 
 ## 3. Screens → calls
@@ -50,11 +51,17 @@ package.items[k]           → the full detail for that item_id (title, subtitle
 The arrival flight departs the evening before the first day, so it shows as "Land at …" on day 0. Item `pinned: true` means the
 traveler chose it — you may show a small "your choice" marker.
 
-## 5. Not available (set aside)
+## 5. Extra features (all available)
 
-The backend does **not** offer: choosing a different city plan, three alternative packages (cheapest/fastest/best rated), plain-text quick
-request, or seats/rooms being used up by bookings. Don't build UI for these. The price difference on every option and the
-"affects other parts" warnings *are* available.
+| Feature | Calls | What to render |
+|---|---|---|
+| **Quick request box** (S1) | `POST /api/parse-request {text}` | A text box above the form. Fill the form from `fields`; highlight `missing` inputs; show `notes` (assumptions) and, when `ready` is false, ask the traveler to check. |
+| **Three packages** (G4) | `POST /api/packages/variants` with the 7 fields | Cards/tabs: *Recommended*, *Cheapest*, *Fastest*, *Best rated* (`variant`, `pricing`, `metrics.transit_minutes`, `metrics.avg_hotel_stars`, city strip). Picking one opens `/packages/:package_id`. Show `notes`. `OVER_BUDGET`/`NO_PACKAGE` come back as in the normal build. |
+| **Change cities** (G3) | `GET …/options/city-plans` → `POST …/changes {op:"CHANGE_CITY_PLAN", plan}` | A plan chooser: each plan's cities, nights, `total_inr`, `price_delta_inr`, `warnings`; mark `current` and `preferred`; grey/flag `fits_budget:false` ("needs +₹…"). Handle `BUDGET_EXCEEDED` and `PINNED_CONFLICT` like any other change. |
+| **Undo** | `POST …/undo` | An "Undo" button/toast after every applied change (`undo_available`); replace the package with `package`. |
+| **"Why this plan"** (S3) | in the package: `rationale` | A short panel: `headline` and the `reasons` list. |
+| **Knock-on notes** (G1) | in `APPLIED` responses: `knock_on[]`, `warnings[]` | Show them in the change toast/banner ("Your airport pickup moves from … to …"). |
+| **Seats/rooms used up** (S2) | `POST …/confirm` | On `409 INVENTORY_CONFLICT` show `error.message` and offer to rebuild the holiday ("Choose another flight or hotel"). |
 
 ## 6. Quick manual check
 

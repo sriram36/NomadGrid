@@ -43,19 +43,22 @@ How NomadGrid "Build My Holiday" is put together, and why. Companion documents: 
 | `engine/airport.py` | 45 | Cheapest valid airport transfer for a flight + hotel (shared by builder and changes) | schedule, pricing |
 | `engine/hotels.py` | 80 | Hotel+room options (fit, availability on every night), stay-quality points, Pareto pruning | pricing |
 | `engine/attractions.py` | 190 | Eligible attractions, day placement, full-day assignment (bipartite matching), optional arrival/change-day visits | pricing, timeutil |
-| `engine/builder.py` | 490 | **The search**: plan contexts, cheapest search, quality search, scoring, assembling an itinerary, `build()` | all engine modules |
+| `engine/builder.py` | 546 | **The search**: plan contexts, cheapest search, quality search, scoring, assembling an itinerary, `build()` | all engine modules |
 | `engine/alternatives.py` | 105 | Over-budget alternatives (drop a city / fewer nights / shift date, combined) | builder |
+| `engine/variants.py` | 254 | **G4** cheapest / fastest / best-rated packages; **G3** city-plan options and building a chosen plan | builder |
+| `quickparse/parser.py` | 206 | **S1** plain-words request → form fields, with fixed rules | — |
+| `export/rationale.py` | 70 | **S3** "why this plan" sentences from the real itinerary | models, export |
 | `engine/inventory.py` | 20 | Effective seats/rooms = catalog minus our own usage (hook for S2) | catalog |
 | `engine/models.py` | 95 | `TripRequest`, `Itinerary`, `Leg`, `TransferUse`, `Visit` | — |
 | `export/package.py` | 245 | Itinerary → API package (items, day-by-day, pricing, warnings) and → shared trip format | models |
 | `validator/validate.py` | 310 | Re-checks every statement rule from the exported trip + raw catalog | catalog only |
-| `changes/service.py` | 500 | Rebuild an editable itinerary from a stored package; apply an edit; options with price differences | engine, export, validator |
-| `store/db.py` | 110 | SQLite persistence; atomic idempotent confirm; unique 10-digit numbers | sqlite3 |
+| `changes/service.py` | 613 | Rebuild an editable itinerary from a stored package; apply an edit; options with price differences | engine, export, validator |
+| `store/db.py` | 226 | SQLite persistence; atomic idempotent confirm that also **uses up seats/rooms (S2)**; unique 10-digit numbers; **undo** history | sqlite3 |
 | `api/requests.py` | 90 | Per-field validation of the 7 request fields | catalog |
-| `api/routes.py` | 215 | HTTP endpoints | everything above |
+| `api/routes.py` | 293 | HTTP endpoints | everything above |
 | `api/app.py` | 60 | App factory, error handlers, static files / SPA fallback | — |
 
-About 2,940 lines of application code and 1,450 lines of tests.
+About 3,800 lines of application code and 2,000 lines of tests.
 
 ## 3. Life of a "build my holiday" request
 
@@ -100,6 +103,8 @@ attractions (56). The Docker bind mount is read-only; a test hashes the files to
 **SQLite** (`/app/storage/nomadgrid.sqlite`, WAL mode)
 - `packages(id PK, status, package_json, created_at, updated_at)`
 - `reservations(number PK, package_id UNIQUE, snapshot_json, created_at)` — uniqueness enforced by the database.
+- `inventory_used(kind, key, day, qty)` — seats per flight and rooms per night used by confirmed bookings (S2).
+- `package_history(seq, package_id, package_json, created_at)` — up to 20 previous versions per package, for Undo.
 
 ## 5. The two rule engines (why there are two)
 
@@ -183,7 +188,7 @@ volume `nomadgrid-db`. Health check: `GET /api/health`. Verified: build, confirm
 
 | Gate | Result |
 |---|---|
-| Tests | 255 passing on Python 3.12 and 3.14: unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
+| Tests | 369 passing on Python 3.12 and 3.14: unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
 | Type checking | pyright: 0 errors |
 | Lint | ruff: clean |
 | Fuzz | ~9,000 random requests: 0 crashes, 0 validator failures, 0 over-budget packages |
@@ -202,8 +207,14 @@ volume `nomadgrid-db`. Health check: `GET /api/health`. Verified: build, confirm
 | Direct window arithmetic instead of minute scans | 3× faster over-budget search, proven equivalent by a property test |
 | One container, SQLite | One command to start; state survives restarts |
 
-## 14. Set aside (not built in this delivery)
+## 14. The extra features and how they work
 
-Good-to-have **G3** change cities, **G4** three packages (cheapest/fastest/best rated); Stretch **S1** quick request, **S2** booking uses up
-seats and rooms (the engine's `Inventory` already accepts reduced counts), **S3** own idea. G2 (price difference on every option) and
-most of G1 (warnings when a change affects other parts) exist as part of "change the package". See PRD §5.2.
+| Feature | Where | How |
+|---|---|---|
+| **G4 three packages** | `engine/variants.py` | *Cheapest*: the exact minimum across all plans. *Fastest*: walk the distinct travel times (flights + city transfers) upward and take the first one that fits the budget, cheapest among equals. *Best rated*: per plan, the most hotel star-nights within budget (Pareto on price vs stars), then the best plan; guest rating is ignored. Fastest and best-rated use two attractions a day when the budget allows. |
+| **G3 change cities** | `engine/variants.py`, `changes/service.py` | `plan_options` scores every valid plan (best quality that fits, else cheapest) so an option's price equals what applying it gives. `CHANGE_CITY_PLAN` rebuilds the package for that plan, then **carries over the traveler's pinned hotels, flights and attractions** by re-applying them with the normal change rules; whatever can't carry over raises `PINNED_CONFLICT` instead of vanishing. |
+| **S2 seats and rooms used up** | `store/db.py` | `confirm` runs in one `BEGIN IMMEDIATE` transaction: check seats and room-nights against catalog minus `inventory_used`, record the usage, write the reservation. The app's `Inventory` view (catalog minus usage) feeds every build, option list and change, so later travelers never see seats that are gone. |
+| **S1 quick request** | `quickparse/parser.py` | Regular expressions and word lists only. Fields are claimed in a fixed order (budget, date, nights, adults, children, cities) and each matched text is blanked so no number is read twice. Unknowns are reported, never guessed; assumptions become `notes`. |
+| **S3 why this plan** | `export/rationale.py` | Sentences generated from the itinerary (cities vs nights, travel time, flights, stars, budget used, sights, what the traveler chose). |
+| **Undo** | `store/db.py`, `routes.py` | Every applied change first saves the previous version; `undo` pops it (20 deep, survives restarts, cleared on booking). |
+| **G1 knock-on** | `changes/service.py` | After a change, old and new transfers are compared and sentences describe what moved ("Your airport pickup on arrival moves from … to …"), on top of the shifted-visit and check-in warnings. |

@@ -1,0 +1,89 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "UNDONE",
+    "package": {
+      "package_id": "pkg_89a71cae94dc",
+      "status": "PLANNED",
+      "variant": "DEFAULT",
+      "traveler": {
+        "name": "Traveler",
+        "home_airport": "BLR",
+        "adults": 2,
+        "children": 1,
+        "child_ages": [
+          6
+        ]
+      },
+      "request": {
+        "departure_city": "Bengaluru",
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "nights": 6,
+        "adults": 2,
+        "child_ages": [
+          6
+        ],
+        "budget_inr": 350000,
+        "traveler_name": "Traveler"
+      },
+      "country": "Japan",
+      "start_date": "2027-04-10",
+      "end_date": "2027-04-16",
+      "city_plan": [
+        {
+          "city": "Tokyo",
+          "nights": 4,
+          "check_in": "2027-04-10",
+          "check_out": "2027-04-14"
+        },
+        {
+          "city": "Kyoto",
+          "nights": 2,
+          "check_in": "2027-04-14",
+          "check_out": "2027-04-16"
+        }
+      ],
+      "pricing": {
+        "total_inr": 345646,
+        "budget_inr": 350000,
+        "remaining_inr": 4354,
+        "over_budget": false,
+        "breakdown": {
+          "flights": 153720,
+          "hotels": 160272,
+          "transfers": 28238,
+          "attractions": 3416
+        }
+      },
+      "metrics": {
+        "transit_minutes": 1135,
+        "usable_ground_minutes": 4235,
+        "avg_hotel_stars": 4.67,
+        "quality_score": 93.4,
+        "budget_used_pct": 98.8,
+        "total": 345646
+      },
+      "items": "… 17 items, same shape as build_package_menon.json …",
+      "days": "… 7 days, same shape as build_package_menon.json …",
+      "warnings": [
+        "CHECKIN_TIME: you reach Ginza Imperial Suites around 1:10 pm, before check-in opens at 15:00."
+      ],
+      "rationale": {
+        "headline": "Tokyo (4 nights) → Kyoto (2 nights)",
+        "reasons": [
+          "6 nights suits 2 cities — about one city per 3 nights, so you are not rushing around.",
+          "Flights and city-to-city travel add up to 18h 55m including Tokyo → Kyoto (2h 15m).",
+          "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:10 pm.",
+          "Hotels average 4.7★ (Ginza Imperial Suites in Tokyo, Higashiyama Machiya Stay in Kyoto) and are all family friendly.",
+          "The holiday costs ₹3,45,646 of your ₹3,50,000 budget (99%), leaving ₹4,354.",
+          "10 sight(s) planned across 6 day(s) — a mix of district, market, museum, nature."
+        ],
+        "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
+      "reservation": null
+    },
+    "summary": "Your last change was undone.",
+    "undo_available": false
+  }
+}

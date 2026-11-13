@@ -1,0 +1,9 @@
+{
+  "_http_status": 409,
+  "body": {
+    "error": {
+      "code": "INVENTORY_CONFLICT",
+      "message": "Flight AV 515 (FL-411) has only 0 seat(s) left, and this holiday needs 3. Another booking took them. Please choose another flight or hotel."
+    }
+  }
+}

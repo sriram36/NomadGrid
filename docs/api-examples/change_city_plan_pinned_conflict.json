@@ -1,0 +1,23 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "PINNED_CONFLICT",
+    "reason_code": "PINNED_CONFLICT",
+    "reason": "Switching the city plan can't keep: your stay at Sakura Garden Hotel in Kyoto.",
+    "suggestion": "Keep your current plan, or switch and let those choices go.",
+    "options": [
+      {
+        "action": "KEEP_CURRENT"
+      },
+      {
+        "action": "APPLY_AND_REMOVE",
+        "remove": [
+          "your stay at Sakura Garden Hotel in Kyoto"
+        ],
+        "resend_with": {
+          "remove_pinned_conflicts": true
+        }
+      }
+    ]
+  }
+}

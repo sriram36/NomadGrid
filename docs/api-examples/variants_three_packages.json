@@ -1,0 +1,317 @@
+{
+  "_http_status": 200,
+  "body": {
+    "outcome": "VARIANTS",
+    "recommended": {
+      "package_id": "pkg_4c1cee3c72ce",
+      "status": "PLANNED",
+      "variant": "RECOMMENDED",
+      "traveler": {
+        "name": "Traveler",
+        "home_airport": "BLR",
+        "adults": 2,
+        "children": 1,
+        "child_ages": [
+          6
+        ]
+      },
+      "request": {
+        "departure_city": "Bengaluru",
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "nights": 6,
+        "adults": 2,
+        "child_ages": [
+          6
+        ],
+        "budget_inr": 350000,
+        "traveler_name": "Traveler"
+      },
+      "country": "Japan",
+      "start_date": "2027-04-10",
+      "end_date": "2027-04-16",
+      "city_plan": [
+        {
+          "city": "Tokyo",
+          "nights": 4,
+          "check_in": "2027-04-10",
+          "check_out": "2027-04-14"
+        },
+        {
+          "city": "Kyoto",
+          "nights": 2,
+          "check_in": "2027-04-14",
+          "check_out": "2027-04-16"
+        }
+      ],
+      "pricing": {
+        "total_inr": 345646,
+        "budget_inr": 350000,
+        "remaining_inr": 4354,
+        "over_budget": false,
+        "breakdown": {
+          "flights": 153720,
+          "hotels": 160272,
+          "transfers": 28238,
+          "attractions": 3416
+        }
+      },
+      "metrics": {
+        "transit_minutes": 1135,
+        "usable_ground_minutes": 4235,
+        "avg_hotel_stars": 4.67,
+        "quality_score": 93.4,
+        "budget_used_pct": 98.8,
+        "total": 345646
+      },
+      "items": "… 17 items, same shape as build_package_menon.json …",
+      "days": "… 7 days, same shape as build_package_menon.json …",
+      "warnings": [
+        "CHECKIN_TIME: you reach Ginza Imperial Suites around 1:10 pm, before check-in opens at 15:00."
+      ],
+      "rationale": {
+        "headline": "Tokyo (4 nights) → Kyoto (2 nights)",
+        "reasons": [
+          "6 nights suits 2 cities — about one city per 3 nights, so you are not rushing around.",
+          "Flights and city-to-city travel add up to 18h 55m including Tokyo → Kyoto (2h 15m).",
+          "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:10 pm.",
+          "Hotels average 4.7★ (Ginza Imperial Suites in Tokyo, Higashiyama Machiya Stay in Kyoto) and are all family friendly.",
+          "The holiday costs ₹3,45,646 of your ₹3,50,000 budget (99%), leaving ₹4,354.",
+          "10 sight(s) planned across 6 day(s) — a mix of district, market, museum, nature."
+        ],
+        "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
+      "reservation": null
+    },
+    "variants": {
+      "cheapest": {
+        "package_id": "pkg_73de50509234",
+        "status": "PLANNED",
+        "variant": "CHEAPEST",
+        "traveler": {
+          "name": "Traveler",
+          "home_airport": "BLR",
+          "adults": 2,
+          "children": 1,
+          "child_ages": [
+            6
+          ]
+        },
+        "request": {
+          "departure_city": "Bengaluru",
+          "country": "Japan",
+          "start_date": "2027-04-10",
+          "nights": 6,
+          "adults": 2,
+          "child_ages": [
+            6
+          ],
+          "budget_inr": 350000,
+          "traveler_name": "Traveler"
+        },
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "end_date": "2027-04-16",
+        "city_plan": [
+          {
+            "city": "Tokyo",
+            "nights": 6,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-16"
+          }
+        ],
+        "pricing": {
+          "total_inr": 219324,
+          "budget_inr": 350000,
+          "remaining_inr": 130676,
+          "over_budget": false,
+          "breakdown": {
+            "flights": 156240,
+            "hotels": 56784,
+            "transfers": 6300,
+            "attractions": 0
+          }
+        },
+        "metrics": {
+          "transit_minutes": 1030,
+          "usable_ground_minutes": 4380,
+          "avg_hotel_stars": 3.0,
+          "quality_score": 66.0,
+          "budget_used_pct": 62.7,
+          "total": 219324
+        },
+        "items": "… 10 items, same shape as build_package_menon.json …",
+        "days": "… 7 days, same shape as build_package_menon.json …",
+        "warnings": [
+          "CHECKIN_TIME: you reach Ueno Garden Inn around 1:00 pm, before check-in opens at 15:00."
+        ],
+        "rationale": {
+          "headline": "Tokyo (6 nights)",
+          "reasons": [
+            "6 nights would normally suit 2 city(ies), but a 1-city plan fits your budget, flights and rooms best.",
+            "Flights and city-to-city travel add up to 17h 10m.",
+            "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:00 pm.",
+            "Hotels average 3.0★ (Ueno Garden Inn in Tokyo) and are all family friendly.",
+            "The holiday costs ₹2,19,324 of your ₹3,50,000 budget (63%), leaving ₹1,30,676.",
+            "5 sight(s) planned across 5 day(s) — a mix of district, market, park, shrine."
+          ],
+          "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+        },
+        "reservation": null
+      },
+      "fastest": {
+        "package_id": "pkg_7ddb612c8fa7",
+        "status": "PLANNED",
+        "variant": "FASTEST",
+        "traveler": {
+          "name": "Traveler",
+          "home_airport": "BLR",
+          "adults": 2,
+          "children": 1,
+          "child_ages": [
+            6
+          ]
+        },
+        "request": {
+          "departure_city": "Bengaluru",
+          "country": "Japan",
+          "start_date": "2027-04-10",
+          "nights": 6,
+          "adults": 2,
+          "child_ages": [
+            6
+          ],
+          "budget_inr": 350000,
+          "traveler_name": "Traveler"
+        },
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "end_date": "2027-04-16",
+        "city_plan": [
+          {
+            "city": "Tokyo",
+            "nights": 6,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-16"
+          }
+        ],
+        "pricing": {
+          "total_inr": 236964,
+          "budget_inr": 350000,
+          "remaining_inr": 113036,
+          "over_budget": false,
+          "breakdown": {
+            "flights": 156240,
+            "hotels": 56784,
+            "transfers": 6300,
+            "attractions": 17640
+          }
+        },
+        "metrics": {
+          "transit_minutes": 1030,
+          "usable_ground_minutes": 4380,
+          "avg_hotel_stars": 3.0,
+          "quality_score": 71.7,
+          "budget_used_pct": 67.7,
+          "total": 236964
+        },
+        "items": "… 16 items, same shape as build_package_menon.json …",
+        "days": "… 7 days, same shape as build_package_menon.json …",
+        "warnings": [
+          "CHECKIN_TIME: you reach Ueno Garden Inn around 1:00 pm, before check-in opens at 15:00."
+        ],
+        "rationale": {
+          "headline": "Tokyo (6 nights)",
+          "reasons": [
+            "6 nights would normally suit 2 city(ies), but a 1-city plan fits your budget, flights and rooms best.",
+            "Flights and city-to-city travel add up to 17h 10m.",
+            "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:00 pm.",
+            "Hotels average 3.0★ (Ueno Garden Inn in Tokyo) and are all family friendly.",
+            "The holiday costs ₹2,36,964 of your ₹3,50,000 budget (68%), leaving ₹1,13,036.",
+            "11 sight(s) planned across 6 day(s) — a mix of district, market, museum, park."
+          ],
+          "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+        },
+        "reservation": null
+      },
+      "best_rated": {
+        "package_id": "pkg_29d7c12f4d96",
+        "status": "PLANNED",
+        "variant": "BEST_RATED",
+        "traveler": {
+          "name": "Traveler",
+          "home_airport": "BLR",
+          "adults": 2,
+          "children": 1,
+          "child_ages": [
+            6
+          ]
+        },
+        "request": {
+          "departure_city": "Bengaluru",
+          "country": "Japan",
+          "start_date": "2027-04-10",
+          "nights": 6,
+          "adults": 2,
+          "child_ages": [
+            6
+          ],
+          "budget_inr": 350000,
+          "traveler_name": "Traveler"
+        },
+        "country": "Japan",
+        "start_date": "2027-04-10",
+        "end_date": "2027-04-16",
+        "city_plan": [
+          {
+            "city": "Tokyo",
+            "nights": 6,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-16"
+          }
+        ],
+        "pricing": {
+          "total_inr": 334404,
+          "budget_inr": 350000,
+          "remaining_inr": 15596,
+          "over_budget": false,
+          "breakdown": {
+            "flights": 156240,
+            "hotels": 154224,
+            "transfers": 6300,
+            "attractions": 17640
+          }
+        },
+        "metrics": {
+          "transit_minutes": 1030,
+          "usable_ground_minutes": 4360,
+          "avg_hotel_stars": 5.0,
+          "quality_score": 98.9,
+          "budget_used_pct": 95.5,
+          "total": 334404
+        },
+        "items": "… 16 items, same shape as build_package_menon.json …",
+        "days": "… 7 days, same shape as build_package_menon.json …",
+        "warnings": [
+          "CHECKIN_TIME: you reach Shinjuku Skyline Tower Hotel around 1:20 pm, before check-in opens at 15:00."
+        ],
+        "rationale": {
+          "headline": "Tokyo (6 nights)",
+          "reasons": [
+            "6 nights would normally suit 2 city(ies), but a 1-city plan fits your budget, flights and rooms best.",
+            "Flights and city-to-city travel add up to 17h 10m.",
+            "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:20 pm.",
+            "Hotels average 5.0★ (Shinjuku Skyline Tower Hotel in Tokyo) and are all family friendly.",
+            "The holiday costs ₹3,34,404 of your ₹3,50,000 budget (96%), leaving ₹15,596.",
+            "11 sight(s) planned across 6 day(s) — a mix of district, market, museum, park."
+          ],
+          "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+        },
+        "reservation": null
+      }
+    },
+    "notes": [
+      "The cheapest package is also the fastest."
+    ]
+  }
+}

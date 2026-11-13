@@ -1,0 +1,61 @@
+{
+  "_http_status": 200,
+  "body": {
+    "fields": {
+      "budget_inr": 350000,
+      "start_date": "2027-04-10",
+      "nights": 6,
+      "adults": 2,
+      "child_ages": [
+        6
+      ],
+      "departure_city": "Bengaluru",
+      "country": "Japan"
+    },
+    "understood": [
+      {
+        "field": "budget_inr",
+        "text": "3.5 lakh",
+        "value": 350000
+      },
+      {
+        "field": "start_date",
+        "text": "10 apr",
+        "value": "2027-04-10"
+      },
+      {
+        "field": "nights",
+        "text": "6 nights",
+        "value": 6
+      },
+      {
+        "field": "adults",
+        "text": "2 adults",
+        "value": 2
+      },
+      {
+        "field": "child_ages",
+        "text": "1 child 6",
+        "value": [
+          6
+        ]
+      },
+      {
+        "field": "departure_city",
+        "text": "bengaluru",
+        "value": "Bengaluru"
+      },
+      {
+        "field": "country",
+        "text": "japan",
+        "value": "Japan"
+      }
+    ],
+    "missing": [],
+    "unparsed": [],
+    "notes": [
+      "No year given, so 2027 was assumed (our data covers April 2027)."
+    ],
+    "ready": true
+  }
+}

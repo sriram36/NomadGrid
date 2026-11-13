@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Product** | NomadGrid — Build My Holiday (Hackathon Problem 1) |
-| **Version** | v3.1 — core delivered and verified; Good-to-have and Stretch set aside (status in §0) |
+| **Version** | v4 — everything delivered and verified: Must-have, Good-to-have and Stretch (status in §0) |
 | **Team** | 2 people · ~9–10 h build · 12-minute demo |
 | **Backend owner** | **You** (with Claude's help) — rules engine, API, persistence, Docker |
 | **Frontend owner** | **Teammate** — UI that talks only to the backend API (see §8) |
@@ -17,8 +17,8 @@
 
 ## 0. Delivery status (wrap-up)
 
-**Delivered and verified:** every Must-have (M1–M8), the independent validator (FR-V), persistence (FR-P), JSON export, the budget-first flow,
-Docker packaging and the backend half of the API contract. **Set aside by decision:** all Good-to-have and Stretch features.
+**Delivered and verified:** every Must-have (M1–M8), every Good-to-have (G1–G4), every Stretch feature (S1–S3), plus Undo; the independent validator (FR-V),
+persistence (FR-P), JSON export, the budget-first flow, Docker packaging and the backend half of the API contract.
 
 | Requirement | Status | How it was verified |
 |---|---|---|
@@ -30,14 +30,17 @@ Docker packaging and the backend half of the API contract. **Set aside by decisi
 | M6 Change hotel / flight / attractions | ✅ | every listed option applied or explained; refusal and budget cases |
 | M7 Confirm, 10-digit number, summary, restart, "not found" | ✅ | verified inside Docker across a container restart |
 | M8 Budget too small | ✅ cheapest total + built alternatives + raise-budget | alternatives re-validated and within budget |
-| FR-V Independent validator | ✅ | mutation suite; also gates confirm |
-| FR-P Persistence | ✅ SQLite on a volume | restart tests (app and container) |
-| Docker (1-command start) | ✅ 202 MB image, non-root, read-only catalog | cold build + health + restart |
-| Frontend (UX §8.4, FE-1…FE-11) | ⏳ the teammate's work | handoff guide + 24 real examples provided |
-| G1 Changes that affect other parts | ◐ partly exists (shifted arrival visits, check-in time, day-load warnings) — **not pursued further** | — |
-| G2 Price difference on every option | ◐ exists (`price_delta_inr`) — **not pursued further** | — |
-| G3 Change cities · G4 Three packages | ⏸ **Set aside** | — |
-| S1 Quick request · S2 Seats/rooms used up · S3 Own idea | ⏸ **Set aside** (S2: the engine's `Inventory` already accepts reduced counts) | — |
+| FR-V Independent validator · FR-P Persistence | ✅ | mutation suite; restart tests (app and container) |
+| Docker (1-command start) | ✅ non-root, read-only catalog | cold build + health + restart |
+| **G1** Changes that affect other parts | ✅ shifted visits, moved airport pickups ("knock-on"), check-in time, day-load warnings | change and edge tests |
+| **G2** Price difference on every option | ✅ `price_delta_inr` | option tests |
+| **G3** Change cities | ✅ options for every valid plan, `CHANGE_CITY_PLAN`, the traveler's picks kept | every option applies at exactly its promised price (fuzz) |
+| **G4** Three packages | ✅ cheapest / fastest / best rated (+ recommended) | each wins at its promise; all valid and within budget (fuzz) |
+| **S1** Quick request | ✅ rules only, reports what is missing | 60+ phrasings, hostile text, no slow regex |
+| **S2** Booking uses up seats and rooms | ✅ atomic in the database | 8-way race → exactly one winner; 70-booking stream never oversold |
+| **S3** Own idea | ✅ "Why this plan" on every package | numbers checked against the package |
+| Undo (UX extra) | ✅ 20 steps, survives restarts | step-by-step undo tests |
+| Frontend (UX §8.4, FE-1…FE-11) | ⏳ the teammate's work | handoff guide + 33 real examples provided |
 
 **Implementation notes that refine this PRD:** out-of-window dates return `NO_PACKAGE` / `OUT_OF_WINDOW` (not a field error); both flight items carry the
 arrival city (Q4); the stay-quality and child-friendly scores are nights- and share-weighted (§6.10A); the validator enforces only statement rules.
@@ -222,7 +225,7 @@ A separate module that takes a package + raw catalog and re-checks **every** rul
 #### FR-P — Persistence [BE]
 SQLite on a Docker named volume. Tables: `packages`, `reservations`, (S2) `inventory_used`. Catalog loaded read-only into memory at startup. A test hashes the `data/` files to prove they are untouched.
 
-### 5.2 STRETCH (priority order) — ⏸ SET ASIDE: not part of this delivery (kept as the roadmap)
+### 5.2 STRETCH (priority order) — ✅ delivered
 | Pri | # | Feature | Backend | Frontend |
 |---|---|---|---|---|
 | 1 | **G1** | Changes that affect other parts | After a change: re-time transfers; shift attractions that no longer fit (things the traveler chose are never dropped silently — user priority, §6.12); detect overlaps/double bookings; warn that a flight change moves hotel check-in time (display only). Warnings in `warnings[]` (package + item level) | Warning banner + per-item badges; show what was auto-fixed |

@@ -1,0 +1,9 @@
+{
+  "_http_status": 200,
+  "body": {
+    "result": "REFUSED",
+    "reason_code": "INVALID_PLAN",
+    "reason": "That city plan is not possible for these dates, travelers and flights. Pick one of the plans listed in the city-plan options.",
+    "suggestion": "Pick one of the plans from the city-plan options."
+  }
+}

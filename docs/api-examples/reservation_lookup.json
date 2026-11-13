@@ -1,7 +1,7 @@
 {
   "_http_status": 200,
   "body": {
-    "package_id": "pkg_f5c870274360",
+    "package_id": "pkg_189d84cd78f6",
     "status": "BOOKED",
     "variant": "DEFAULT",
     "traveler": {
@@ -86,7 +86,7 @@
         "item_id": "i1",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -111,7 +111,7 @@
         "item_id": "i2",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": [],
@@ -141,7 +141,7 @@
         "item_id": "i3",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -169,7 +169,7 @@
         "item_id": "i4",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -197,7 +197,7 @@
         "item_id": "i5",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -226,7 +226,7 @@
         "item_id": "i6",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -254,7 +254,7 @@
         "item_id": "i7",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -282,7 +282,7 @@
         "item_id": "i8",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -311,7 +311,7 @@
         "item_id": "i9",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -339,7 +339,7 @@
         "item_id": "i10",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -367,7 +367,7 @@
         "item_id": "i11",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -392,7 +392,7 @@
         "item_id": "i12",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": [],
@@ -422,7 +422,7 @@
         "item_id": "i13",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -450,7 +450,7 @@
         "item_id": "i14",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -479,7 +479,7 @@
         "item_id": "i15",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -508,7 +508,7 @@
         "item_id": "i16",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -533,7 +533,7 @@
         "item_id": "i17",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": [],
@@ -562,7 +562,7 @@
         "item_id": "i18",
         "status": "BOOKED",
         "booking": {
-          "reference": "5824151414"
+          "reference": "7016123456"
         },
         "sources": [],
         "warnings": []
@@ -798,9 +798,22 @@
       "NOT_FAMILY_FRIENDLY: Sumiyoshi Taisha is not marked child friendly.",
       "ATTRACTION_DAY_LOAD: Sun 11 Apr has 3 attractions planned."
     ],
+    "rationale": {
+      "headline": "Osaka (4 nights) → Kyoto (2 nights)",
+      "reasons": [
+        "6 nights suits 2 cities — about one city per 3 nights, so you are not rushing around.",
+        "Flights and city-to-city travel add up to 17h 55m including Osaka → Kyoto (0h 15m).",
+        "You land at 9:20 am on day 1 (both flights are direct); you are at your hotel around 11:35 am.",
+        "Hotels average 4.7★ (Umeda Grand Hotel in Osaka, Sakura Garden Hotel in Kyoto) and are all family friendly.",
+        "The holiday costs ₹2,97,542 of your ₹3,50,000 budget (85%), leaving ₹52,458.",
+        "11 sight(s) planned across 6 day(s) — a mix of aquarium, castle, district, market.",
+        "Kept exactly as you chose: your hotel in Kyoto, Sumiyoshi Taisha."
+      ],
+      "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+    },
     "reservation": {
-      "number": "5824151414",
-      "confirmed_at": "2026-11-13T09:48:49+00:00"
+      "number": "7016123456",
+      "confirmed_at": "2026-11-13T12:59:20+00:00"
     }
   }
 }

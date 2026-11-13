@@ -34,6 +34,26 @@ the fix, and the regression test that now guards it. (PRD section 12.1.)
 - Do not name scratch scripts after standard-library modules (`inspect.py` shadowed `inspect` and broke `dataclasses`).
 - Windows consoles cannot print `→`/`·`; set `PYTHONIOENCODING=utf-8` for probes (the API itself is UTF-8 clean).
 
-### Open
-- `docker compose up --build` has **not** been run: Docker Desktop was not running on this machine. Needs a cold-start check (PRD X1).
-- Not built yet: G3 change cities, G4 three packages, S1 quick request, S2 seat/room consumption, S3.
+### Open (cycle 1, now closed)
+- `docker compose up --build` was cold-started and verified after cycle 1 (build, confirm, container restart, lookup).
+
+## Cycle 2 — extra features (change cities, three packages, quick request, seats and rooms, undo, why-this-plan)
+
+| # | Area | What I tried | What happened | Root cause | Fix | Regression test |
+|---|---|---|---|---|---|---|
+| 5 | Quick request | `adults 2 kids 1 from delhi …` | Adults missing; "2" was glued to "kids" | Children were read before adults, so the number before "kids" was taken as the child count | Read adults first and blank the matched text | `test_quick_request_phrasings_found_by_probing` |
+| 6 | Quick request | `kids 1` | Silently read as a child aged 1 (a guess) | A bare number after "kids" was treated as an age with no warning | Add a "please check" note and make `ready` false | `test_a_bare_number_after_kids_is_flagged_not_silently_trusted` |
+| 7 | Quick request | `6n`, `10 Apr to 16 Apr`, `adults: 3`, `2 pax` | Not understood (reported missing) | No rules for these phrasings | Added: nights shorthand, date ranges, reversed adults, people/pax (with a check note) | same test |
+| 8 | City-plan options | Applying several options in a row on one stored package | An option's price differed from what applying it gave | **Test flaw, not a bug**: an earlier `raise_budget` had changed the stored budget, so the old price list was stale | Test now applies each option to an identical fresh package; the API docs and handoff say "fetch options again after every change" | `test_fuzz_every_city_plan_option_gives_the_promised_price` |
+
+**Considered and dismissed:** the "fastest" package uses the *cheapest* city-to-city transfer, not the quickest. In the UAE a taxi is faster than the bus, but a
+single-city plan has no transfer and uses the same flights, so a two-city plan can never be the fastest there; in Japan there is only one transfer per pair. Not reachable.
+
+**Attacks that held up:**
+- Three packages: valid, within budget and winning at their promise across ~120 random requests and 4 budgets.
+- City plans: every listed plan applied at exactly its promised price; 16 malformed plans refused with a reason; pinned choices never dropped silently.
+- Seats and rooms: an 8-way race for the last seats gave exactly the possible number of winners; a stream of 70 bookings with stale packages never oversold a seat or room, and every booked reservation re-validated.
+- Quick request: 60+ phrasings, 15 hostile texts (emoji, SQL, 5,000-character strings, repeated tokens) — all under 0.5 s, no slow regular expressions.
+- Undo: step-by-step restoring, the 20-step cap, restart survival, and refusal after booking.
+
+**Static analysis:** pyright 0 errors, ruff clean after the new modules; 369 tests passing.

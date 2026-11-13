@@ -1,0 +1,251 @@
+{
+  "_http_status": 200,
+  "body": {
+    "options": [
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 2
+          },
+          {
+            "city": "Kyoto",
+            "nights": 4
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Kyoto"
+        ],
+        "city_count": 2,
+        "total_inr": 339822,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1135,
+        "avg_hotel_stars": 4.33,
+        "preferred": true,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": -5824
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 4
+          },
+          {
+            "city": "Kyoto",
+            "nights": 2
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Kyoto"
+        ],
+        "city_count": 2,
+        "total_inr": 345646,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1135,
+        "avg_hotel_stars": 4.67,
+        "preferred": true,
+        "warnings": [],
+        "current": true,
+        "price_delta_inr": 0
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 3
+          },
+          {
+            "city": "Kyoto",
+            "nights": 3
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Kyoto"
+        ],
+        "city_count": 2,
+        "total_inr": 348894,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1135,
+        "avg_hotel_stars": 4.5,
+        "preferred": true,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": 3248
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 3
+          },
+          {
+            "city": "Osaka",
+            "nights": 3
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Osaka"
+        ],
+        "city_count": 2,
+        "total_inr": 323736,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1150,
+        "avg_hotel_stars": 4.5,
+        "preferred": true,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": -21910
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 4
+          },
+          {
+            "city": "Osaka",
+            "nights": 2
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Osaka"
+        ],
+        "city_count": 2,
+        "total_inr": 340816,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1150,
+        "avg_hotel_stars": 4.67,
+        "preferred": true,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": -4830
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 2
+          },
+          {
+            "city": "Osaka",
+            "nights": 4
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Osaka"
+        ],
+        "city_count": 2,
+        "total_inr": 345296,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1150,
+        "avg_hotel_stars": 4.67,
+        "preferred": true,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": -350
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 6
+          }
+        ],
+        "cities": [
+          "Tokyo"
+        ],
+        "city_count": 1,
+        "total_inr": 334404,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1030,
+        "avg_hotel_stars": 5.0,
+        "preferred": false,
+        "warnings": [],
+        "current": false,
+        "price_delta_inr": -11242
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 2
+          },
+          {
+            "city": "Kyoto",
+            "nights": 2
+          },
+          {
+            "city": "Osaka",
+            "nights": 2
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Kyoto",
+          "Osaka"
+        ],
+        "city_count": 3,
+        "total_inr": 341796,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1150,
+        "avg_hotel_stars": 4.67,
+        "preferred": false,
+        "warnings": [
+          "RUSHED_PLAN: only 2.0 nights per city on average."
+        ],
+        "current": false,
+        "price_delta_inr": -3850
+      },
+      {
+        "plan": [
+          {
+            "city": "Tokyo",
+            "nights": 2
+          },
+          {
+            "city": "Osaka",
+            "nights": 2
+          },
+          {
+            "city": "Kyoto",
+            "nights": 2
+          }
+        ],
+        "cities": [
+          "Tokyo",
+          "Osaka",
+          "Kyoto"
+        ],
+        "city_count": 3,
+        "total_inr": 335958,
+        "fits_budget": true,
+        "budget_needed_inr": 0,
+        "transit_minutes": 1165,
+        "avg_hotel_stars": 4.67,
+        "preferred": false,
+        "warnings": [
+          "RUSHED_PLAN: only 2.0 nights per city on average."
+        ],
+        "current": false,
+        "price_delta_inr": -9688
+      }
+    ],
+    "preferred_city_count": 2
+  }
+}

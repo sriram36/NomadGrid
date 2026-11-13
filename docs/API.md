@@ -14,13 +14,17 @@ Real request/response examples for every case are in [`api-examples/`](api-examp
 | `GET /api/health` | Liveness `{"status":"ok"}` | — |
 | `GET /api/meta` | Dropdown values and rules for the form | `meta.json` |
 | `POST /api/packages` | **Build** a package from the 7 request fields | `build_package_menon.json`, `build_over_budget.json`, `build_no_package_*.json`, `build_validation_error.json` |
+| `POST /api/packages/variants` | **Three packages**: cheapest, fastest, best rated (plus the recommended one) | `variants_three_packages.json` |
+| `POST /api/parse-request` | **Quick request**: plain words → the 7 form fields (fixed rules, no AI) | `parse_request.json`, `parse_request_needs_check.json` |
 | `GET /api/packages/{id}` | Fetch a saved package | — |
 | `GET /api/packages/{id}/options/hotels?city=` | Hotel+room choices for a city, with price difference and availability | `options_hotels.json` |
 | `GET /api/packages/{id}/options/flights?leg=ARRIVAL\|RETURN` | Flight choices for a leg | `options_flights_arrival.json`, `options_flights_return.json` |
 | `GET /api/packages/{id}/options/attractions?date=` | Attractions that can be added on a day, with start-time choices | `options_attractions.json` |
-| `POST /api/packages/{id}/changes` | Apply one change | `change_*.json` |
+| `GET /api/packages/{id}/options/city-plans` | **Every valid city plan** with the total it would give | `options_city_plans.json` |
+| `POST /api/packages/{id}/changes` | Apply one change (hotel, flight, attractions, **city plan**) | `change_*.json` |
+| `POST /api/packages/{id}/undo` | **Undo** the last change | `undo.json` |
 | `GET /api/packages/{id}/export` | Download the shared trip-format JSON (attachment) | `export_trip_format_planned.json`, `…_booked.json` |
-| `POST /api/packages/{id}/confirm` | Book it → 10-digit reservation number | `confirm.json` |
+| `POST /api/packages/{id}/confirm` | Book it → 10-digit reservation number; **uses up seats and rooms** | `confirm.json`, `confirm_inventory_conflict.json` |
 | `GET /api/reservations/{number}` | Reopen a booked package | `reservation_lookup.json`, `reservation_not_found.json` |
 | `GET /images/…` | Catalog photos (credits: `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md`) | — |
 
@@ -77,6 +81,7 @@ Top level: `package_id`, `status`, `variant`, `request`, `traveler`, `country`, 
 | `CHANGE_FLIGHT` | `leg` (`ARRIVAL`/`RETURN`), `flight_id` |
 | `ADD_ATTRACTION` | `attraction_id`, `date`, optional `start` (`HH:MM`; omitted = earliest free slot) |
 | `REMOVE_ATTRACTION` | `item_id` |
+| `CHANGE_CITY_PLAN` | `plan`: `[{"city": "Tokyo", "nights": 3}, {"city": "Kyoto", "nights": 3}]` — the nights must add up to the trip length |
 
 Optional on any op: `raise_budget: true` (accept going over budget — the budget becomes the new total) and
 `remove_pinned_conflicts: true` (accept dropping a traveler-chosen visit that no longer fits).
@@ -91,7 +96,7 @@ Optional on any op: `raise_budget: true` (accept going over budget — the budge
 `reason_code` values: `PACKAGE_LOCKED`, `UNKNOWN_OP`, `INVALID_CITY`, `HOTEL_NOT_FOUND`, `ROOM_NOT_FOUND`, `ROOM_DOES_NOT_FIT`,
 `ROOMS_UNAVAILABLE`, `NO_AIRPORT_TRANSFER`, `INVALID_LEG`, `FLIGHT_NOT_FOUND`, `FLIGHT_MISMATCH`, `AIRPORT_MISMATCH`, `SEATS_UNAVAILABLE`,
 `ATTRACTION_NOT_FOUND`, `INVALID_DAY`, `INVALID_TIME`, `ATTRACTION_WRONG_CITY`, `ATTRACTION_CLOSED`, `ATTRACTION_DUPLICATE`,
-`ATTRACTION_OUTSIDE_HOURS`, `ATTRACTION_OVERLAP`, `ITEM_NOT_FOUND`, `VALIDATION_FAILED`.
+`ATTRACTION_OUTSIDE_HOURS`, `ATTRACTION_OVERLAP`, `ITEM_NOT_FOUND`, `INVALID_PLAN`, `VALIDATION_FAILED`.
 
 ## Options
 
@@ -104,7 +109,7 @@ transfer changes) and `current` (the choice already in the package). Unavailable
 ## Confirm and reservations
 
 `POST /api/packages/{id}/confirm` → `{"reservation_number": "9872917955", "package": {…status "BOOKED"…}}`. Repeating the call returns the
-same number. A package that no longer passes every rule gets `409 PACKAGE_INVALID`. Booked packages are locked (`PACKAGE_LOCKED`).
+same number. A package that no longer passes every rule gets `409 PACKAGE_INVALID`; if another booking has taken the last seats or rooms it gets `409 INVENTORY_CONFLICT` with a plain message (nothing is booked). Booked packages are locked (`PACKAGE_LOCKED`).
 `GET /api/reservations/{number}` → the booked package, or `404 RESERVATION_NOT_FOUND` for any number that doesn't exist or isn't 10 digits.
 
 ## Export
@@ -116,4 +121,45 @@ same number. A package that no longer passes every rule gets `409 PACKAGE_INVALI
 ## Error shape (everything else)
 
 `{"error": {"code": "…", "message": "…"}}` — `PACKAGE_NOT_FOUND` / `RESERVATION_NOT_FOUND` / `NOT_FOUND` (404), `METHOD_NOT_ALLOWED` (405),
-`PACKAGE_INVALID` (409), `INTERNAL_ERROR` (500, no stack trace).
+`PACKAGE_INVALID` / `INVENTORY_CONFLICT` (409), `INTERNAL_ERROR` (500, no stack trace).
+
+## Extra features
+
+### Three packages — `POST /api/packages/variants`
+Same request body as build. Returns `{"outcome": "VARIANTS", "recommended": {…}, "variants": {"cheapest", "fastest", "best_rated"}, "notes": []}`;
+every package is complete, valid, within budget, saved with its own `package_id`, and carries `variant` (`CHEAPEST`, `FASTEST`, `BEST_RATED`,
+`RECOMMENDED`). The traveler picks one and continues with its id. Over-budget and impossible requests return the same `OVER_BUDGET` / `NO_PACKAGE`
+bodies as build. *Cheapest* = lowest total; *fastest* = least flight + city-to-city transfer minutes; *best rated* = highest average hotel stars per
+night within budget (guest rating ignored). Ties are broken by the lower price. See `variants_three_packages.json`.
+
+### Change cities — `GET …/options/city-plans`, then `CHANGE_CITY_PLAN`
+Each option: `plan[]`, `cities`, `city_count`, `total_inr`, `price_delta_inr`, `fits_budget`, `budget_needed_inr`, `transit_minutes`,
+`avg_hotel_stars`, `preferred` (the app's preferred city count for this many nights), `current`, `warnings[]` (e.g. `RUSHED_PLAN`).
+Applying a plan rebuilds the whole package but **keeps what the traveler chose** (hotels, flights, attractions) wherever it is still valid; anything
+that cannot carry over returns `PINNED_CONFLICT` with `options` (`KEEP_CURRENT` or `APPLY_AND_REMOVE`, which is re-sent with
+`remove_pinned_conflicts: true`). A plan over budget returns `BUDGET_EXCEEDED` unless re-sent with `raise_budget: true`.
+Examples: `options_city_plans.json`, `change_city_plan_applied.json`, `change_city_plan_pinned_conflict.json`, `change_city_plan_refused_invalid.json`.
+
+### Quick request — `POST /api/parse-request`
+Body `{"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh"}` → `{fields, understood[], missing[], unparsed[], notes[], ready}`.
+`fields` uses the same names as the build request, so a `ready: true` result can be posted as-is. Anything not understood is listed in `missing`;
+guesses are explained in `notes` (e.g. "No year given, so 2027 was assumed", "Read “kids 1” as one child aged 1 — please check the age");
+a note containing "please check" makes `ready` false. Understands dates (`10 Apr`, `April 10 2027`, `10/04/2027`, `2027-04-10`, ranges like `10 Apr to 16 Apr`),
+nights (`6 nights`, `6n`, `7 days` = 6 nights), budgets (`3.5 lakh`, `350k`, `₹3,50,000`), adults (`2 adults`, `couple`, `solo`), children and ages,
+and city aliases (Bangalore, Bombay, Madras, Dubai, UAE…). Examples: `parse_request.json`, `parse_request_needs_check.json`.
+
+### Booking uses up seats and rooms
+`POST …/confirm` checks the package's seats and room-nights against the catalog **minus our own confirmed bookings** and records the usage in the same
+transaction. If the last seats or rooms are gone it returns `409 INVENTORY_CONFLICT` (message names the flight or hotel) and books nothing; the traveler
+can rebuild. Builds, options and changes always use these reduced numbers. The data files themselves are never modified. See `confirm_inventory_conflict.json`.
+
+### Undo — `POST /api/packages/{id}/undo`
+Restores the previous version of a package (up to 20 steps; history survives restarts). Returns `{"result": "UNDONE", "package", "summary", "undo_available"}`,
+or `REFUSED` with `NOTHING_TO_UNDO` / `PACKAGE_LOCKED` (booked packages cannot change). Every `APPLIED` change response includes `undo_available: true`.
+
+### "Why this plan" and "knock-on" notes
+Every package has a `rationale`: `{headline, reasons[], alternatives_hint}` — plain sentences built from the real itinerary (why this many cities, travel time,
+flights and arrival, hotel quality, budget used, sights, and what the traveler chose themselves). Every `APPLIED` change also returns `knock_on[]`:
+sentences about *other* bookings that moved because of it (e.g. "Your airport pickup on arrival moves from 10:20 am to 11:30 am").
+
+> **Fetch options again after every change.** Hotel, flight and city-plan options describe the package as it is *now*; a change (or a raised budget) can alter them.

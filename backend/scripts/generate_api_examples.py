@@ -95,4 +95,55 @@ save("reservation_not_found", *get("/api/reservations/0000000000"))
 save("package_not_found", *get("/api/packages/pkg_doesnotexist"))
 save("change_refused_package_locked", *post(f"/api/packages/{pid}/changes", {"op": "REMOVE_ATTRACTION", "item_id": "i1"}))
 save("export_trip_format_booked", 200, client.get(f"/api/packages/{pid}/export").json())
+# ---- extras: three packages, change cities, quick request, undo, seats used up
+def slim(x):
+    """Trim the big `items`/`days` lists of any package in a response (same shape as build_package_menon.json)."""
+    if isinstance(x, dict):
+        out = {k: slim(v) for k, v in x.items()}
+        if "items" in out and "days" in out:
+            out["items"] = f"… {len(x['items'])} items, same shape as build_package_menon.json …"
+            out["days"] = f"… {len(x['days'])} days, same shape as build_package_menon.json …"
+        return out
+    if isinstance(x, list):
+        return [slim(v) for v in x]
+    return x
+
+
+s_, v_ = post("/api/packages/variants", MENON)
+save("variants_three_packages", s_, slim(v_))
+
+fp = client.post("/api/packages", json=MENON).json()["package"]
+fid = fp["package_id"]
+s_, opts_ = get(f"/api/packages/{fid}/options/city-plans")
+save("options_city_plans", s_, opts_)
+tokyo = next(o for o in opts_["options"] if o["cities"][0] == "Tokyo" and o["fits_budget"])
+s_, r_ = post(f"/api/packages/{fid}/changes", {"op": "CHANGE_CITY_PLAN", "plan": tokyo["plan"]})
+save("change_city_plan_applied", s_, slim(r_))
+save("change_city_plan_refused_invalid", *post(f"/api/packages/{fid}/changes", {
+    "op": "CHANGE_CITY_PLAN", "plan": [{"city": "Paris", "nights": 6}]}))
+s_, u_ = post(f"/api/packages/{fid}/undo")
+save("undo", s_, slim(u_))
+
+pk = client.post("/api/packages", json=MENON).json()["package"]
+pkid, plast = pk["package_id"], pk["city_plan"][-1]["city"]
+hot = client.get(f"/api/packages/{pkid}/options/hotels", params={"city": plast}).json()["options"]
+pick = next(o for o in hot if o["available"] and not o["current"] and o["fits_budget"])
+client.post(f"/api/packages/{pkid}/changes", json={"op": "CHANGE_HOTEL", "city": plast,
+                                                   "hotel_id": pick["hotel_id"], "room_id": pick["room_id"]})
+away = next(o for o in client.get(f"/api/packages/{pkid}/options/city-plans").json()["options"]
+            if o["fits_budget"] and plast not in o["cities"])
+save("change_city_plan_pinned_conflict", *post(f"/api/packages/{pkid}/changes", {"op": "CHANGE_CITY_PLAN", "plan": away["plan"]}))
+
+save("parse_request", *post("/api/parse-request", {"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh"}))
+save("parse_request_needs_check", *post("/api/parse-request", {
+    "text": "adults 2 kids 1 from delhi to japan 12 april 5 nights 4 lakh"}))
+
+queue = [client.post("/api/packages", json=MENON).json()["package"] for _ in range(6)]   # all built before any is booked
+for q in queue:                                  # book them one after another until the last seats are gone
+    status_, body_ = post(f"/api/packages/{q['package_id']}/confirm")
+    if status_ == 409:
+        save("confirm_inventory_conflict", status_, body_)
+        break
+else:
+    raise SystemExit("expected a seat/room conflict while booking six identical holidays")
 print("done")
