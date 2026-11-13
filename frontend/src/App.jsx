@@ -6,7 +6,7 @@ import HomePage from './pages/HomePage';
 import PackagePage from './pages/PackagePage';
 import OutcomePage from './pages/OutcomePage';
 import ComparePage from './pages/ComparePage';
-import BookingsPage from './pages/BookingsPage';
+import ConfirmationPage from './pages/ConfirmationPage';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 function ToastLayer() {
@@ -40,7 +40,7 @@ function AppShell() {
           <Route path="/packages/:id" element={<PackagePage />} />
           <Route path="/outcome" element={<OutcomePage />} />
           <Route path="/compare" element={<ComparePage />} />
-          <Route path="/bookings" element={<BookingsPage />} />
+          <Route path="/reservations/:number" element={<ConfirmationPage />} />
           {/* Catch-all → home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

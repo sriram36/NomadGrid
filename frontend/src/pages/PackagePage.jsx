@@ -34,6 +34,10 @@ export default function PackagePage() {
   }, [id]);
 
   const goBack = () => { handleResetTrip(); navigate('/'); };
+  const confirmAndShow = async () => {
+    const res = await handleConfirmBooking();
+    if (res?.ok) navigate(`/reservations/${res.number}`);
+  };
   const closeModal = () => setSwapModalState({ isOpen: false, modalType: null, targetItem: null, targetDate: null });
   const open = (modalType, extra = {}) => setSwapModalState({ isOpen: true, modalType, targetItem: null, targetDate: null, ...extra });
 
@@ -145,7 +149,7 @@ export default function PackagePage() {
           <div className="lg:col-span-4">
             <BudgetSidebar
               tripPackage={pkg}
-              onConfirmBooking={handleConfirmBooking}
+              onConfirmBooking={confirmAndShow}
               onResetTrip={goBack}
               onUndo={handleUndo}
               onOpenCityPlans={() => open('city_plan')}
