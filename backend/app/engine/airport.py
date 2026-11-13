@@ -1,5 +1,5 @@
 """Choose the airport transfer for a flight + hotel (shared by the builder and by package changes)."""
-from datetime import date
+from datetime import date, datetime
 from typing import Callable, Optional, Tuple
 
 from app.core.pricing import transfer_price, transfer_quantity
@@ -7,7 +7,7 @@ from app.engine.models import TripRequest
 from app.engine.schedule import arrival_pickup, departure_pickup
 
 # (transfer record, pickup, arrival, price, quantity)
-Choice = Tuple[dict, object, object, int, int]
+Choice = Tuple[dict, datetime, datetime, int, int]
 
 
 def best_airport_transfer(cat, req: TripRequest, airport: str, city: str, area: str,

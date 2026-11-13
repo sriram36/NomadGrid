@@ -1,11 +1,10 @@
 """Attack the change operations and the time-window edges."""
-import copy
 from datetime import date, datetime, timedelta
 
 import pytest
 
 from app.changes.service import (
-    Refusal, _retime_arrival_day, apply_change, hotel_options_for, itinerary_from_package,
+    Refusal, _retime_arrival_day, apply_change, itinerary_from_package,
 )
 from app.core.timeutil import at
 from app.engine.hotels import hotel_options
@@ -19,6 +18,12 @@ from tests.conftest import MENON
 
 def D(s):
     return datetime.fromisoformat(s)
+
+
+def must(x):
+    """Assert a value is not None (and let the type checker know)."""
+    assert x is not None
+    return x
 
 
 def build(client, **over):
@@ -243,7 +248,6 @@ def test_remove_unknown_item_and_unknown_ops(client):
 
 def test_stale_item_id_after_a_change_is_refused_not_misapplied(client):
     pkg = build(client)
-    day = day_of(pkg, "FULL")["date"]
     visits = [i for i in pkg["items"] if i["type"] == "attraction"]
     r = change(client, pkg, op="REMOVE_ATTRACTION", item_id=visits[0]["item_id"])
     assert r["result"] == "APPLIED"
@@ -280,12 +284,11 @@ def test_confirmed_package_is_locked(client):
 
 # ================================================================ pinned items are never dropped silently
 def test_pinned_attraction_that_no_longer_fits_stops_the_change_and_asks(cat):
-    from app.catalog.loader import Catalog
     from app.engine.builder import build as build_pkg
     from app.engine.models import TripRequest
-    from app.config import DATA_DIR
     req = TripRequest("Bengaluru", "Japan", date(2027, 4, 10), 6, 2, (6,), 350000)
     res = build_pkg(req, cat)
+    assert res.itinerary is not None
     pkg = to_package(res.itinerary, cat, "pkg_p", {"name": "x", "home_airport": "BLR", "adults": 2, "children": 1, "child_ages": [6]})
     it = itinerary_from_package(pkg, cat)
     rec = next(a for a in cat.attractions_in(it.cities[0]) if a["open_until"] >= "17:00" and a["visit_minutes"] >= 60
@@ -311,6 +314,7 @@ def test_unpinned_arrival_visit_is_shifted_not_lost(cat):
     from app.engine.models import TripRequest
     req = TripRequest("Bengaluru", "Japan", date(2027, 4, 10), 6, 2, (6,), 600000)
     res = build_pkg(req, cat)
+    assert res.itinerary is not None
     pkg = to_package(res.itinerary, cat, "pkg_s", {"name": "x", "home_airport": "BLR", "adults": 2, "children": 1, "child_ages": [6]})
     it = itinerary_from_package(pkg, cat)
     todays = [v for v in it.visits if v.day == it.request.start_date]
@@ -330,28 +334,28 @@ ALLDAY = {"service_from": "00:00", "service_until": "24:00", "duration_minutes":
 
 
 def test_arrival_pickup_edges():
-    assert arrival_pickup(TAXI, D("2027-04-10T09:20"))[0] == D("2027-04-10T10:20")
-    assert arrival_pickup(TAXI, D("2027-04-10T03:00"))[0] == D("2027-04-10T06:00")        # waits for service to open
-    assert arrival_pickup(TAXI, D("2027-04-10T21:59"))[0] == D("2027-04-10T22:59")
-    assert arrival_pickup(TAXI, D("2027-04-10T22:00"))[0] == D("2027-04-10T23:00")        # exactly at the end: allowed
+    assert must(arrival_pickup(TAXI, D("2027-04-10T09:20")))[0] == D("2027-04-10T10:20")
+    assert must(arrival_pickup(TAXI, D("2027-04-10T03:00")))[0] == D("2027-04-10T06:00")        # waits for service to open
+    assert must(arrival_pickup(TAXI, D("2027-04-10T21:59")))[0] == D("2027-04-10T22:59")
+    assert must(arrival_pickup(TAXI, D("2027-04-10T22:00")))[0] == D("2027-04-10T23:00")        # exactly at the end: allowed
     assert arrival_pickup(TAXI, D("2027-04-10T22:01")) is None                            # one minute too late
-    assert arrival_pickup(TAXI, D("2027-04-10T09:20"))[1] == D("2027-04-10T11:10")
+    assert must(arrival_pickup(TAXI, D("2027-04-10T09:20")))[1] == D("2027-04-10T11:10")
 
 
 def test_arrival_pickup_wrapping_window_spills_past_midnight():
-    assert arrival_pickup(SHUTTLE, D("2027-04-10T23:30"))[0] == D("2027-04-11T00:30")
+    assert must(arrival_pickup(SHUTTLE, D("2027-04-10T23:30")))[0] == D("2027-04-11T00:30")
     assert arrival_pickup(SHUTTLE, D("2027-04-10T23:31")) is None
-    assert arrival_pickup(ALLDAY, D("2027-04-10T23:00"))[0] == D("2027-04-11T00:00")      # 24:00 counts
+    assert must(arrival_pickup(ALLDAY, D("2027-04-10T23:00")))[0] == D("2027-04-11T00:00")      # 24:00 counts
     assert arrival_pickup(ALLDAY, D("2027-04-10T23:01")) is None                          # would be next-day pickup
 
 
 def test_departure_pickup_edges():
     dep = D("2027-04-16T11:00")
-    p, arrive = departure_pickup(TAXI, dep, date(2027, 4, 16))
+    p, arrive = must(departure_pickup(TAXI, dep, date(2027, 4, 16)))
     assert arrive <= dep - timedelta(minutes=180) and p.date() == date(2027, 4, 16)
     assert (dep - arrive) >= timedelta(minutes=180)
     # exact statement limit when no cushion is possible
-    p2, a2 = departure_pickup(TAXI, D("2027-04-16T10:00"), date(2027, 4, 16), cushion_min=0)
+    p2, a2 = must(departure_pickup(TAXI, D("2027-04-16T10:00"), date(2027, 4, 16), cushion_min=0))
     assert a2 == D("2027-04-16T07:00")
     # very early flight: pickup would be the day before -> not allowed
     assert departure_pickup(TAXI, D("2027-04-16T05:00"), date(2027, 4, 16)) is None
@@ -360,15 +364,15 @@ def test_departure_pickup_edges():
 
 def test_intercity_timetable_edges():
     train = {"service_from": "06:00", "service_until": "21:30", "frequency_minutes": 30, "duration_minutes": 135}
-    dep, arr = intercity_departure(train, date(2027, 4, 14))
+    dep, arr = must(intercity_departure(train, date(2027, 4, 14)))
     assert dep == D("2027-04-14T08:00") and arr == D("2027-04-14T10:15")
     odd = {"service_from": "06:10", "service_until": "21:30", "frequency_minutes": 25, "duration_minutes": 20}
-    dep, _ = intercity_departure(odd, date(2027, 4, 14))
+    dep, _ = must(intercity_departure(odd, date(2027, 4, 14)))
     assert (dep.hour * 60 + dep.minute - 370) % 25 == 0 and dep.hour * 60 + dep.minute >= 480
     late = {"service_from": "05:00", "service_until": "07:00", "frequency_minutes": 30, "duration_minutes": 20}
-    assert intercity_departure(late, date(2027, 4, 14))[0] == D("2027-04-14T07:00")      # nothing after 08:00: latest slot
+    assert must(intercity_departure(late, date(2027, 4, 14)))[0] == D("2027-04-14T07:00")      # nothing after 08:00: latest slot
     taxi = {"service_from": "00:00", "service_until": "24:00", "duration_minutes": 100}
-    assert intercity_departure(taxi, date(2027, 4, 14))[0] == D("2027-04-14T08:00")
+    assert must(intercity_departure(taxi, date(2027, 4, 14)))[0] == D("2027-04-14T08:00")
 
 
 # ================================================================ capacity edges

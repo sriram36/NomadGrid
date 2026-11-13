@@ -5,7 +5,7 @@ Every alternative is a full, validated Recommended package that fits the budget.
 """
 from dataclasses import dataclass, replace
 from datetime import timedelta
-from typing import List, Optional
+from typing import List
 
 from app.engine.builder import BuildResult, WINDOW_FIRST, WINDOW_LAST, build
 from app.engine.cityplan import preferred_city_count
@@ -70,7 +70,7 @@ def find_alternatives(req: TripRequest, cat, inv, limit: int = 4) -> List[Altern
         for off in (1, -1, 2, -2, 3, -3):
             d = req.start_date + timedelta(days=off)
             if d >= WINDOW_FIRST and d + timedelta(days=req.nights) <= WINDOW_LAST:
-                yield off, d
+                yield d
 
     # ---- single levers
     drop_cities = kstar - 1 if kstar > 1 else None
@@ -81,7 +81,7 @@ def find_alternatives(req: TripRequest, cat, inv, limit: int = 4) -> List[Altern
         if attempt(["FEWER_NIGHTS"], replace(req, nights=n),
                    changes=[{"field": "nights", "from": req.nights, "to": n}]):
             break
-    for off, d in date_options():
+    for d in date_options():
         if attempt(["SHIFT_DATE"], replace(req, start_date=d),
                    changes=[{"field": "start_date", "from": req.start_date.isoformat(), "to": d.isoformat()}]):
             break
@@ -96,7 +96,7 @@ def find_alternatives(req: TripRequest, cat, inv, limit: int = 4) -> List[Altern
                     break
         for n in night_options(req.nights):
             hit = False
-            for off, d in date_options():
+            for d in date_options():
                 if attempt(["FEWER_NIGHTS", "SHIFT_DATE"], replace(req, nights=n, start_date=d) if d + timedelta(days=n) <= WINDOW_LAST else req,
                            changes=[{"field": "nights", "from": req.nights, "to": n},
                                     {"field": "start_date", "from": req.start_date.isoformat(), "to": d.isoformat()}]):

@@ -34,13 +34,14 @@ def test_fuzz_every_package_is_valid_and_within_budget(cat, seed):
         assert time.time() - t < 5, f"too slow: {req}"
         outcomes[res.outcome] += 1
         if res.outcome == "PACKAGE":
+            assert res.itinerary is not None
             pkg = to_package(res.itinerary, cat, "pkg_f", {"name": "x", "home_airport": cat.departure_airport(req.departure_city),
                                                            "adults": adults, "children": len(kids), "child_ages": list(kids)})
             v = validate_trip(to_trip_format(pkg), cat, first_package=True)
             assert v == [], (req, [x.to_dict() for x in v][:3])
             assert pkg["pricing"]["total_inr"] <= budget, req
         elif res.outcome == "OVER_BUDGET":
-            assert res.cheapest_total > budget, req
+            assert res.cheapest_total is not None and res.cheapest_total > budget, req
         else:
             assert res.reason_code in KNOWN_REASONS and res.message, req
     assert outcomes["PACKAGE"] > 20, outcomes        # a sudden collapse in packages means a regression

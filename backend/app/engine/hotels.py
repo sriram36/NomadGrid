@@ -1,6 +1,6 @@
 """Hotel + room options for one city stay."""
 from datetime import date, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from app.core.pricing import hotel_price, rooms_needed
 

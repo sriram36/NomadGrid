@@ -68,12 +68,13 @@ class PlanCtx:
         self.cities = [l[0] for l in self.legs]
         self.opts: List[List[dict]] = []
         self.fopts: List[List[dict]] = []
-        self.links: List[Optional[dict]] = []
+        self.links: List[dict] = []
         self.arr_flights: List[dict] = []
         self.ret_flights: List[dict] = []
         self.full_days: List[Tuple[date, str]] = []
         self.change_days: List[Tuple[date, str]] = []
-        self.attr_min = self.attr_rich = None
+        self.attr_min: Tuple[dict, int] = ({}, 0)      # (plan, cost); set in prepare()
+        self.attr_rich: Tuple[dict, int] = ({}, 0)
         self._arr_cache: Dict[tuple, Optional[tuple]] = {}
         self._dep_cache: Dict[tuple, Optional[tuple]] = {}
         self.ok = False
@@ -113,7 +114,7 @@ class PlanCtx:
             self.change_days.append((self.legs[i + 1][2], self.cities[i + 1]))
         # attractions for full days
         change = {d for d, _ in self.change_days}
-        for city, n, check_in, check_out in self.legs:
+        for city, n, check_in, _check_out in self.legs:
             for j in range(n):
                 d = check_in + timedelta(days=j)
                 if d != req.start_date and d not in change:
@@ -131,7 +132,7 @@ class PlanCtx:
                 self.attr_rich = (plan_days, cost)
         self.link_cost = sum(l["price"] for l in self.links)
         self.link_minutes = sum(l["rec"]["duration_minutes"] for l in self.links)
-        self.change_usable = sum(self._usable_from(l["arrive"], d) for l, (d, _) in zip(self.links, self.change_days))
+        self.change_usable = sum(self._usable_from(l["arrive"], d) for l, (d, _) in zip(self.links, self.change_days, strict=False))
         self.ok = True
         return True
 
@@ -309,13 +310,13 @@ def best_min_cost(ctx: PlanCtx) -> Optional[dict]:
         mid_cost = sum(m["price"] for m in mids)
         first_best, last_best = {}, {}
         for A in ctx.arr_flights:
-            c = [(o["price"] + ctx.arr_transfer(A, o)[3], o["hotel"]["hotel_id"], o["room"]["room_id"], o)
-                 for o in ctx.opts[0] if ctx.arr_transfer(A, o)]
+            c = [(o["price"] + t[3], o["hotel"]["hotel_id"], o["room"]["room_id"], o)
+                 for o in ctx.opts[0] if (t := ctx.arr_transfer(A, o))]
             if c:
                 first_best[A["flight_id"]] = min(c, key=lambda x: x[:3])
         for R in ctx.ret_flights:
-            c = [(o["price"] + ctx.dep_transfer(R, o)[3], o["hotel"]["hotel_id"], o["room"]["room_id"], o)
-                 for o in ctx.opts[-1] if ctx.dep_transfer(R, o)]
+            c = [(o["price"] + t[3], o["hotel"]["hotel_id"], o["room"]["room_id"], o)
+                 for o in ctx.opts[-1] if (t := ctx.dep_transfer(R, o))]
             if c:
                 last_best[R["flight_id"]] = min(c, key=lambda x: x[:3])
         for A in ctx.arr_flights:
@@ -394,7 +395,7 @@ def best_recommended(ctx: PlanCtx, tr_range: Tuple[int, int]) -> Optional[dict]:
                                 continue
                             picks = [f, *mids, l]
                             consider(A, R, picks, arr, dep, sum(p["price"] for p in picks),
-                                     sum(p["sp"] * n for p, n in zip(picks, nights)))
+                                     sum(p["sp"] * n for p, n in zip(picks, nights, strict=False)))
     return best[1] if best else None
 
 
@@ -404,7 +405,7 @@ def finalize(ctx: PlanCtx, cand: dict, tr_range: Tuple[int, int], extras: bool) 
     req, cat = s.req, s.cat
     legs = [Leg(city=city, nights=n, check_in=ci, check_out=co, hotel=p["hotel"], room=p["room"],
                 rooms=p["rooms"], price=p["price"])
-            for (city, n, ci, co), p in zip(ctx.legs, cand["picks"])]
+            for (city, n, ci, co), p in zip(ctx.legs, cand["picks"], strict=False)]
     A, R = cand["A"], cand["R"]
     t, pu, ar, pr, qty = cand["arr"]
     arr_t = TransferUse(t, pu, ar, pr, qty, req.start_date)
@@ -423,7 +424,7 @@ def finalize(ctx: PlanCtx, cand: dict, tr_range: Tuple[int, int], extras: bool) 
     if extras and cand["attr_mode"] == "RICH":
         taken = {v.attraction["attraction_id"] for v in visits}
         spots = [(req.start_date, ctx.cities[0], arr_t.arrive)] + \
-                [(d, city, l.arrive) for (d, city), l in zip(ctx.change_days, links)]
+                [(d, city, l.arrive) for (d, city), l in zip(ctx.change_days, links, strict=False)]
         for d, city, arrive in spots:
             if arrive.date() != d:
                 continue

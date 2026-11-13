@@ -27,10 +27,10 @@ def generate_plans(cat, country: str, nights: int, max_cities: Optional[int] = N
         limit = min(limit, max_cities)
     for k in range(1, limit + 1):
         for perm in permutations(cities, k):
-            if not all((a, b) in links for a, b in zip(perm, perm[1:])):
+            if not all((a, b) in links for a, b in zip(perm, perm[1:], strict=False)):
                 continue
             for comp in compositions(nights, k, MIN_NIGHTS_PER_CITY):
-                plans.append(tuple(zip(perm, comp)))
+                plans.append(tuple(zip(perm, comp, strict=False)))
     return plans
 
 

@@ -1,4 +1,3 @@
-import hashlib
 from datetime import date
 
 from app.catalog.loader import Catalog, data_fingerprint

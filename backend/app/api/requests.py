@@ -81,6 +81,7 @@ def parse_request(raw, cat) -> Tuple[Optional[TripRequest], List[dict]]:
         err("traveler_name", "Name must be text of at most 60 characters.")
         name = "Traveler"
 
-    if errors:
+    if (errors or not isinstance(dep, str) or not isinstance(country, str) or start is None or nights is None
+            or adults is None or budget is None):
         return None, errors
     return TripRequest(dep, country, start, nights, adults, tuple(ages), budget, name.strip() or "Traveler"), []

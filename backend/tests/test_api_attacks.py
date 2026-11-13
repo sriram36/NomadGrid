@@ -1,7 +1,6 @@
 """Try to break the API: hostile input, impossible trips, budget edges, confirm races, tampering."""
 import copy
 import sqlite3
-import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest

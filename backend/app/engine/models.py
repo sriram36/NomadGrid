@@ -1,7 +1,7 @@
 """Plain data types shared by the engine."""
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -84,7 +84,7 @@ class Itinerary:
     dep_transfer: TransferUse
     links: List[TransferUse]
     visits: List[Visit]
-    metrics: Dict[str, float] = field(default_factory=dict)
+    metrics: Dict[str, Any] = field(default_factory=dict)
     arr_pinned: bool = False
     ret_pinned: bool = False
 

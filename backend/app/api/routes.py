@@ -11,7 +11,6 @@ from app.changes.service import (
 )
 from app.engine.alternatives import find_alternatives, inr
 from app.engine.builder import build
-from app.engine.inventory import Inventory
 from app.export.package import to_package, to_trip_format
 from app.validator.validate import validate_trip
 
@@ -60,7 +59,7 @@ async def build_package(request: Request):
         return error(422, "VALIDATION_ERROR", "The request body must be valid JSON.",
                      fields=[{"field": "body", "message": "The request body must be valid JSON."}])
     req, errors = parse_request(raw, cat)
-    if errors:
+    if errors or req is None:
         return error(422, "VALIDATION_ERROR", "Please fix the highlighted fields.", fields=errors)
 
     inv = request.app.state.inventory()
@@ -68,15 +67,18 @@ async def build_package(request: Request):
     traveler = _traveler(req, cat)
 
     if res.outcome == "PACKAGE":
+        assert res.itinerary is not None
         pkg = to_package(res.itinerary, cat, _new_id(), traveler)
         store.save_package(pkg)
         return {"outcome": "PACKAGE", "package": pkg}
 
     if res.outcome == "OVER_BUDGET":
+        assert res.cheapest_total is not None
         over = res.cheapest_total - req.budget_inr
         alts = []
         for i, alt in enumerate(find_alternatives(req, cat, inv), start=1):
             r2 = alt.request
+            assert alt.result.itinerary is not None
             pkg = to_package(alt.result.itinerary, cat, _new_id(), _traveler(r2, cat), variant="ALTERNATIVE")
             store.save_package(pkg)
             alts.append({"id": f"alt{i}", "levers": alt.levers, "label": alt.label, "changes": alt.changes,

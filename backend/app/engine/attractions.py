@@ -6,12 +6,12 @@ the traveler reaches the city.
 
 Comfort rules (only for what the SYSTEM suggests): 08:30-21:30 window, 30-min gaps, 30-min settling.
 """
-from datetime import date, datetime, timedelta
+from datetime import date
 from typing import Dict, List, Optional, Set, Tuple
 
 from app.config import DAY_END_MIN, DAY_START_MIN, SETTLE_MIN, VISIT_GAP_MIN
 from app.core.pricing import attraction_price
-from app.core.timeutil import at, hm, weekday_code
+from app.core.timeutil import hm, weekday_code
 
 # date -> [(attraction, start_min, end_min)]
 DayPlan = Dict[date, List[Tuple[dict, int, int]]]
@@ -106,11 +106,12 @@ def plan_full_days(cat, full_days: List[Tuple[date, str]], adults: int, children
     plan: DayPlan = {}
     for d in days:
         a1 = chosen[d]
-        (s, e), = place_sequence([a1])
+        placed = place_sequence([a1])
+        assert placed is not None      # a1 was picked from attractions that fit the day
+        s, e = placed[0]
         plan[d] = [(a1, s, e)]
 
     if mode == "RICH":
-        city_of = dict(full_days)
         for d in sorted(days):
             a1 = chosen[d]
             pool = [a for a in cands[d] if a["attraction_id"] not in taken]
@@ -123,7 +124,7 @@ def plan_full_days(cat, full_days: List[Tuple[date, str]], adults: int, children
                         best = (seq, placed)
                 if best:
                     seq, placed = best
-                    plan[d] = [(a, s, e) for a, (s, e) in zip(seq, placed)]
+                    plan[d] = [(a, s, e) for a, (s, e) in zip(seq, placed, strict=False)]
                     taken.add(a2["attraction_id"])
                     used_cats.add(a2["category"])
                     break

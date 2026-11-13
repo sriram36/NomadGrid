@@ -112,7 +112,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
         return v
     if legs[0]["ci"] != start:
         bad("H3", f"First hotel check-in {legs[0]['ci']} is not the start date {start}")
-    for a, b in zip(legs, legs[1:]):
+    for a, b in zip(legs, legs[1:], strict=False):
         if a["co"] != b["ci"]:
             bad("H3", f"Hotel nights are not contiguous: {a['co']} vs {b['ci']}")
     if legs[-1]["co"] != end:
@@ -127,7 +127,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
     if len(set(cities)) != len(cities):
         bad("C3", f"A city appears more than once: {cities}")
     links = cat.links_of(country)
-    for a, b in zip(cities, cities[1:]):
+    for a, b in zip(cities, cities[1:], strict=False):
         if (a, b) not in links:
             bad("C4", f"No transfer link from {a} to {b}")
     if sum((l["co"] - l["ci"]).days for l in legs) != nights:
@@ -181,7 +181,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
     arrive_ready = None                     # when the traveler reaches the first hotel
     if len(airport_tr) != 2:
         bad("A1", f"Need exactly 2 airport transfers (arrival and departure), found {len(airport_tr)}")
-    elif arr_rec is not None:
+    elif arr_rec is not None and ret_rec is not None:
         (ta, ra), (td, rd) = airport_tr
         pa, pd_ = _dt(ta["start"]), _dt(td["start"])
         if ra["airport"] != arr_rec["to"]:
@@ -195,7 +195,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
         if pa < _dt(arr_rec["arrival_local"]) + timedelta(minutes=60):
             bad("A4", f"Pickup {ta['start']} is less than 60 minutes after landing {arr_rec['arrival_local']}", ta)
         if pd_ + timedelta(minutes=rd["duration_minutes"]) > _dt(ret_rec["departure_local"]) - timedelta(minutes=180):
-            bad("A5", f"Traveler would reach the airport less than 180 minutes before departure", td)
+            bad("A5", "Traveler would reach the airport less than 180 minutes before departure", td)
         for t, rec in ((ta, ra), (td, rd)):
             if not _in_window(_dt(t["start"]), rec["service_from"], rec["service_until"]):
                 bad("A6", f"Pickup {t['start']} is outside service hours {rec['service_from']}-{rec['service_until']}", t)
@@ -205,7 +205,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
     if len(city_tr) != len(legs) - 1:
         bad("T1", f"Need {len(legs) - 1} transfer(s) between cities, found {len(city_tr)}")
     change_ready = {}
-    for (t, rec), (a, b) in zip(city_tr, zip(legs, legs[1:])):
+    for (t, rec), (a, b) in zip(city_tr, zip(legs, legs[1:], strict=False), strict=False):
         p = _dt(t["start"])
         if (rec["from_city"], rec["to_city"]) != (a["city"], b["city"]):
             bad("T2", f"Transfer goes {rec['from_city']}→{rec['to_city']}, plan needs {a['city']}→{b['city']}", t)
@@ -253,7 +253,7 @@ def validate_trip(trip: dict, cat, first_package: bool = False) -> List[Violatio
         by_day.setdefault(d, []).append((s_dt, e_dt, x))
     for d, lst in by_day.items():
         lst.sort(key=lambda r: r[0])
-        for (s1, e1, a), (s2, e2, b) in zip(lst, lst[1:]):
+        for (_s1, e1, a), (s2, _e2, b) in zip(lst, lst[1:], strict=False):
             if s2 < e1:
                 bad("X5", f"Visits overlap on {d}: {a['name']} and {b['name']}", b)
     if first_package:

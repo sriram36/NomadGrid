@@ -1,6 +1,6 @@
 """Turn an Itinerary into the API package object, and the package into the shared trip format."""
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from app.core.pricing import flight_price
 from app.core.timeutil import at, fmt_dt, hm, tod, weekday_code
@@ -35,7 +35,7 @@ def _transfer_sub(rec: dict, qty: int) -> str:
 
 
 def build_items(it: Itinerary, cat) -> List[dict]:
-    req, n = it.request, it.request.travelers
+    n = it.request.travelers
     rows = []   # (sort datetime, item dict)
 
     def add(when, **item):
@@ -47,7 +47,8 @@ def build_items(it: Itinerary, cat) -> List[dict]:
     def city_name(code):
         return cat.airports[code]["city"]
 
-    for flight, city, tag in ((it.arr_flight, it.legs[0].city, "ARRIVAL"), (it.ret_flight, it.legs[-1].city, "RETURN")):
+    for flight, tag in ((it.arr_flight, "ARRIVAL"), (it.ret_flight, "RETURN")):
+        city = city_name(flight["to"])     # data dictionary: "For a flight: the arrival city"
         add(flight["_dep"], type="flight", name=f"{flight['airline']} {flight['flight_number']} {flight['from']} to {flight['to']}",
             city=city, catalog_id=flight["flight_id"], start=fmt_dt(flight["_dep"]), end=fmt_dt(flight["_arr"]),
             quantity=n, price_inr=flight_price(flight, n), icon="flight", leg=tag,

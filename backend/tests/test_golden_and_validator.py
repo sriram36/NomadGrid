@@ -295,3 +295,41 @@ def test_validator_survives_garbage_input(cat):
     assert validate_trip({"start_date": "2027-04-10", "end_date": "2027-04-16",
                           "traveler": {"adults": 2, "children": 1, "home_airport": "BLR"},
                           "country": "Narnia", "items": []}, cat)[0].rule_id == "C1"
+
+
+# ----------------------------------------------------------------- cases called out by the problem statement / data dictionary
+def test_flight_items_carry_the_arrival_city_exactly_as_the_data_dictionary_says(golden, cat):
+    flights = [i for i in golden["items"] if i["type"] == "flight"]
+    assert len(flights) == 2
+    for f in flights:
+        assert f["city"] == cat.airports[cat.flights[f["catalog_id"]]["to"]]["city"]
+    ret = next(i for i in flights if i["leg"] == "RETURN")
+    assert ret["city"] == "Bengaluru"                 # the return flight arrives in the home city
+
+
+def test_nara_attractions_can_never_be_used(client, golden, cat):
+    nara = [a["attraction_id"] for a in cat.attractions.values() if a["city"] == "Nara"]
+    assert len(nara) == 2
+    assert all(i["city"] != "Nara" for i in golden["items"])
+    day = next(d["date"] for d in golden["days"] if d["kind"] == "FULL")
+    for aid in nara:
+        r = client.post(f"/api/packages/{golden['package_id']}/changes",
+                        json={"op": "ADD_ATTRACTION", "attraction_id": aid, "date": day})
+        assert r.status_code == 404 or r.json().get("reason_code") in ("ATTRACTION_WRONG_CITY", "PACKAGE_NOT_FOUND")
+
+
+def test_kix_to_kyoto_transfers_match_every_kyoto_hotel_area_because_area_is_null(cat):
+    from datetime import date
+    from app.engine.airport import arrival_transfer, departure_transfer
+    from app.engine.models import TripRequest
+    req = TripRequest("Bengaluru", "Japan", date(2027, 4, 10), 6, 2, (6,), 350000)
+    kyoto_areas = {h["area"] for h in cat.hotels_in("Kyoto")}
+    assert len(kyoto_areas) >= 4
+    for area in kyoto_areas:
+        got = arrival_transfer(cat, req, cat.flights["FL-740"], "Kyoto", area)
+        assert got is not None and got[0]["transfer_id"].startswith("TR-KIX-KYO"), area
+        assert got[0]["area"] is None
+        back = departure_transfer(cat, req, cat.flights["FL-411"], "Kyoto", area, date(2027, 4, 16))
+        assert back is not None and back[0]["transfer_id"].startswith("TR-KIX-KYO"), area
+    # but a Tokyo-only transfer must never serve a Kyoto hotel
+    assert all(t["city"] == "Kyoto" for t in cat.airport_transfers("KIX", "Kyoto"))

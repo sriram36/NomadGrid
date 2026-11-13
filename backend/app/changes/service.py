@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 
 from app.config import DAY_END_MIN, DAY_START_MIN, SETTLE_MIN, VISIT_GAP_MIN
 from app.core.pricing import attraction_price, flight_price, hotel_price, rooms_needed
-from app.core.timeutil import at, hm, tod, weekday_code
+from app.core.timeutil import at, hm, tod
 from app.engine import attractions as attr
 from app.engine.airport import arrival_transfer, departure_transfer
 from app.engine.alternatives import inr
@@ -27,7 +27,7 @@ class Refusal(Exception):
         self.code, self.reason, self.suggestion, self.options = code, reason, suggestion, options
 
     def to_response(self, result: str = "REFUSED") -> dict:
-        out = {"result": result, "reason_code": self.code, "reason": self.reason}
+        out: dict = {"result": result, "reason_code": self.code, "reason": self.reason}
         if self.suggestion:
             out["suggestion"] = self.suggestion
         if self.options is not None:
@@ -77,6 +77,7 @@ def itinerary_from_package(pkg: dict, cat) -> Itinerary:
             visit_by_item[i["item_id"]] = v
     legs.sort(key=lambda l: l.check_in)
     links.sort(key=lambda l: l.pickup)
+    assert arr and ret and arr_t and dep_t, "package is missing a flight or an airport transfer"
     it = Itinerary(req, legs, arr, ret, arr_t, dep_t, links, visits, {}, arr_pinned, ret_pinned)
     it.visit_by_item = visit_by_item   # type: ignore[attr-defined]
     return it
@@ -298,7 +299,7 @@ def op_add_attraction(it, op, cat, inv) -> List[str]:
         try:
             s = hm(given)
         except Exception:
-            raise Refusal("INVALID_TIME", "Start time must look like 14:30.")
+            raise Refusal("INVALID_TIME", "Start time must look like 14:30.") from None
         if s < hm(a["open_from"]) or s + a["visit_minutes"] > hm(a["open_until"]):
             raise Refusal("ATTRACTION_OUTSIDE_HOURS", f"{a['name']} is open {a['open_from']}–{a['open_until']} and the "
                                                       f"visit takes {a['visit_minutes']} minutes.")
@@ -355,7 +356,7 @@ def apply_change(pkg: dict, op: dict, cat, inv, with_cheaper: bool = True) -> di
     """Apply one change to a stored package (never persists; the caller saves on APPLIED)."""
     if pkg.get("status") == "BOOKED":
         return Refusal("PACKAGE_LOCKED", "This holiday is already booked, so it can't be changed.").to_response()
-    handler = OPS.get(op.get("op")) if isinstance(op, dict) else None
+    handler = OPS.get(op.get("op", "")) if isinstance(op, dict) else None
     if handler is None:
         return Refusal("UNKNOWN_OP", "Unknown change. Use CHANGE_HOTEL, CHANGE_FLIGHT, ADD_ATTRACTION or "
                                      "REMOVE_ATTRACTION.").to_response()
@@ -429,14 +430,14 @@ def hotel_options_for(pkg: dict, city: str, cat, inv, _nested: bool = False) -> 
     out = []
     for hotel in cat.hotels_in(city):
         for room in cat.rooms_of(hotel["hotel_id"]):
-            if rooms_needed(room, adults, children) is None:
+            k = rooms_needed(room, adults, children)
+            if k is None:
                 continue                      # can never hold this party: not an option
             res = apply_change(pkg, {"op": "CHANGE_HOTEL", "city": city, "hotel_id": hotel["hotel_id"],
                                      "room_id": room["room_id"]}, cat, inv, with_cheaper=False)
             st = _status(res)
             if st["available"] and "_new_total" in st:
                 st["price_delta_inr"] = st.pop("_new_total") - old_total
-            k = rooms_needed(room, adults, children)
             out.append({"hotel_id": hotel["hotel_id"], "room_id": room["room_id"], "name": hotel["name"],
                         "stars": hotel["stars"], "rating": hotel["rating"], "area": hotel["area"],
                         "room_type": room["room_type"], "room_name": room["name"], "rooms_needed": k,
