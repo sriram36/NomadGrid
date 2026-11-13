@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Product** | NomadGrid — Build My Holiday (Hackathon Problem 1) |
-| **Version** | v2 — detailed, with ownership split |
+| **Version** | v3 — final for build, strictly aligned to the problem statement (audit in §3B) |
 | **Team** | 2 people · ~9–10 h build · 12-minute demo |
 | **Backend owner** | **You** (with Claude's help) — rules engine, API, persistence, Docker |
 | **Frontend owner** | **Teammate** — UI that talks only to the backend API (see §8) |
@@ -16,7 +16,7 @@
 ---
 
 ## Table of contents
-1. Summary · 2. Goals & success criteria · 3. Users & golden scenario · 4. Scope tiers & ownership · 5. Functional requirements · 6. Backend design (algorithms) · 7. API contract · 8. Frontend work package · 9. Non-functional requirements · 10. Architecture, repo layout & Docker · 11. Data traps · 12. Testing strategy · 13. Git & collaboration workflow · 14. Delivery plan · 15. Future plans · 16. Risks · 17. Open questions & assumptions · Appendix A (Menon facts) · Appendix B (glossary)
+1. Summary · 2. Goals & success criteria · 3. Users & golden scenario · 3A. Problem-statement compliance · 3B. Strict-compliance audit · 4. Scope tiers & ownership · 5. Functional requirements · 6. Backend design (algorithms) · 7. API contract · 8. Frontend work package · 9. Non-functional requirements · 10. Architecture, repo layout & Docker · 11. Data traps · 12. Testing strategy · 13. Git & collaboration workflow · 14. Delivery plan · 15. Future plans · 16. Risks · 17. Open questions & assumptions · Appendix A (Menon facts) · Appendix B (glossary)
 
 ---
 
@@ -85,6 +85,24 @@ Everything the statement asks for is built exactly as written. This matrix maps 
 | Photo credits | If photos are shown, also show the credits in `images/ATTRIBUTIONS.md` | §5.2 S3, FE-8 | FE |
 
 **Clarifications we chose (they do not change the statement):** the form shows exactly the 7 fields and no extra required input (traveler name is not asked; the export uses a default); "1–2 attractions on every full day" is applied to the first system-built package, as the statement words it; we never pick something the statement forbids (e.g. Nara attractions, a hotel night on the last day).
+
+### 3B. Final strict-compliance audit (done before build)
+Every rule and feature in the problem statement was re-read against this PRD. Result:
+| Check | Result |
+|---|---|
+| All 8 Must-haves (M1–M8) present with behavior exactly as worded | ✅ §3A, §5.1 |
+| All 4 Good-to-have and 3 Stretch features present as worded | ✅ §5.2 |
+| Every travel rule in problem §4 (dates, cities, flights, airport transfers, city transfers, hotels, attractions, prices) is both built (§6.3–6.9) and validated (§6.13) | ✅ |
+| Price formulas and child definition (0–17), 1% tolerance understood | ✅ §6.9 |
+| Export format: `country`, hotel `room_id`, `sources: []`, after confirm `BOOKED` + `booking.reference` string | ✅ §6.15 |
+| Technical rules: any stack, catalog-only, backend logic, state saved across refresh **and** restart, no AI, start in 1–2 commands, built during the event | ✅ §9, §10, §13 |
+| Judges' four outcomes (package / none within budget / no package / invalid value) each handled | ✅ §7.3 |
+| Demo: form empty before the slot; Menon request end to end (build, change, confirm, open reservation) | ✅ §8 FE-2, §14 |
+| Submission: README contents, zip without `node_modules`/venvs/build output/keys | ✅ §14 README checklist |
+| Photos shown ⇒ credits shown | ✅ FE-8 |
+| Where we are **stricter** than the statement (never looser) | return pickup on the last day only; 30-min gaps / 08:30–21:30 window only for *system-suggested* visits; over-budget edits need explicit consent. None of these can make a package violate a statement rule |
+| Where we **add** to the statement (additive only) | budget alternatives, raise-budget, warnings, pinned items, quality score, undo, UX layer |
+| Anything that **contradicts** the statement | **None found.** Two choices are interpretations of ambiguous wording and are recorded as decisions: return-flight `city` = last trip city (Q4) and "1–2 attractions" applying to the first package only (Q3) |
 
 ---
 
@@ -271,8 +289,11 @@ Match: `transfer.airport == flight airport`, `transfer.city == hotel.city`, `tra
 
 ### 6.8 Attractions
 - **Pool per day:** attractions where `city = that night's city`, weekday ∈ `open_days`, date ∉ `closed_dates`, and `visit_minutes` fits the opening window. Nara is automatically excluded (no hotels).
-- **Day activity window (config):** 08:30–21:30 (never before arrival at the city on arrival/change days + 30 min). Visits are inside both the attraction's hours and this window.
-- **Overlap:** visits on a day are separated by ≥ 30 min buffer (stricter than "no overlap").
+- **Statement rules vs. comfort rules.** *Statement rules* are the only **hard** checks (validator and user edits): the visit is inside the attraction's opening hours on an open day, visits on a day do not overlap, each attraction is used at most once, and on arrival/city-change days a visit starts after the traveler reaches the city. *Comfort rules* apply **only when the system suggests visits** for the Recommended package, and never to user edits or the validator:
+  - **Day activity window (config):** 08:30–21:30.
+  - **Gap between visits:** ≥ 30 min.
+  - **Settling time:** first visit on an arrival/change day starts ≥ 30 min after reaching the hotel/city.
+  A user may therefore add, say, Dotonbori at 10:00 pm (open until 11:00 pm) or schedule two visits back to back, as long as the statement's rules hold.
 - **Uniqueness:** each attraction at most once in the whole package.
 - **First package:** `FULL` days get 1–2 attractions (target 2, minimum 1); `ARRIVAL`/`CITY_CHANGE` days optional (add one if time allows and budget remains); `LAST` day none.
 - **Selection order:** *min-cost mode* (Cheapest variant, over-budget feasibility): cheapest first (free first). *Recommended mode:* a varied mix (different categories on different days), `child_friendly` when children travel (soft), `accessible`, up to 2 per full day, paid attractions allowed while the budget permits. Ties by catalog order for determinism. Choose the set that guarantees every full day ≥ 1 first (matching problem: if a city lacks enough open attractions for its full days, that plan is infeasible → try next plan).
@@ -417,6 +438,8 @@ Common flow: load package → clone → apply edit → recompute dependents → 
 | **P2** | `total_inr` = Σ item prices |
 | **E1** | export has all required fields; `sources == []` |
 | **E2** | after confirm: status BOOKED and `booking.reference` = 10-digit string |
+
+**The validator enforces only the statement's rules** — never our comfort preferences (30-minute gaps, the 08:30–21:30 window, the preferred city count `k*`, quality scoring). It can therefore never reject something the judges' checker would accept, and never accept something it would reject.
 
 ### 6.14 Reservations, persistence, inventory
 - **DB:** SQLite (WAL). `packages(id TEXT PK, status, request_json, package_json, created_at, updated_at)`, `reservations(number TEXT PK, package_id, snapshot_json, created_at)`, `inventory_used(kind, key, date, qty)` (S2).
@@ -811,6 +834,8 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 
 **Definition of done (per feature):** code + tests passing + validator clean + break-it session run and findings logged (§12.1) + noted in README + committed. A feature cycle is pushed only when every feature in it meets this.
 
+**README checklist (statement §9) — `README.md` must contain:** (1) how to start the app: `docker compose up --build` plus the no-Docker fallback; (2) the architecture (diagram + module list from §10); (3) **our city rule** (§5.1 M2, §6.3, §6.1A); (4) what is finished (Must/Good/Stretch checklist); (5) known limitations (from the break-it log and open risks). The zip contains source, `README.md`, setup scripts, `Dockerfile` and compose files only — no `node_modules`, virtual environments, build output or keys.
+
 ## 15. Future plans (post-hackathon)
 **Near term:** live supplier inventory and pricing; real booking, payments, cancellations/refunds, hold-and-expire; accounts and saved trips; share link; PDF/email itinerary; more countries, departure cities and cabins; multi-currency and localization.
 **Planning intelligence:** constraint-solver optimizer (ILP/CP-SAT) with preferences (pace, interests, kids/seniors/accessibility, hotel area); real inter-attraction travel times via maps/routing; crowd/season/weather-aware planning; multiple room types per city and mixed rooms; check-in/out time enforcement; day trips (e.g., Nara), open-jaw trips, multi-stop circuits, flexible-date lowest-fare search; ML-based recommendations (allowed outside the hackathon's no-AI rule).
@@ -837,12 +862,12 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 | Q3 | Attraction count after edits | **Decided:** 1–2 per full day applies to the first package only; edits are not count-capped and the **traveler's choices take priority** (pinned items, §6.12); UI warns on 0 or >2. No need to ask the organizers |
 | Q4 | `city` on the return-flight item | **Decided:** the **last trip city** (the city the flight departs from). Only plans whose last city has a valid return flight are ever suggested (§6.3). Residual risk: the dictionary literally says "arrival city"; the judges' checker most likely keys on `catalog_id` and airports |
 | Q5 | Return pickup on the last day only | **Decided:** yes (strict reading of "no hotel night on the last day") |
-| Q6 | Buffer between attractions / arrival-day settling | 30 min each (stricter than "no overlap") |
+| Q6 | Buffer between attractions / arrival-day settling | 30 min each, **for system-suggested visits only**; user edits and the validator use only the statement's rules (§6.8) |
 | Q7 | `child_friendly: false` attractions when children travel | Soft preference only |
 | Q8 | Traveler name | **Not a form field** (the statement's form has 7 fields). The API accepts an optional `traveler_name` (not sent by the UI); the export uses `"Traveler"` by default |
 | Q9 | Reservation number format | 10 digits, first digit 1–9, random, unique |
 | Q10 | Fastest/Best-rated when none within budget | Omit with an explanatory note |
-| Q11 | Day activity window | 08:30–21:30 for planned visits |
+| Q11 | Day activity window | 08:30–21:30 for **system-suggested** visits only; user-added visits may use any time inside the attraction's opening hours |
 | Q12 | Pushing to GitHub | **Decided:** commit after every chunk; push only when a cycle of features is done (tests green + break-it session logged) |
 | Q13 | Edit that pushes the total over budget | **Decided:** budget comes first. The edit is **not applied**; response `BUDGET_EXCEEDED` with cheaper options and an explicit "raise budget and apply" choice. Hard-rule breaks are `REFUSED` |
 | Q14 | Over-budget request | **Decided:** say the trip isn't possible as requested, show the cheapest total, offer fully built within-budget alternatives (drop a city, fewer nights, shift date, combinations) and a raise-budget option |
