@@ -17,7 +17,7 @@ pip install -r backend/requirements.txt
 cd backend && python -m app      # API on http://localhost:8000
 ```
 
-Tests: `cd backend && python -m pytest`
+Tests: `pip install -r backend/requirements-dev.txt && cd backend && python -m pytest`  (checks: `ruff check .` and `pyright`)
 
 ## Architecture
 
@@ -48,5 +48,5 @@ M5 total/budget/export, M6 change hotel / flight / attractions (price difference
 Also: G2 price difference on every option, G1 warnings (shifted arrivals, check-in time, day load).
 
 ## Known limitations
-G3 change cities, G4 three packages, S1, S2 and S3 are not built yet. Docker has not been cold-start tested yet.
+G3 change cities, G4 three packages, S1, S2 and S3 are not built yet. Docker was cold-started and checked (build, confirm, restart, lookup).
 See `docs/break-it-log.md` for what was attacked and what broke.
