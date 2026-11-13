@@ -100,16 +100,16 @@ def main():
             search(page)
             page.get_by_text("Nights must be a whole number between 3 and 10.").wait_for()
 
-        with step("quick request: a sentence fills the form"):
+        with step("the plain-words request bar is gone; the Menon sample fills the form"):
             page.goto(BASE)
-            page.get_by_label("Describe your trip in plain words").fill("Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh")
-            page.get_by_role("button", name="Fill the form").click()
-            page.get_by_text("Understood everything").wait_for()
+            assert page.get_by_text("Or just type your trip").count() == 0
+            assert page.get_by_label("Describe your trip in plain words").count() == 0
+            menon(page)
             assert field(page, "1. Departure City").input_value() == "Bengaluru"
             assert field(page, "2. Destination Country").input_value() == "Japan"
             assert field(page, "7. Total Budget").input_value() == "350000"
             assert field(page, "Child #1 Age").input_value() == "6"
-            snap(page, "02_quick_request")
+            snap(page, "02_menon_sample")
 
         # ---------------------------------------------------------------- build the Menon holiday
         with step("Menon family: a package is built and opens at /packages/<id>"):
@@ -279,12 +279,12 @@ def main():
             assert field(page, "4. Number of Nights").input_value() != ""
 
         # ---------------------------------------------------------------- compare three packages (G4)
-        with step("compare: recommended, cheapest, fastest and best rated; open the best rated one"):
+        with step("compare: recommended, cheapest and best rated; open the best rated one"):
             page.goto(BASE)
             menon(page)
             page.get_by_role("button", name=re.compile("Compare Cheapest")).click()
             page.wait_for_url(BASE + "/compare")
-            for key in ("recommended", "cheapest", "fastest", "best_rated"):
+            for key in ("recommended", "cheapest", "best_rated"):
                 page.locator(f"[data-testid=variant-{key}]").wait_for()
             snap(page, "11_compare")
             page.locator("[data-testid=variant-best_rated]").get_by_role("button", name=re.compile("View and customise")).click()
