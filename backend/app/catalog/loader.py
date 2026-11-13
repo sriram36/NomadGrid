@@ -67,10 +67,6 @@ class Catalog:
         for t in self.transfers.values():
             if t.get("airport"):
                 self._airport_transfers[(t["airport"], t["city"])].append(t)
-        self._serving = defaultdict(list)
-        for a in self.airports.values():
-            for c in a.get("serves_cities", []):
-                self._serving[c].append(a["code"])
         self._countries = {c["name"]: c for c in self.destinations["countries"]}
         self._dep_cities = {d["city"]: d["airport"] for d in self.destinations["departure_cities"]}
 
@@ -99,9 +95,6 @@ class Catalog:
     def country_of_airport(self, code: str) -> Optional[str]:
         a = self.airports.get(code)
         return a["country"] if a else None
-
-    def airports_serving(self, city: str) -> List[str]:
-        return sorted(self._serving.get(city, []))
 
     def arrivals(self, dep_airport: str, country_code: str, day: date) -> List[dict]:
         """Flights from dep_airport into the country that LAND on `day` (local date)."""

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, BookOpen, Utensils, Train, HeartHandshake, Camera, Info } from 'lucide-react';
 import { api, NetworkError } from '../api/client';
 

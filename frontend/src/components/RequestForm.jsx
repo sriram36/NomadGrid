@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Wand2, Layers } from 'lucide-react';
 import { sampleTrips } from '../lib/samples';
 import { formatINR } from '../lib/format';

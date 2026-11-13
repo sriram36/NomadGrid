@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 from typing import List, Optional
 
 from app.core.pricing import flight_price
-from app.core.timeutil import at, fmt_dt, hm, tod, weekday_code
+from app.core.timeutil import at, fmt_dt, hm, hours_minutes, tod, weekday_code
 from app.engine.models import Itinerary
 from app.interests import matched, tags_of
 from app.export.route import build_route
@@ -15,10 +15,6 @@ EXPORT_FIELDS = ["item_id", "type", "name", "city", "status", "catalog_id", "sta
 def time_label(dt: datetime) -> str:
     h = dt.hour % 12 or 12
     return f"{h}:{dt.minute:02d} {'am' if dt.hour < 12 else 'pm'}"
-
-
-def _hours(minutes: int) -> str:
-    return f"{minutes // 60}h {minutes % 60:02d}m"
 
 
 def _transfer_icon(rec: dict) -> str:
@@ -62,7 +58,7 @@ def build_items(it: Itinerary, cat) -> List[dict]:
             quantity=n, price_inr=flight_price(flight, n), icon="flight", leg=tag,
             title=f"Flight {city_name(flight['from'])} → {city_name(flight['to'])}",
             subtitle=f"{flight['airline']} {flight['flight_number']} · {'Direct' if flight['stops'] == 0 else '1 stop'} · "
-                     f"{_hours(flight['duration_minutes'])}",
+                     f"{hours_minutes(flight['duration_minutes'])}",
             badges=["DIRECT" if flight["stops"] == 0 else "ONE_STOP"], time_dt=flight["_dep"],
             pinned=(it.arr_pinned if tag == "ARRIVAL" else it.ret_pinned),
             details={"isArrival": tag == "ARRIVAL", "isReturn": tag == "RETURN", "airline": flight["airline"],

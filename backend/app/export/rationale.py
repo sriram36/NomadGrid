@@ -3,15 +3,12 @@
 Every sentence is derived from the actual itinerary (nothing is canned), so the traveler can see why the
 app chose these cities, flights and hotels, and what they would be giving up by changing them.
 """
+from app.core.timeutil import hours_minutes
 from app.engine.alternatives import inr
 from app.engine.cityplan import preferred_city_count
 from app.engine.models import Itinerary
 from app.export.package import time_label
 from app.interests import TAGS, matched
-
-
-def _hm(minutes: int) -> str:
-    return f"{minutes // 60}h {minutes % 60:02d}m"
 
 
 def build_rationale(it: Itinerary, cat, total: int) -> dict:
@@ -34,8 +31,8 @@ def build_rationale(it: Itinerary, cat, total: int) -> dict:
                    + sum(l.rec["duration_minutes"] for l in it.links))
     hop = ""
     if it.links:
-        hop = " including " + ", ".join(f"{l.from_city} → {l.to_city} ({_hm(l.rec['duration_minutes'])})" for l in it.links)
-    reasons.append(f"Flights and city-to-city travel add up to {_hm(int(transit))}{hop}.")
+        hop = " including " + ", ".join(f"{l.from_city} → {l.to_city} ({hours_minutes(l.rec['duration_minutes'])})" for l in it.links)
+    reasons.append(f"Flights and city-to-city travel add up to {hours_minutes(int(transit))}{hop}.")
 
     direct = [f for f in (it.arr_flight, it.ret_flight) if f["stops"] == 0]
     stops = ("both flights are direct" if len(direct) == 2 else

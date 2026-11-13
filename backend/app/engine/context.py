@@ -35,7 +35,6 @@ class PlanCtx:
         self.attr_rich: Tuple[dict, int] = ({}, 0)
         self._arr_cache: Dict[tuple, Optional[tuple]] = {}
         self._dep_cache: Dict[tuple, Optional[tuple]] = {}
-        self.ok = False
 
     # ------------------------------------------------------------------ building
     def prepare(self) -> bool:
@@ -91,7 +90,6 @@ class PlanCtx:
         self.link_cost = sum(l["price"] for l in self.links)
         self.link_minutes = sum(l["rec"]["duration_minutes"] for l in self.links)
         self.change_usable = sum(self._usable_from(l["arrive"], d) for l, (d, _) in zip(self.links, self.change_days, strict=False))
-        self.ok = True
         return True
 
     @staticmethod

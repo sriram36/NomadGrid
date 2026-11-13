@@ -204,7 +204,7 @@ changes, so saving a file reloads the API (uvicorn `--reload`) or hot-updates th
 
 | Gate | Result |
 |---|---|
-| Tests | 435 backend tests passing (Python 3.14 locally, 3.12 in the container): unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
+| Tests | 434 backend tests passing (Python 3.14 locally, 3.12 in the container): unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
 | Browser | `e2e/ui_flow.py`: 30 steps through the real UI (Edge), failing on any console or server error |
 | Type checking | pyright: 0 errors |
 | Lint | ruff: clean |

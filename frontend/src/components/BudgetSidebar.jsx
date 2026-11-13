@@ -1,22 +1,5 @@
-import React, { useState } from 'react';
-import { 
-  Download, 
-  CheckCircle2, 
-  AlertTriangle, 
-  CreditCard, 
-  Plane, 
-  Hotel, 
-  Car, 
-  MapPin, 
-  Copy, 
-  RotateCcw,
-  Sparkles,
-  ShieldCheck,
-  Check,
-  Lock,
-  Undo2,
-  Map
-} from 'lucide-react';
+import { useState } from 'react';
+import { Download, CheckCircle2, AlertTriangle, Plane, Hotel, Car, MapPin, Copy, RotateCcw, ShieldCheck, Check, Lock, Undo2, Map } from 'lucide-react';
 import { formatINR } from '../lib/format';
 import { api } from '../api/client';
 

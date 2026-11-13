@@ -1,4 +1,3 @@
-import React from 'react';
 import { Plane, Train, Bus, Car, MapPin, Home, Moon, Clock, Route } from 'lucide-react';
 
 // S6: the journey at a glance - departure hub, cities in visit order, and every leg with its mode and duration.

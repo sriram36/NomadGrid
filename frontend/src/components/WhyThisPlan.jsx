@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { buildPlanInsights } from '../lib/planInsights';
 

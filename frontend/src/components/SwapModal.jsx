@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, RefreshCw, AlertCircle, ShieldAlert, Star, Wallet, Undo2 } from 'lucide-react';
 import { api, NetworkError } from '../api/client';
 import { formatINR, signedINR, hoursMinutes } from '../lib/format';

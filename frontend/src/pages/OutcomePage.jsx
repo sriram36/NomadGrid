@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ShieldAlert, Wallet, ArrowLeft, ArrowRight, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';

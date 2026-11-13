@@ -110,7 +110,7 @@ def slim(x):
 
 
 s_, v_ = post("/api/packages/variants", MENON)
-save("variants_three_packages", s_, slim(v_))
+save("variants", s_, slim(v_))
 
 fp = client.post("/api/packages", json=MENON).json()["package"]
 fid = fp["package_id"]

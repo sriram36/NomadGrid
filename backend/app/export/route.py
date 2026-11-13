@@ -6,13 +6,10 @@ the catalog (airports and the chosen hotels); nothing here is stored or written 
 """
 from typing import List
 
+from app.core.timeutil import hours_minutes
 from app.engine.models import Itinerary
 
 _MODE = {"TRAIN": "TRAIN", "INTERCITY_BUS": "BUS", "CITY_BUS": "BUS", "INTERCITY_TAXI": "TAXI", "CITY_TAXI": "TAXI"}
-
-
-def _hours(minutes: int) -> str:
-    return f"{minutes // 60}h {minutes % 60:02d}m"
 
 
 def build_route(it: Itinerary, cat) -> dict:
@@ -30,7 +27,7 @@ def build_route(it: Itinerary, cat) -> dict:
         return {"kind": "FLIGHT", "direction": direction, "mode": "FLIGHT",
                 "from": a_from["city"], "to": a_to["city"], "from_code": flight["from"], "to_code": flight["to"],
                 "label": f"{flight['airline']} {flight['flight_number']}", "stops": flight["stops"],
-                "duration_minutes": flight["duration_minutes"], "duration_label": _hours(flight["duration_minutes"]),
+                "duration_minutes": flight["duration_minutes"], "duration_label": hours_minutes(flight["duration_minutes"]),
                 "depart": flight["departure_local"], "arrive": flight["arrival_local"], "side": origin_side}
 
     legs = [flight_leg(it.arr_flight, "OUT", "start")]
@@ -38,7 +35,7 @@ def build_route(it: Itinerary, cat) -> dict:
         rec = link.rec
         legs.append({"kind": "INTERCITY", "direction": "ONWARD", "mode": _MODE.get(rec["type"], "TRANSFER"),
                      "from": link.from_city, "to": link.to_city, "label": rec["name"],
-                     "duration_minutes": rec["duration_minutes"], "duration_label": _hours(rec["duration_minutes"])})
+                     "duration_minutes": rec["duration_minutes"], "duration_label": hours_minutes(rec["duration_minutes"])})
     legs.append(flight_leg(it.ret_flight, "BACK", "end"))
     for i, leg in enumerate(legs, start=1):
         leg["order"] = i
@@ -50,5 +47,5 @@ def build_route(it: Itinerary, cat) -> dict:
                    "lat": origin_airport.get("lat"), "lng": origin_airport.get("lng")},
         "stops": stops, "legs": legs, "path": path,
         "summary": {"cities": len(stops), "nights": req.nights, "travel_minutes": travel,
-                    "travel_label": _hours(travel), "label": " → ".join(path)},
+                    "travel_label": hours_minutes(travel), "label": " → ".join(path)},
     }

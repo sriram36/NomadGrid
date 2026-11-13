@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { CheckCircle2, Copy, Check, Eye, Download, ShieldAlert } from 'lucide-react';
 import { useApp } from '../context/AppContext';

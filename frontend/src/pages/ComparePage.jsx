@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Wallet, Star, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';

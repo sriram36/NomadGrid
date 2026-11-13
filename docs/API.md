@@ -14,7 +14,7 @@ Real request/response examples for every case are in [`api-examples/`](api-examp
 | `GET /api/health` | Liveness `{"status":"ok"}` | — |
 | `GET /api/meta` | Dropdown values and rules for the form | `meta.json` |
 | `POST /api/packages` | **Build** a package from the 7 request fields | `build_package_menon.json`, `build_over_budget.json`, `build_no_package_*.json`, `build_validation_error.json` |
-| `POST /api/packages/variants` | **Package variants**: cheapest and best rated (plus the recommended one) | `variants_three_packages.json` |
+| `POST /api/packages/variants` | **Package variants**: cheapest and best rated (plus the recommended one) | `variants.json` |
 | `POST /api/parse-request` | **Quick request**: plain words → the 7 form fields (fixed rules, no AI) | `parse_request.json`, `parse_request_needs_check.json` |
 | `GET /api/packages/{id}` | Fetch a saved package | — |
 | `GET /api/packages/{id}/options/hotels?city=` | Hotel+room choices for a city, with price difference and availability | `options_hotels.json` |
@@ -134,7 +134,7 @@ Same request body as build. Returns `{"outcome": "VARIANTS", "recommended": {…
 every package is complete, valid, within budget, saved with its own `package_id`, and carries `variant` (`CHEAPEST`, `BEST_RATED`,
 `RECOMMENDED`). The traveler picks one and continues with its id. Over-budget and impossible requests return the same `OVER_BUDGET` / `NO_PACKAGE`
 bodies as build. *Cheapest* = lowest total; *best rated* = highest average hotel stars per
-night within budget (guest rating ignored). Ties are broken by the lower price. See `variants_three_packages.json`.
+night within budget (guest rating ignored). Ties are broken by the lower price. See `variants.json`.
 
 ### Change cities — `GET …/options/city-plans`, then `CHANGE_CITY_PLAN`
 Each option: `plan[]`, `cities`, `city_count`, `total_inr`, `price_delta_inr`, `fits_budget`, `budget_needed_inr`, `transit_minutes`,

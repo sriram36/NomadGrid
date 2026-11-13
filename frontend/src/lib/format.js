@@ -14,13 +14,6 @@ export function addDays(dateStr, days) {
   return date.toISOString().split('T')[0];
 }
 
-// "2027-04-10" -> "Sat, 10 Apr"
-export function prettyDate(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-IN', {
-    weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
-  });
-}
 
 // 1075 -> "17h 55m"
 export function hoursMinutes(minutes) {

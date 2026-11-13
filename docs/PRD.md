@@ -7,7 +7,7 @@
 | **Team** | 2 people · ~9–10 h build · 12-minute demo |
 | **Backend owner** | **You** (with Claude's help) — rules engine, API, persistence, Docker |
 | **Frontend owner** | **Teammate** — UI that talks only to the backend API (see §8) |
-| **Source of truth** | `problem-1-holiday-package.md`, `DATA_DICTIONARY.md`, `data/catalog/*` (read-only). `holiday_package_problem1_full_text.md` is a text transcription of the same problem PDF |
+| **Source of truth** | `problem-1-holiday-package.md`, `DATA_DICTIONARY.md`, `data/catalog/*` (read-only). |
 
 **Tags used below:** **[BE]** backend task · **[FE]** frontend task · **[BOTH]** shared.
 

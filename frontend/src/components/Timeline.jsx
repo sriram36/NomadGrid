@@ -1,22 +1,5 @@
-import React, { useState } from 'react';
-import { 
-  Plane, 
-  Hotel, 
-  Car, 
-  MapPin, 
-  Clock, 
-  Plus, 
-  Trash2, 
-  RefreshCw, 
-  Star, 
-  ShieldCheck, 
-  AlertTriangle,
-  Info,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  Check
-} from 'lucide-react';
+import { useState } from 'react';
+import { Hotel, Clock, Plus, Trash2, RefreshCw, Star, Calendar, Check } from 'lucide-react';
 import { formatINR, addDays } from '../lib/format';
 
 export default function Timeline({

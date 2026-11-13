@@ -80,3 +80,8 @@ def latest_in_window(deadline: datetime, start: int, end: int):
         if best is None or cand > best:
             best = cand
     return best
+
+
+def hours_minutes(minutes: int) -> str:
+    """1075 -> '17h 55m' (the one formatter for every duration shown to the traveler)."""
+    return f"{minutes // 60}h {minutes % 60:02d}m"

@@ -101,7 +101,7 @@ Dockerfile · docker-compose.yml (production) · docker-compose.dev.yml (live ed
 ```
 pip install -r backend/requirements-dev.txt
 cd backend
-python -m pytest        # 435 tests
+python -m pytest        # 434 tests
 ruff check .            # lint: clean
 pyright                 # types: 0 errors
 python scripts/generate_api_examples.py    # refresh docs/api-examples
@@ -111,7 +111,7 @@ Editor setup is in `.vscode/settings.json` (uses `backend/.venv`). Commit messag
 
 ## Quality
 
-435 backend tests (unit, the Menon golden case, 30+ validator mutations, ~120 API attacks, change and edge cases, seeded fuzz for every feature) plus a 30-step real-browser test ·
+434 backend tests (unit, the Menon golden case, 30+ validator mutations, ~120 API attacks, change and edge cases, seeded fuzz for every feature) plus a 30-step real-browser test ·
 0 type errors · lint clean · the full suite passes on Python 3.12 and 3.14 · ~9,000 fuzzed requests with 0 crashes and 0 validator failures ·
 the cheapest search matches a brute-force oracle · every city-plan option applies at exactly its promised price · a simulated stream of 70 bookings
 never oversold a seat or room · Docker verified (build, confirm, container restart, lookup, UI served) · the catalog is baked into the image read-only and never modified.

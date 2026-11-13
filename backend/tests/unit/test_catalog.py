@@ -27,14 +27,6 @@ def test_country_lookup_is_exact(cat):
     assert cat.country("Narnia") is None
 
 
-def test_airports_serving_uses_serves_cities(cat):
-    assert cat.airports_serving("Kyoto") == ["KIX"]          # Kyoto has no airport of its own
-    assert cat.airports_serving("Tokyo") == ["HND", "NRT"]
-    assert cat.airports_serving("Abu Dhabi") == ["AUH", "DXB"]
-    assert "ITM" not in cat.airports_serving("Osaka")        # ITM serves nothing
-    assert cat.airports_serving("Osaka") == ["KIX"]
-
-
 def test_arrival_flights_match_on_arrival_local_date(cat):
     ids = {f["flight_id"] for f in cat.arrivals("BLR", "JP", date(2027, 4, 10))}
     assert ids == {"FL-401", "FL-405", "FL-740", "FL-403"}
