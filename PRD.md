@@ -125,7 +125,7 @@ Each requirement lists what the **backend** must do, what the **frontend** must 
 #### M2 — Build one package (the app chooses the cities)
 - **[BE]** Generates all valid city plans (§6.3), searches flights/hotels/transfers/attractions (§6.4–6.10), returns one of three outcomes: `PACKAGE`, `OVER_BUDGET`, `NO_PACKAGE` (§7.3). `NO_PACKAGE` carries the *reason* from the failure diagnostics (§6.11).
 - **[FE]** Calls `POST /api/packages`; on `PACKAGE` routes to `/packages/:id`; on the other two shows the dedicated pages (§8).
-- **Our city rule (README text):** a plan is an ordered list of distinct cities of the chosen country, each ≥ 2 nights, nights summing to the trip length, consecutive cities linked in `countries[].links`; first city reachable from an arrival airport that serves it, last city from a return airport that serves it. **Default plan choice is constraint-first, then time-based (see §6.10 and Q2):** only plans that satisfy every hard rule *and* the traveler's budget are eligible; among them the app suggests the plan that best fits the **time available** (preferred number of cities ≈ one per 3 nights, least time lost in transit). The traveler can then edit (G3) and the app raises warnings, e.g. "rushed: 3 cities in 6 nights".
+- **Our city rule (README text):** a plan is an ordered list of distinct cities of the chosen country, each ≥ 2 nights, nights summing to the trip length, consecutive cities linked in `countries[].links`; first city reachable from an arrival airport that serves it, last city from a return airport that serves it. **Default plan choice is constraint-first, then time-based (see §6.10 and Q2):** only plans that satisfy every hard rule *and* the traveler's budget are eligible; among them the app suggests the plan that best fits the **time available** (preferred number of cities ≈ one per 3 nights, least time lost in transit). The traveler can then edit (G3) and the app raises warnings, e.g. "rushed: 3 cities in 6 nights". Within the chosen plan the app builds the **best recommended package**: it spends the budget on quality (better hotels, direct flights, 2 attractions a day) and lands near the budget instead of defaulting to the cheapest (§6.10A).
 - **Done when:** any valid request yields a validator-clean package, or a correct explanation.
 
 #### M3 — Rules are respected
@@ -175,7 +175,7 @@ SQLite on a Docker named volume. Tables: `packages`, `reservations`, (S2) `inven
 ### 5.2 STRETCH (priority order)
 | Pri | # | Feature | Backend | Frontend |
 |---|---|---|---|---|
-| 1 | **G1** | Changes that affect other parts | After a change: re-time transfers; shift or drop arrival/last-day attractions that no longer fit; detect overlaps/double bookings; warn that a flight change moves hotel check-in time (display only). Warnings in `warnings[]` (package + item level) | Warning banner + per-item badges; show what was auto-fixed |
+| 1 | **G1** | Changes that affect other parts | After a change: re-time transfers; shift attractions that no longer fit (things the traveler chose are never dropped silently — user priority, §6.12); detect overlaps/double bookings; warn that a flight change moves hotel check-in time (display only). Warnings in `warnings[]` (package + item level) | Warning banner + per-item badges; show what was auto-fixed |
 | 2 | **G2** | Price difference | Every option returned by `/options/*` carries `price_delta_inr` vs. current (including knock-on transfer changes) | `+₹X`/`−₹X` chips on every option |
 | 3 | **G4** | Three packages | `POST /api/packages/variants` returns `cheapest`, `fastest`, `best_rated` (§6.10) each saved with its own id | Tabs/cards to compare and pick; picked id continues the normal flow |
 | 4 | **G3** | Change cities | `GET /options/city-plans` lists valid plans with totals; `CHANGE_CITY_PLAN` rebuilds | City-plan chooser with totals |
@@ -209,7 +209,7 @@ SQLite on a Docker named volume. Tables: `packages`, `reservations`, (S2) `inven
 **Default ranking (after constraints — hard rules and budget — are satisfied):**
 1. Closeness to `k*` cities (exact `k*`, else `k*−1`, else `k*+1`, with an explanatory warning).
 2. **Time-equal band:** among those plans, any plan whose `transit_minutes` is within `TIME_TOLERANCE_MIN` (default **120**, configurable) of the best is treated as equal on time. Beyond the band, less transit wins.
-3. Lowest base cost.
+3. **Highest quality score within the budget** (§6.10A) — the app spends the budget on quality instead of defaulting to the cheapest package.
 4. Most `usable_ground_minutes`.
 5. Most balanced nights, then deterministic IDs (`flight_id`, `hotel_id`, `transfer_id`).
 
@@ -222,7 +222,7 @@ SQLite on a Docker named volume. Tables: `packages`, `reservations`, (S2) `inven
 | Tokyo / Kyoto / Osaka (2,2,2) | `FL-401` in, `FL-411` out | 1,150 | ₹1,53,720 |
 | Kyoto → Tokyo | `FL-740` in, `FL-412` out | 1,225 | ₹1,83,960 |
 
-A strict "least transit" rule would pick Osaka ⇄ Kyoto: it saves only **60 minutes** but costs **₹27,720 more** in flights, and skips Tokyo. With the 120-minute band the Tokyo → Kyoto and Tokyo → Osaka plans count as time-equal, so cost then decides. (Under the "6–8 nights → 2 cities" rule, the 3-city plans are only a fallback.)
+A strict "least transit" rule would pick Osaka ⇄ Kyoto: it saves only **60 minutes** but costs **₹27,720 more** in flights, and skips Tokyo. With the 120-minute band the Tokyo → Kyoto and Tokyo → Osaka plans count as time-equal, so the quality score (§6.10A) then decides. (Under the "6–8 nights → 2 cities" rule, the 3-city plans are only a fallback.)
 
 ### 6.2 Pipeline
 ```
@@ -234,7 +234,7 @@ request → validate → candidate plans → per plan: flights × hotels × tran
 1. Take the country's cities and `links`.
 2. For k = 1 … min(#cities, ⌊N/2⌋): all ordered k-permutations of cities where each consecutive pair has a link.
 3. For each permutation: all compositions of N into k parts, each ≥ 2.
-4. Keep plans whose first city has ≥ 1 airport that serves it **and** last city ditto.
+4. Keep plans whose first city has ≥ 1 airport that serves it **and** last city ditto. **A city is therefore only ever suggested as the last city if a valid return flight exists for it** (right date, an airport that serves that city, enough seats); the same filter applies to the city plans listed for G3 and to every alternative.
 Japan ≤ 3 cities, UAE ≤ 2 → small, enumerate everything. 3 nights ⇒ single city only.
 
 ### 6.4 Flights
@@ -275,7 +275,7 @@ Match: `transfer.airport == flight airport`, `transfer.city == hotel.city`, `tra
 - **Overlap:** visits on a day are separated by ≥ 30 min buffer (stricter than "no overlap").
 - **Uniqueness:** each attraction at most once in the whole package.
 - **First package:** `FULL` days get 1–2 attractions (target 2, minimum 1); `ARRIVAL`/`CITY_CHANGE` days optional (add one if time allows and budget remains); `LAST` day none.
-- **Selection order:** cheapest first (free first), then `child_friendly` when children travel (soft), then `accessible`, then catalog order for determinism. Choose the set that guarantees every full day ≥ 1 first (matching problem: if a city lacks enough open attractions for its full days, that plan is infeasible → try next plan).
+- **Selection order:** *min-cost mode* (Cheapest variant, over-budget feasibility): cheapest first (free first). *Recommended mode:* a varied mix (different categories on different days), `child_friendly` when children travel (soft), `accessible`, up to 2 per full day, paid attractions allowed while the budget permits. Ties by catalog order for determinism. Choose the set that guarantees every full day ≥ 1 first (matching problem: if a city lacks enough open attractions for its full days, that plan is infeasible → try next plan).
 - **Price:** `adults×price_per_person + children×(child_price ?? price_per_person)`. `child_price = 0` is a real free price; only an **absent** field falls back to the adult price.
 
 ### 6.9 Pricing summary
@@ -290,19 +290,36 @@ Match: `transfer.airport == flight airport`, `transfer.city == hotel.city`, `tra
 `total = Σ price_inr` over all items.
 
 ### 6.10 Search, objectives & default package
-Search per plan (small): arrival flights × return flights × (hotel+transfer choices for first/last city) × cheapest middle hotels × transfers × attractions.
-Two cost notions:
+Search per plan (small): arrival flights × return flights × hotel+room options for each city × transfers × attractions. For each city keep only options not dominated on (price, stars, family-friendly, guest rating), which keeps the search to a few thousand combinations per plan. **Recommended mode** maximizes the quality score (§6.10A) within the budget; **min-cost mode** minimizes cost (used for the Cheapest variant and to decide whether anything fits the budget).
+Two cost notions (used by min-cost mode, the Cheapest variant and the over-budget check):
 - **Base cost** = flights + hotels + transfers + *minimum* attractions (1 per full day, cheapest eligible).
 - **Total** = base + any extra optional attractions.
 
 | Package | Objective | Notes |
 |---|---|---|
-| **Default (Recommended)** | **Step 1 — constraints first:** keep only candidates that pass every hard rule and have total ≤ budget. **Step 2 — time-based suggestion:** preferred city count `k* = clamp(⌊N/3⌋, 1, #cities)` (3 nights→1, 4–5→1, 6–8→2, 9–10→3 in Japan / 2 in UAE); among plans with `k*` cities, treat plans within `TIME_TOLERANCE_MIN` (default 120 min) of the best `transit_minutes` as time-equal, then lowest base cost, then most usable ground time, then balanced nights (full ranking and evidence in §6.1A). If no eligible plan has `k*` cities, fall back to `k*−1`, then `k*+1`, and attach a warning explaining why. **Step 3 — fill:** attractions up to 2 per full day (cheapest, child-friendly first) while total ≤ budget | What `POST /api/packages` returns |
+| **Default — Best recommended** | **Step 1 — constraints first:** keep only candidates that pass every hard rule and have total ≤ budget. **Step 2 — time-based suggestion:** preferred city count `k* = clamp(⌊N/3⌋, 1, #cities)` (3 nights→1, 4–5→1, 6–8→2, 9–10→3 in Japan / 2 in UAE); among plans with `k*` cities, treat plans within `TIME_TOLERANCE_MIN` (default 120 min) of the best `transit_minutes` as time-equal, then the highest quality score (§6.10A), then most usable ground time, then balanced nights (full ranking and evidence in §6.1A). If no eligible plan has `k*` cities, fall back to `k*−1`, then `k*+1`, and attach a warning explaining why. **Step 3 — spend the budget on quality:** within the chosen plan, pick the flights, hotels, transfers and attractions with the highest quality score that fit the budget, so the package lands **near the budget** (e.g. a ₹4,00,000 budget gets a ~₹3.6–4.0 lakh holiday with better hotels, direct flights and 2 attractions a day — not a ₹2,00,000 minimum package) | What `POST /api/packages` returns |
 | **Cheapest** (G4) | Minimum total with minimum attractions | True lowest total |
 | **Fastest** (G4) | Minimize Σ flight `duration_minutes` + Σ intercity transfer `duration_minutes`; among **within-budget** packages; ties → cheaper | If none within budget, omit with note |
 | **Best rated** (G4) | Maximize average hotel `stars` per night = Σ(stars×nights)/N, **within budget**; ties → cheaper; `rating` ignored | If none within budget, omit with note |
 
-Deterministic tie-breaks everywhere: lower cost → less travel time → plan order → `flight_id` / `hotel_id` / `transfer_id`.
+Deterministic tie-breaks everywhere: higher quality score → closer to (but not over) the budget → lower cost → less travel time → plan order → `flight_id` / `hotel_id` / `transfer_id`. (Variants other than the default keep their own objective first.)
+
+### 6.10A Recommended package — spend the budget on quality
+**Principle:** a traveler who gives ₹4,00,000 should get a holiday that uses it well, not a ₹2,00,000 minimum package with ₹2,00,000 unused. The default package maximizes a **quality score (0–100)** among packages that satisfy every hard rule **and** total ≤ budget. The score only chooses between valid packages — it never relaxes a hard rule.
+
+| Component | Points | How it is scored |
+|---|---|---|
+| **Stay** | 40 | `28 × (average stars per night − 2) / 3` · `6` if every hotel is `family_friendly` when children travel (awarded automatically when no children) · `6 × (average guest rating − 6.9) / 2.5` |
+| **Flights** | 20 | `5` per direct leg (2 legs) · `5` if the arrival lands 06:00–20:00 local · `5` if the return departs 08:00–20:00 local |
+| **Experience** | 15 | `9 × attractions on full days / (2 × full days)` · `3 × min(distinct categories, 4) / 4` · `3` if every attraction is `child_friendly` when children travel (awarded automatically when no children) |
+| **Time** | 15 | `9 × (1 − (transit − best transit) / (worst transit − best transit))` across the request's feasible candidates (full 9 if only one) · `6 × usable ground minutes / maximum possible for that plan` |
+| **Budget fit** | 10 | `10 × clamp((spend ÷ budget − 0.50) / 0.40, 0, 1)` — 0 at ≤ 50% spent, full points from 90% to 100% |
+
+- **Effect:** at ₹2.5 lakh the app builds a modest package; at ₹4 lakh it moves to 4–5★ family-friendly hotels where affordable, direct flights, sensible arrival times and 2 varied attractions a day (paid ones included); the budget-fit points pull the total toward 90–100% of the budget.
+- **When the budget is far above anything the catalog offers**, the app shows the best-quality package available and the money left over; it never pads the price.
+- **Guest rating is used here only as a small soft factor.** The G4 "Best rated" variant still ranks by hotel `stars` alone and ignores `rating`, exactly as the statement says.
+- **Weights are constants in one config file** (a starting proposal, tuned by tests and by trying real budgets); changing them never affects correctness.
+- **Other variants are unchanged:** *Cheapest* = lowest total, *Fastest* = least transit, *Best rated* = highest average stars within budget (§6.10).
 
 ### 6.11 Failure diagnostics & over-budget logic
 **Stages** (the *furthest stage any candidate reached* explains `NO_PACKAGE`):
@@ -326,7 +343,7 @@ Each reason includes human text plus counts (e.g., "6 flights found on 10 Apr bu
    | `FEWER_NIGHTS` | N−1 … 3 nights |
    | `SHIFT_DATE` | Start date ±1…3 days (inside the data window) |
    | Combinations | `DROP_CITY` + `FEWER_NIGHTS`, `DROP_CITY` + `SHIFT_DATE`, `FEWER_NIGHTS` + `SHIFT_DATE` |
-   Each alternative carries a plain description of what changed ("Drop Kyoto: Tokyo only, 6 nights"), its total and remaining budget, and a saved draft `package_id` so the traveler can open it immediately.
+   Each alternative is itself built as a **Recommended** package for the changed request, within the budget, so it is a good holiday and not just a cheap one. Each alternative carries a plain description of what changed ("Drop Kyoto: Tokyo only, 6 nights"), its total and remaining budget, and a saved draft `package_id` so the traveler can open it immediately.
 4. **Always also offer "raise the budget".** `RAISE_BUDGET` states the extra needed (e.g. "+₹62,000 → ₹4,12,000"); if the traveler agrees, the app builds the original request with the new budget. The app never exceeds the budget silently.
 5. **If no lever combination fits**, say so: "even the cheapest possible holiday for these travelers and dates costs ₹Y" and offer only raise-budget and "Edit the trip".
 6. The traveler chooses: open an alternative, raise the budget (explicit consent), or edit the trip.
@@ -336,11 +353,13 @@ Each reason includes human text plus counts (e.g., "6 flights found on 10 Apr bu
 ### 6.12 Changes (apply logic)
 Common flow: load package → clone → apply edit → recompute dependents → validate (FR-V) → if violations → `REFUSED` with the first blocking reason; else persist and `APPLIED`.
 - **CHANGE_HOTEL(city, hotel_id, room_id):** check hotel in city, room belongs to hotel, fit, availability on every night; if city is first/last, re-resolve airport transfer (area/service window; refuse if none); attractions in that city are unaffected (same city).
-- **CHANGE_FLIGHT(leg, flight_id):** check route/date/airport-serves-city/seats; recompute transfer. Arrival leg: re-time arrival-day attractions (G1: shift or drop ones that no longer fit, warn). Return leg: transfer pickup recomputed; if infeasible → refuse.
+- **CHANGE_FLIGHT(leg, flight_id):** check route/date/airport-serves-city/seats; recompute transfer. Arrival leg: re-time arrival-day attractions (G1: shift ones that no longer fit and warn; a traveler-added attraction that cannot be kept makes the change `PINNED_CONFLICT` — the traveler decides — and is never silently dropped; system-suggested ones may be re-chosen with a warning). Return leg: transfer pickup recomputed; if infeasible → refuse.
 - **ADD_ATTRACTION(attraction_id, date, start?):** day must not be `LAST`; city = that night's city; open; not closed; fits hours; no overlap/buffer violation; not already used; on arrival/change day start ≥ arrival at city. If `start` omitted, backend picks the earliest free slot.
 - **REMOVE_ATTRACTION(item_id):** remove; warning if a full day now has 0.
-- **CHANGE_CITY_PLAN(plan[])** (G3): rebuild whole package for the chosen plan, keeping attractions the traveler added if still valid (else drop with warning).
+- **CHANGE_CITY_PLAN(plan[])** (G3): rebuild whole package for the chosen plan, keeping pinned items (hotels, flights and attractions the traveler chose) wherever they are still valid; anything that cannot carry over is listed (`PINNED_CONFLICT`) and the traveler confirms before it is removed.
 - **PACKAGE_LOCKED:** any change on a BOOKED package is refused.
+
+**User choices take priority.** Anything the traveler picks (a hotel, a flight, an attraction they added, a city plan) is marked `pinned`. Automatic work never overrides it: a later change keeps pinned items whenever the hard rules still allow. If a pinned item can no longer be kept, the app does **not** silently drop it — it returns `PINNED_CONFLICT`, explains the clash in plain words and gives the traveler the choice (e.g. "The later flight leaves no time for Senso-ji on 10 Apr. Keep the current flight, or take the later flight and remove Senso-ji?"). System-suggested items may be re-chosen automatically, with a warning. The traveler's own additions are not count-capped (Q3).
 
 **Hard rules, budget, and soft checks.** *Hard* travel rules (§6.13) are never broken: a change that would break one is **refused** with a reason. The traveler's **budget** is protected too: a change that would exceed it is **not applied** unless the traveler explicitly agrees to raise the budget (`BUDGET_EXCEEDED`, §6.11). *Soft* concerns never block the traveler; the change is applied and a **warning** is returned (package-level or per item), so the traveler stays in control after the first package has satisfied their constraints:
 | Soft warning | When |
@@ -410,7 +429,7 @@ Top level: `trip_id`, `traveler{name, home_airport, adults, children, child_ages
 Item: `item_id`, `type` (`flight|hotel|transfer|attraction`), `name`, `city`, `status` (`PLANNED|BOOKED`), `catalog_id`, `start`, `end`, `room_id`, `quantity`, `price_inr`, `booking`, `sources` (`[]`), `warnings`.
 | Type | `start` | `end` | `city` | `room_id` | `quantity` |
 |---|---|---|---|---|---|
-| flight | departure (`YYYY-MM-DDTHH:MM`) | arrival | arrival city (return flight: home city — Q4) | null | travelers |
+| flight | departure (`YYYY-MM-DDTHH:MM`) | arrival | arrival city for the arrival flight; **last trip city** for the return flight (the city it departs from) — Q4 | null | travelers |
 | hotel | check-in date | check-out date | hotel city | room id | rooms |
 | transfer | pickup datetime | arrival datetime (or null) | transfer's city (intercity: destination city) | null | vehicles or travelers |
 | attraction | visit start | visit end | attraction city | null | travelers |
@@ -470,8 +489,9 @@ Responses (HTTP 200, discriminated by `outcome`):
                 {"city":"Kyoto","nights":3,"check_in":"2027-04-13","check_out":"2027-04-16"} ],
   "pricing":{ "total_inr":311200,"budget_inr":350000,"remaining_inr":38800,"over_budget":false,
               "breakdown":{"flights":156240,"hotels":98000,"transfers":24000,"attractions":32960} },
-  "metrics":{ "avg_hotel_stars":3.5, "transit_minutes":1135, "usable_ground_minutes":3960 },
-  "items":[ { /* shared-format items + extra: "day":"2027-04-10", "image":"/images/hotels/…", "details":{…} } ],
+  "metrics":{ "avg_hotel_stars":3.5, "transit_minutes":1135, "usable_ground_minutes":3960,
+              "quality_score":78, "budget_used_pct":89 },
+  "items":[ { /* shared-format items + extra: "day":"2027-04-10", "pinned":false, "image":"/images/hotels/…", "details":{…} } ],
   "days":[ { "date":"2027-04-10","weekday":"SAT","city":"Tokyo","kind":"ARRIVAL",
              "events":[ {"item_id":"i1","time":"09:20","label":"…"} ] } ],
   "warnings":[ "…" ],
@@ -497,7 +517,7 @@ After confirm: `status:"BOOKED"`, `reservation:{"number":"4829105736","confirmed
 | `GET /images/...` | Static catalog images (read-only) |
 
 **Change ops (`POST …/changes`):** `CHANGE_HOTEL {city,hotel_id,room_id}` · `CHANGE_FLIGHT {leg,flight_id}` · `ADD_ATTRACTION {attraction_id,date,start?}` · `REMOVE_ATTRACTION {item_id}` · `CHANGE_CITY_PLAN {plan:[{city,nights}]}` (G3).
-**Refusal codes:** `PACKAGE_LOCKED`, `ROOMS_UNAVAILABLE`, `ROOM_DOES_NOT_FIT`, `SEATS_UNAVAILABLE`, `AIRPORT_MISMATCH`, `NO_AIRPORT_TRANSFER`, `ATTRACTION_CLOSED`, `ATTRACTION_OUTSIDE_HOURS`, `ATTRACTION_OVERLAP`, `ATTRACTION_DUPLICATE`, `ATTRACTION_WRONG_CITY`, `INVALID_DAY`, `PRICE_FORMULA_MISMATCH` (internal), `VALIDATION_FAILED`.
+**Refusal codes:** `PACKAGE_LOCKED`, `ROOMS_UNAVAILABLE`, `ROOM_DOES_NOT_FIT`, `SEATS_UNAVAILABLE`, `AIRPORT_MISMATCH`, `NO_AIRPORT_TRANSFER`, `ATTRACTION_CLOSED`, `ATTRACTION_OUTSIDE_HOURS`, `ATTRACTION_OVERLAP`, `ATTRACTION_DUPLICATE`, `ATTRACTION_WRONG_CITY`, `INVALID_DAY`, `PINNED_CONFLICT` (response includes `options` for the traveler to choose from), `PRICE_FORMULA_MISMATCH` (internal), `VALIDATION_FAILED`.
 
 ### 7.6 Contract handoff [BE]
 At the end of Phase 0 the backend commits `docs/api-examples/*.json` (one real example per response above, including the Menon package) and the live OpenAPI at `/docs`, so the frontend can build against fixtures before the engine is finished.
@@ -813,10 +833,10 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 | # | Question | Default we use |
 |---|---|---|
 | Q1 | Stack | **Decided:** Python + FastAPI + SQLite · React + Vite · Docker Compose (one container, no-Docker fallback) |
-| Q2 | Default package city preference | **Decided:** constraints first (hard rules, then budget), then time-based suggestion per §6.1A (`k* = clamp(⌊N/3⌋,1,#cities)`; plans within 120 min of the best transit time count as time-equal; then lowest cost; then most usable ground time); traveler can edit and the app raises warnings. *To confirm: is the 120-minute tolerance acceptable, and does "time" mean T1–T3 as defined in §6.1A?* |
-| Q3 | Attraction count after edits | **Decided:** 1–2 per full day applies to the first package only; edits not capped, UI warns on 0 or >2. Residual risk if the checker enforces 1–2 after edits |
-| Q4 | `city` on the return-flight item | Dictionary says "arrival city" → home city. Confirm with organizers |
-| Q5 | Return pickup on the last day only | Yes (strict reading of "no hotel night on the last day") |
+| Q2 | Default package city preference | **Decided:** constraints first (hard rules, then budget), then time-based suggestion per §6.1A (`k* = clamp(⌊N/3⌋,1,#cities)`; plans within 120 min of the best transit time count as time-equal; then highest quality score (§6.10A); then most usable ground time); traveler can edit and the app raises warnings. *To confirm: is the 120-minute tolerance acceptable, and does "time" mean T1–T3 as defined in §6.1A?* |
+| Q3 | Attraction count after edits | **Decided:** 1–2 per full day applies to the first package only; edits are not count-capped and the **traveler's choices take priority** (pinned items, §6.12); UI warns on 0 or >2. No need to ask the organizers |
+| Q4 | `city` on the return-flight item | **Decided:** the **last trip city** (the city the flight departs from). Only plans whose last city has a valid return flight are ever suggested (§6.3). Residual risk: the dictionary literally says "arrival city"; the judges' checker most likely keys on `catalog_id` and airports |
+| Q5 | Return pickup on the last day only | **Decided:** yes (strict reading of "no hotel night on the last day") |
 | Q6 | Buffer between attractions / arrival-day settling | 30 min each (stricter than "no overlap") |
 | Q7 | `child_friendly: false` attractions when children travel | Soft preference only |
 | Q8 | Traveler name | **Not a form field** (the statement's form has 7 fields). The API accepts an optional `traveler_name` (not sent by the UI); the export uses `"Traveler"` by default |
@@ -826,6 +846,8 @@ The goal of testing is to **find failures**, not to confirm success. After each 
 | Q12 | Pushing to GitHub | **Decided:** commit after every chunk; push only when a cycle of features is done (tests green + break-it session logged) |
 | Q13 | Edit that pushes the total over budget | **Decided:** budget comes first. The edit is **not applied**; response `BUDGET_EXCEEDED` with cheaper options and an explicit "raise budget and apply" choice. Hard-rule breaks are `REFUSED` |
 | Q14 | Over-budget request | **Decided:** say the trip isn't possible as requested, show the cheapest total, offer fully built within-budget alternatives (drop a city, fewer nights, shift date, combinations) and a raise-budget option |
+| Q15 | Default package: cheapest or best? | **Decided:** the **best recommended package built near the budget** (§6.10A) — a ₹4,00,000 budget gets a ~₹3.6–4.0 lakh holiday, not a ₹2,00,000 one. Cheapest stays available as a variant (G4) and for the over-budget check. *Open detail: the quality-score weights are my starting proposal; adjust after trying real budgets* |
+| Q16 | User choices vs automatic changes | **Decided:** the traveler's choices take priority; automatic changes never silently remove them (`PINNED_CONFLICT`, §6.12) |
 
 ---
 
