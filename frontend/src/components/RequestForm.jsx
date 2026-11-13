@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Wand2, Layers, Heart } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Layers, Heart } from 'lucide-react';
 import { sampleTrips } from '../lib/samples';
 import { formatINR } from '../lib/format';
-import { api, NetworkError } from '../api/client';
 import { useApp } from '../context/AppContext';
 import { INTERESTS } from '../lib/interests';
 
@@ -43,40 +42,6 @@ export default function RequestForm({
   const [errors, setErrors] = useState({});
   const [picked, setPicked] = useState(interests || []);
   const toggleInterest = (key) => setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-  const [quickText, setQuickText] = useState('');
-  const [quick, setQuick] = useState(null);
-  const [quickBusy, setQuickBusy] = useState(false);
-
-  // Type the trip in plain words: the backend reads it with fixed rules (no AI) and we fill the form from it.
-  const readSentence = async () => {
-    if (!quickText.trim()) return;
-    setQuickBusy(true);
-    try {
-      const { status, data } = await api.parseRequest(quickText);
-      if (status !== 200) {
-        setQuick({ error: data?.error?.fields?.[0]?.message || data?.error?.message || 'Please type a short request.' });
-        return;
-      }
-      setQuick(data);
-      const f = data.fields || {};
-      setFormData((prev) => ({
-        departureCity: f.departure_city ?? prev.departureCity,
-        destinationCountry: f.country ?? prev.destinationCountry,
-        startDate: f.start_date ?? prev.startDate,
-        nights: f.nights ?? prev.nights,
-        adults: f.adults ?? prev.adults,
-        childrenCount: f.child_ages ? f.child_ages.length : prev.childrenCount,
-        childrenAges: f.child_ages ?? prev.childrenAges,
-        budget: f.budget_inr ?? prev.budget
-      }));
-      setErrors({});
-    } catch (e) {
-      setQuick({ error: e instanceof NetworkError ? e.message : 'Could not read that request.' });
-    } finally {
-      setQuickBusy(false);
-    }
-  };
-
   // Handle child count change and dynamically manage child age inputs
   const handleChildrenCountChange = (count) => {
     const num = Math.max(0, parseInt(count, 10) || 0);
@@ -241,45 +206,6 @@ export default function RequestForm({
             Test Impossible Dates
           </button>
         </div>
-      </div>
-
-      {/* Type your trip in plain words */}
-      <div className="bg-white rounded-2xl border border-slate-300 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Wand2 className="w-4 h-4 text-[#006ce4]" />
-          <h2 className="text-sm font-extrabold text-[#003580]">Or just type your trip</h2>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            value={quickText}
-            onChange={(e) => setQuickText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); readSentence(); } }}
-            placeholder="e.g. Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh"
-            aria-label="Describe your trip in plain words"
-            className="flex-1 px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 border-slate-300 focus:border-[#006ce4] focus:outline-hidden bg-white"
-          />
-          <button
-            type="button"
-            onClick={readSentence}
-            disabled={quickBusy || !quickText.trim()}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded disabled:opacity-50"
-          >
-            {quickBusy ? 'Reading…' : 'Fill the form'}
-          </button>
-        </div>
-        {quick && (
-          <div className="mt-2 space-y-1 text-[11px]">
-            {quick.error && <p className="text-[#d4111e] font-bold">{quick.error}</p>}
-            {!quick.error && quick.ready && (
-              <p className="text-[#008009] font-bold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Understood everything — check the form below, then search.</p>
-            )}
-            {!quick.error && quick.missing?.length > 0 && (
-              <p className="text-[#b45309] font-bold">Still needed: {quick.missing.join(', ').replaceAll('_', ' ')}.</p>
-            )}
-            {(quick.notes || []).map((n, i) => <p key={i} className="text-slate-600">• {n}</p>)}
-          </div>
-        )}
       </div>
 
       {/* Booking.com Iconic Yellow-Framed Search Box */}
@@ -593,7 +519,7 @@ export default function RequestForm({
                 className="w-full sm:w-auto px-6 py-3 text-sm font-extrabold text-[#006ce4] bg-white border-2 border-[#006ce4] hover:bg-[#006ce4]/10 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Layers className="w-4 h-4" />
-                Compare Cheapest · Fastest · Best Rated
+                Compare Cheapest · Best Rated
               </button>
               <button
                 type="submit"
