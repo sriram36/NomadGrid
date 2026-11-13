@@ -183,7 +183,7 @@ volume `nomadgrid-db`. Health check: `GET /api/health`. Verified: build, confirm
 
 | Gate | Result |
 |---|---|
-| Tests | 255 passing: unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
+| Tests | 255 passing on Python 3.12 and 3.14: unit, golden Menon, 30+ validator mutations, ~120 API attacks, change/edge cases, seeded fuzz |
 | Type checking | pyright: 0 errors |
 | Lint | ruff: clean |
 | Fuzz | ~9,000 random requests: 0 crashes, 0 validator failures, 0 over-budget packages |

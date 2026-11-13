@@ -88,7 +88,7 @@ Editor setup is in `.vscode/settings.json` (uses `backend/.venv`). Commit messag
 
 ## Quality
 
-255 tests (unit, the Menon golden case, 30+ validator mutations, ~120 API attacks, change and edge cases, seeded fuzz) · 0 type errors · lint clean ·
+255 tests, run on Python 3.12 (the Docker image's version) and 3.14 (unit, the Menon golden case, 30+ validator mutations, ~120 API attacks, change and edge cases, seeded fuzz) · 0 type errors · lint clean ·
 ~9,000 fuzzed requests with 0 crashes, 0 validator failures and 0 over-budget packages · the cheapest search matches a brute-force oracle ·
 Docker verified: build, confirm, container restart, lookup · the catalog is mounted read-only and never modified.
 
