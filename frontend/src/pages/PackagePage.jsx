@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle, Lightbulb, ChevronDown, ChevronUp, SearchX } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, SearchX } from 'lucide-react';
 import Timeline from '../components/Timeline';
 import BudgetSidebar from '../components/BudgetSidebar';
 import SwapModal from '../components/SwapModal';
+import VariantBar from '../components/VariantBar';
+import VisualRoute from '../components/VisualRoute';
+import WhyThisPlan from '../components/WhyThisPlan';
+import CityGuideDrawer from '../components/CityGuideDrawer';
 import { useApp } from '../context/AppContext';
 
 const VARIANT_LABEL = {
@@ -19,10 +23,10 @@ export default function PackagePage() {
   const navigate = useNavigate();
   const {
     currentPackage, loadPackage, applyChange, handleConfirmBooking, handleRemoveAttraction, handleUndo,
-    undoAvailable, swapModalState, setSwapModalState, handleResetTrip,
+    undoAvailable, swapModalState, setSwapModalState, handleResetTrip, interests,
   } = useApp();
   const [state, setState] = useState(currentPackage?.package_id === id ? 'ready' : 'loading');
-  const [showWhy, setShowWhy] = useState(true);
+  const [guide, setGuide] = useState(null);   // { city, area } while the read-only city guide is open
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +70,6 @@ export default function PackagePage() {
   const pkg = currentPackage;
   const booked = pkg.status === 'BOOKED';
   const variantLabel = VARIANT_LABEL[pkg.variant];
-  const reasons = pkg.rationale?.reasons || [];
 
   return (
     <div className="min-h-screen bg-[#f2f6fa]">
@@ -107,6 +110,8 @@ export default function PackagePage() {
           </div>
         </div>
 
+        {!booked && <VariantBar pkg={pkg} />}
+
         {pkg.warnings?.length > 0 && (
           <div className="bg-[#fff9e6] border border-[#febb02] rounded-xl p-4 text-xs text-slate-800" role="status" data-testid="warnings">
             <p className="font-black text-[#003580] flex items-center gap-1.5 mb-1">
@@ -118,29 +123,16 @@ export default function PackagePage() {
           </div>
         )}
 
-        {reasons.length > 0 && (
-          <div className="bg-white border border-slate-300 rounded-xl shadow-sm" data-testid="why-panel">
-            <button onClick={() => setShowWhy((v) => !v)} aria-expanded={showWhy}
-              className="w-full flex items-center justify-between px-4 py-3 text-left">
-              <span className="flex items-center gap-2 text-sm font-extrabold text-[#003580]">
-                <Lightbulb className="w-4 h-4 text-[#febb02]" /> Why this plan
-              </span>
-              {showWhy ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-            </button>
-            {showWhy && (
-              <ul className="px-4 pb-4 space-y-1.5 text-xs text-slate-700 list-disc pl-9">
-                {reasons.map((r, i) => <li key={i}>{r}</li>)}
-              </ul>
-            )}
-          </div>
-        )}
+        <WhyThisPlan tripPackage={pkg} interests={interests} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
+            <VisualRoute tripPackage={pkg} />
             <Timeline
               tripPackage={pkg}
               onOpenSwapFlight={booked ? undefined : (item) => open('flight', { targetItem: item })}
               onOpenSwapHotel={booked ? undefined : (item) => open('hotel', { targetItem: item })}
+              onOpenCityGuide={(item) => setGuide({ city: item.city, area: item.details?.area })}
               onRemoveAttraction={booked ? undefined : handleRemoveAttraction}
               onOpenAddAttraction={booked ? undefined : (date) => open('add_attraction', { targetDate: date })}
               readOnly={booked}
@@ -170,7 +162,10 @@ export default function PackagePage() {
         targetDate={swapModalState.targetDate}
         tripPackage={pkg}
         onApply={applyChange}
+        interests={interests}
       />
+
+      <CityGuideDrawer city={guide?.city} area={guide?.area} onClose={() => setGuide(null)} />
     </div>
   );
 }
