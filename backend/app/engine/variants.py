@@ -1,8 +1,7 @@
-"""G4 three packages (cheapest / fastest / best rated) and G3 city-plan options.
+"""G4 package variants (cheapest / best rated, plus the recommended one) and G3 city-plan options.
 
 Definitions (problem statement):
   cheapest    lowest total price
-  fastest     least total travel time = flight durations + city-to-city transfer durations
   best rated  highest average hotel `stars` per night, within budget (guest `rating` does not count)
 On a tie either package may be shown; we break ties by the lower price.
 """
@@ -48,36 +47,11 @@ def _polish(ctx: PlanCtx, cand: dict, tr_range: Tuple[int, int]) -> dict:
     return out
 
 
-# ============================================================================ fastest
+# ============================================================================ best rated
 def _transit(ctx: PlanCtx, a: dict, r: dict) -> int:
     return a["duration_minutes"] + r["duration_minutes"] + ctx.link_minutes
 
 
-def _fastest(by_k: Dict[int, List[PlanCtx]], budget: int) -> Optional[Tuple[PlanCtx, dict]]:
-    """The least-travel-time package that fits the budget (cheapest among equal travel times)."""
-    entries = []
-    for ctxs in by_k.values():
-        for c in ctxs:
-            for t in {_transit(c, a, r) for a in c.arr_flights for r in c.ret_flights}:
-                entries.append((t, c))
-    entries.sort(key=lambda e: (e[0], e[1].plan))
-    i = 0
-    while i < len(entries):
-        t, group = entries[i][0], []
-        while i < len(entries) and entries[i][0] == t:
-            group.append(entries[i][1])
-            i += 1
-        best = None
-        for c in group:
-            cand = best_min_cost(c, lambda a, r, c=c, t=t: _transit(c, a, r) == t)
-            if cand and cand["total"] <= budget and (best is None or (cand["total"], c.plan) < (best[1]["total"], best[0].plan)):
-                best = (c, cand)
-        if best:
-            return best
-    return None
-
-
-# ============================================================================ best rated
 def _stars_pareto(options: List[dict], by_area: bool) -> List[dict]:
     """Keep options not dominated on (price lower, stars higher); per area for the first/last city."""
     groups: Dict[Optional[str], List[dict]] = {}
@@ -168,24 +142,18 @@ def build_variants(req: TripRequest, cat, inv: Optional[Inventory] = None) -> di
     cheap["score"], cheap["usable"] = score_candidate(c0, cheap, tr)
     found["cheapest"] = finalize(c0, cheap, tr, extras=False)
 
-    fast = _fastest(by_k, req.budget_inr)
-    found["fastest"] = finalize(fast[0], _polish(fast[0], fast[1], tr), tr, extras=True) if fast else None
-
     rated = _best_rated(by_k)
     found["best_rated"] = finalize(rated[0], _polish(rated[0], rated[1], tr), tr, extras=True) if rated else None
 
     notes: List[str] = []
-    for name, label in (("fastest", "fastest"), ("best_rated", "best-rated")):
-        if found[name] is None:
-            notes.append(f"No {label} package fits your budget, so only the other choices are shown.")
+    if found["best_rated"] is None:
+        notes.append("No best-rated package fits your budget, so only the other choices are shown.")
 
     def sig(it: Optional[Itinerary]):
         if it is None:
             return None
         return (tuple((l.city, l.nights, l.hotel["hotel_id"], l.room["room_id"]) for l in it.legs),
                 it.arr_flight["flight_id"], it.ret_flight["flight_id"])
-    if found["fastest"] and sig(found["fastest"]) == sig(found["cheapest"]):
-        notes.append("The cheapest package is also the fastest.")
     if found["best_rated"] and sig(found["best_rated"]) == sig(found["cheapest"]):
         notes.append("The cheapest package is also the best rated.")
     return {"variants": found, "notes": notes}

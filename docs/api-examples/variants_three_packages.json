@@ -3,18 +3,20 @@
   "body": {
     "outcome": "VARIANTS",
     "recommended": {
-      "package_id": "pkg_4c1cee3c72ce",
+      "package_id": "pkg_67115144521f",
       "status": "PLANNED",
       "variant": "RECOMMENDED",
       "traveler": {
         "name": "Traveler",
         "home_airport": "BLR",
+        "departure_city": "Bengaluru",
         "adults": 2,
         "children": 1,
         "child_ages": [
           6
         ]
       },
+      "nights": 6,
       "request": {
         "departure_city": "Bengaluru",
         "country": "Japan",
@@ -25,7 +27,8 @@
           6
         ],
         "budget_inr": 350000,
-        "traveler_name": "Traveler"
+        "traveler_name": "Traveler",
+        "interests": []
       },
       "country": "Japan",
       "start_date": "2027-04-10",
@@ -76,27 +79,122 @@
           "Flights and city-to-city travel add up to 18h 55m including Tokyo → Kyoto (2h 15m).",
           "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:10 pm.",
           "Hotels average 4.7★ (Ginza Imperial Suites in Tokyo, Higashiyama Machiya Stay in Kyoto) and are all family friendly.",
+          "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+          "Rooms: 1 × Family Room in Tokyo, 1 × Family Room in Kyoto — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
           "The holiday costs ₹3,45,646 of your ₹3,50,000 budget (99%), leaving ₹4,354.",
           "10 sight(s) planned across 6 day(s) — a mix of district, market, museum, nature."
         ],
         "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
       },
+      "route": {
+        "origin": {
+          "city": "Bengaluru",
+          "airport": "BLR",
+          "airport_name": "Kempegowda International Airport",
+          "lat": 13.1986,
+          "lng": 77.7066
+        },
+        "stops": [
+          {
+            "order": 1,
+            "city": "Tokyo",
+            "nights": 4,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-14",
+            "hotel": "Ginza Imperial Suites",
+            "lat": 35.6753,
+            "lng": 139.7595
+          },
+          {
+            "order": 2,
+            "city": "Kyoto",
+            "nights": 2,
+            "check_in": "2027-04-14",
+            "check_out": "2027-04-16",
+            "hotel": "Higashiyama Machiya Stay",
+            "lat": 35.0031,
+            "lng": 135.7767
+          }
+        ],
+        "legs": [
+          {
+            "kind": "FLIGHT",
+            "direction": "OUT",
+            "mode": "FLIGHT",
+            "from": "Bengaluru",
+            "to": "Tokyo",
+            "from_code": "BLR",
+            "to_code": "NRT",
+            "label": "AirVeda AV 520",
+            "stops": 0,
+            "duration_minutes": 430,
+            "duration_label": "7h 10m",
+            "depart": "2027-04-09T23:50:00",
+            "arrive": "2027-04-10T10:30:00",
+            "side": "start",
+            "order": 1
+          },
+          {
+            "kind": "INTERCITY",
+            "direction": "ONWARD",
+            "mode": "TRAIN",
+            "from": "Tokyo",
+            "to": "Kyoto",
+            "label": "Shinkansen Tokyo to Kyoto",
+            "duration_minutes": 135,
+            "duration_label": "2h 15m",
+            "order": 2
+          },
+          {
+            "kind": "FLIGHT",
+            "direction": "BACK",
+            "mode": "FLIGHT",
+            "from": "Osaka",
+            "to": "Bengaluru",
+            "from_code": "KIX",
+            "to_code": "BLR",
+            "label": "AirVeda AV 515",
+            "stops": 0,
+            "duration_minutes": 570,
+            "duration_label": "9h 30m",
+            "depart": "2027-04-16T12:00:00",
+            "arrive": "2027-04-16T18:00:00",
+            "side": "end",
+            "order": 3
+          }
+        ],
+        "path": [
+          "Bengaluru",
+          "Tokyo",
+          "Kyoto",
+          "Bengaluru"
+        ],
+        "summary": {
+          "cities": 2,
+          "nights": 6,
+          "travel_minutes": 1135,
+          "travel_label": "18h 55m",
+          "label": "Bengaluru → Tokyo → Kyoto → Bengaluru"
+        }
+      },
       "reservation": null
     },
     "variants": {
       "cheapest": {
-        "package_id": "pkg_73de50509234",
+        "package_id": "pkg_f63fa091f70e",
         "status": "PLANNED",
         "variant": "CHEAPEST",
         "traveler": {
           "name": "Traveler",
           "home_airport": "BLR",
+          "departure_city": "Bengaluru",
           "adults": 2,
           "children": 1,
           "child_ages": [
             6
           ]
         },
+        "nights": 6,
         "request": {
           "departure_city": "Bengaluru",
           "country": "Japan",
@@ -107,7 +205,8 @@
             6
           ],
           "budget_inr": 350000,
-          "traveler_name": "Traveler"
+          "traveler_name": "Traveler",
+          "interests": []
         },
         "country": "Japan",
         "start_date": "2027-04-10",
@@ -152,101 +251,99 @@
             "Flights and city-to-city travel add up to 17h 10m.",
             "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:00 pm.",
             "Hotels average 3.0★ (Ueno Garden Inn in Tokyo) and are all family friendly.",
+            "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+            "Rooms: 1 × Family Room in Tokyo — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
             "The holiday costs ₹2,19,324 of your ₹3,50,000 budget (63%), leaving ₹1,30,676.",
             "5 sight(s) planned across 5 day(s) — a mix of district, market, park, shrine."
           ],
           "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
         },
-        "reservation": null
-      },
-      "fastest": {
-        "package_id": "pkg_7ddb612c8fa7",
-        "status": "PLANNED",
-        "variant": "FASTEST",
-        "traveler": {
-          "name": "Traveler",
-          "home_airport": "BLR",
-          "adults": 2,
-          "children": 1,
-          "child_ages": [
-            6
-          ]
-        },
-        "request": {
-          "departure_city": "Bengaluru",
-          "country": "Japan",
-          "start_date": "2027-04-10",
-          "nights": 6,
-          "adults": 2,
-          "child_ages": [
-            6
+        "route": {
+          "origin": {
+            "city": "Bengaluru",
+            "airport": "BLR",
+            "airport_name": "Kempegowda International Airport",
+            "lat": 13.1986,
+            "lng": 77.7066
+          },
+          "stops": [
+            {
+              "order": 1,
+              "city": "Tokyo",
+              "nights": 6,
+              "check_in": "2027-04-10",
+              "check_out": "2027-04-16",
+              "hotel": "Ueno Garden Inn",
+              "lat": 35.712,
+              "lng": 139.7728
+            }
           ],
-          "budget_inr": 350000,
-          "traveler_name": "Traveler"
-        },
-        "country": "Japan",
-        "start_date": "2027-04-10",
-        "end_date": "2027-04-16",
-        "city_plan": [
-          {
-            "city": "Tokyo",
+          "legs": [
+            {
+              "kind": "FLIGHT",
+              "direction": "OUT",
+              "mode": "FLIGHT",
+              "from": "Bengaluru",
+              "to": "Tokyo",
+              "from_code": "BLR",
+              "to_code": "NRT",
+              "label": "AirVeda AV 520",
+              "stops": 0,
+              "duration_minutes": 430,
+              "duration_label": "7h 10m",
+              "depart": "2027-04-09T23:50:00",
+              "arrive": "2027-04-10T10:30:00",
+              "side": "start",
+              "order": 1
+            },
+            {
+              "kind": "FLIGHT",
+              "direction": "BACK",
+              "mode": "FLIGHT",
+              "from": "Tokyo",
+              "to": "Bengaluru",
+              "from_code": "HND",
+              "to_code": "BLR",
+              "label": "Nippon Sky NS 806",
+              "stops": 0,
+              "duration_minutes": 600,
+              "duration_label": "10h 00m",
+              "depart": "2027-04-16T11:00:00",
+              "arrive": "2027-04-16T17:30:00",
+              "side": "end",
+              "order": 2
+            }
+          ],
+          "path": [
+            "Bengaluru",
+            "Tokyo",
+            "Bengaluru"
+          ],
+          "summary": {
+            "cities": 1,
             "nights": 6,
-            "check_in": "2027-04-10",
-            "check_out": "2027-04-16"
+            "travel_minutes": 1030,
+            "travel_label": "17h 10m",
+            "label": "Bengaluru → Tokyo → Bengaluru"
           }
-        ],
-        "pricing": {
-          "total_inr": 236964,
-          "budget_inr": 350000,
-          "remaining_inr": 113036,
-          "over_budget": false,
-          "breakdown": {
-            "flights": 156240,
-            "hotels": 56784,
-            "transfers": 6300,
-            "attractions": 17640
-          }
-        },
-        "metrics": {
-          "transit_minutes": 1030,
-          "usable_ground_minutes": 4380,
-          "avg_hotel_stars": 3.0,
-          "quality_score": 71.7,
-          "budget_used_pct": 67.7,
-          "total": 236964
-        },
-        "items": "… 16 items, same shape as build_package_menon.json …",
-        "days": "… 7 days, same shape as build_package_menon.json …",
-        "warnings": [
-          "CHECKIN_TIME: you reach Ueno Garden Inn around 1:00 pm, before check-in opens at 15:00."
-        ],
-        "rationale": {
-          "headline": "Tokyo (6 nights)",
-          "reasons": [
-            "6 nights would normally suit 2 city(ies), but a 1-city plan fits your budget, flights and rooms best.",
-            "Flights and city-to-city travel add up to 17h 10m.",
-            "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:00 pm.",
-            "Hotels average 3.0★ (Ueno Garden Inn in Tokyo) and are all family friendly.",
-            "The holiday costs ₹2,36,964 of your ₹3,50,000 budget (68%), leaving ₹1,13,036.",
-            "11 sight(s) planned across 6 day(s) — a mix of district, market, museum, park."
-          ],
-          "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
         },
         "reservation": null
       },
       "best_rated": {
-        "package_id": "pkg_29d7c12f4d96",
+        "package_id": "pkg_ac2ba829ec1b",
         "status": "PLANNED",
         "variant": "BEST_RATED",
         "traveler": {
           "name": "Traveler",
           "home_airport": "BLR",
+          "departure_city": "Bengaluru",
           "adults": 2,
           "children": 1,
           "child_ages": [
             6
           ]
         },
+        "nights": 6,
         "request": {
           "departure_city": "Bengaluru",
           "country": "Japan",
@@ -257,7 +354,8 @@
             6
           ],
           "budget_inr": 350000,
-          "traveler_name": "Traveler"
+          "traveler_name": "Traveler",
+          "interests": []
         },
         "country": "Japan",
         "start_date": "2027-04-10",
@@ -302,16 +400,85 @@
             "Flights and city-to-city travel add up to 17h 10m.",
             "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:20 pm.",
             "Hotels average 5.0★ (Shinjuku Skyline Tower Hotel in Tokyo) and are all family friendly.",
+            "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+            "Rooms: 1 × Family Room in Tokyo — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
             "The holiday costs ₹3,34,404 of your ₹3,50,000 budget (96%), leaving ₹15,596.",
             "11 sight(s) planned across 6 day(s) — a mix of district, market, museum, park."
           ],
           "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
         },
+        "route": {
+          "origin": {
+            "city": "Bengaluru",
+            "airport": "BLR",
+            "airport_name": "Kempegowda International Airport",
+            "lat": 13.1986,
+            "lng": 77.7066
+          },
+          "stops": [
+            {
+              "order": 1,
+              "city": "Tokyo",
+              "nights": 6,
+              "check_in": "2027-04-10",
+              "check_out": "2027-04-16",
+              "hotel": "Shinjuku Skyline Tower Hotel",
+              "lat": 35.6983,
+              "lng": 139.699
+            }
+          ],
+          "legs": [
+            {
+              "kind": "FLIGHT",
+              "direction": "OUT",
+              "mode": "FLIGHT",
+              "from": "Bengaluru",
+              "to": "Tokyo",
+              "from_code": "BLR",
+              "to_code": "NRT",
+              "label": "AirVeda AV 520",
+              "stops": 0,
+              "duration_minutes": 430,
+              "duration_label": "7h 10m",
+              "depart": "2027-04-09T23:50:00",
+              "arrive": "2027-04-10T10:30:00",
+              "side": "start",
+              "order": 1
+            },
+            {
+              "kind": "FLIGHT",
+              "direction": "BACK",
+              "mode": "FLIGHT",
+              "from": "Tokyo",
+              "to": "Bengaluru",
+              "from_code": "HND",
+              "to_code": "BLR",
+              "label": "Nippon Sky NS 806",
+              "stops": 0,
+              "duration_minutes": 600,
+              "duration_label": "10h 00m",
+              "depart": "2027-04-16T11:00:00",
+              "arrive": "2027-04-16T17:30:00",
+              "side": "end",
+              "order": 2
+            }
+          ],
+          "path": [
+            "Bengaluru",
+            "Tokyo",
+            "Bengaluru"
+          ],
+          "summary": {
+            "cities": 1,
+            "nights": 6,
+            "travel_minutes": 1030,
+            "travel_label": "17h 10m",
+            "label": "Bengaluru → Tokyo → Bengaluru"
+          }
+        },
         "reservation": null
       }
     },
-    "notes": [
-      "The cheapest package is also the fastest."
-    ]
+    "notes": []
   }
 }

@@ -45,7 +45,7 @@ How NomadGrid "Build My Holiday" is put together, and why. Companion documents: 
 | `engine/attractions.py` | 190 | Eligible attractions, day placement, full-day assignment (bipartite matching), optional arrival/change-day visits | pricing, timeutil |
 | `engine/builder.py` | 546 | **The search**: plan contexts, cheapest search, quality search, scoring, assembling an itinerary, `build()` | all engine modules |
 | `engine/alternatives.py` | 105 | Over-budget alternatives (drop a city / fewer nights / shift date, combined) | builder |
-| `engine/variants.py` | 254 | **G4** cheapest / fastest / best-rated packages; **G3** city-plan options and building a chosen plan | builder |
+| `engine/variants.py` | 254 | **G4** cheapest / best-rated packages; **G3** city-plan options and building a chosen plan | builder |
 | `quickparse/parser.py` | 206 | **S1** plain-words request → form fields, with fixed rules | — |
 | `export/rationale.py` | 70 | **S3** "why this plan" sentences from the real itinerary | models, export |
 | `engine/inventory.py` | 20 | Effective seats/rooms = catalog minus our own usage (hook for S2) | catalog |
@@ -211,7 +211,7 @@ volume `nomadgrid-db`. Health check: `GET /api/health`. Verified: build, confirm
 
 | Feature | Where | How |
 |---|---|---|
-| **G4 three packages** | `engine/variants.py` | *Cheapest*: the exact minimum across all plans. *Fastest*: walk the distinct travel times (flights + city transfers) upward and take the first one that fits the budget, cheapest among equals. *Best rated*: per plan, the most hotel star-nights within budget (Pareto on price vs stars), then the best plan; guest rating is ignored. Fastest and best-rated use two attractions a day when the budget allows. |
+| **G4 package variants** | `engine/variants.py` | *Cheapest*: the exact minimum across all plans. *Best rated*: per plan, the most hotel star-nights within budget (Pareto on price vs stars), then the best plan; guest rating is ignored. Best-rated uses two attractions a day when the budget allows. |
 | **G3 change cities** | `engine/variants.py`, `changes/service.py` | `plan_options` scores every valid plan (best quality that fits, else cheapest) so an option's price equals what applying it gives. `CHANGE_CITY_PLAN` rebuilds the package for that plan, then **carries over the traveler's pinned hotels, flights and attractions** by re-applying them with the normal change rules; whatever can't carry over raises `PINNED_CONFLICT` instead of vanishing. |
 | **S2 seats and rooms used up** | `store/db.py` | `confirm` runs in one `BEGIN IMMEDIATE` transaction: check seats and room-nights against catalog minus `inventory_used`, record the usage, write the reservation. The app's `Inventory` view (catalog minus usage) feeds every build, option list and change, so later travelers never see seats that are gone. |
 | **S1 quick request** | `quickparse/parser.py` | Regular expressions and word lists only. Fields are claimed in a fixed order (budget, date, nights, adults, children, cities) and each matched text is blanked so no number is read twice. Unknowns are reported, never guessed; assumptions become `notes`. |

@@ -279,12 +279,12 @@ def main():
             assert field(page, "4. Number of Nights").input_value() != ""
 
         # ---------------------------------------------------------------- compare three packages (G4)
-        with step("compare: recommended, cheapest, fastest and best rated; open the best rated one"):
+        with step("compare: recommended, cheapest and best rated; open the best rated one"):
             page.goto(BASE)
             menon(page)
             page.get_by_role("button", name=re.compile("Compare Cheapest")).click()
             page.wait_for_url(BASE + "/compare")
-            for key in ("recommended", "cheapest", "fastest", "best_rated"):
+            for key in ("recommended", "cheapest", "best_rated"):
                 page.locator(f"[data-testid=variant-{key}]").wait_for()
             snap(page, "11_compare")
             page.locator("[data-testid=variant-best_rated]").get_by_role("button", name=re.compile("View and customise")).click()

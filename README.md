@@ -2,7 +2,7 @@
 
 Enter a trip — departure city, destination country, first day, nights, adults, children's ages and a budget — and get **one complete,
 rule-correct holiday package**: flights, hotels, airport and city transfers, and a day-by-day plan of attractions, priced in INR.
-Change the hotel, a flight, the attractions or even the **city plan** and the whole package is re-checked. Compare the **cheapest, fastest and
+Change the hotel, a flight, the attractions or even the **city plan** and the whole package is re-checked. Compare the **cheapest and
 best-rated** packages, or just **type the trip in plain words**. Confirm to get a **10-digit reservation number** that reopens the summary
 later, even after a restart — and booking really **uses up seats and rooms**, so the last seat can't be sold twice.
 
@@ -44,7 +44,7 @@ curl -X POST localhost:8000/api/parse-request -H "content-type: application/json
 | **G1** A change fixes or warns about what else it affects | ✅ shifted arrival visits, moved airport pickups ("knock-on" notes), check-in times, day-load warnings |
 | **G2** Price difference on every change option | ✅ `price_delta_inr` on every option |
 | **G3** Choose another city plan; the app rebuilds | ✅ compare every valid plan, switch with one call; your own picks are kept |
-| **G4** Three packages: cheapest, fastest, best rated | ✅ plus the recommended one; you pick |
+| **G4** Package variants: cheapest and best rated | ✅ plus the recommended one; you pick (the *fastest* variant was dropped on purpose) |
 | **S1** Plain-words request read with rules (no AI) | ✅ understands dates, lakhs, ages, city aliases; says what is missing |
 | **S2** Booking uses up seats and rooms in our own store | ✅ atomic; a taken last seat or room gives a clear refusal |
 | **S3** Own idea | ✅ "Why this plan" — a plain-language explanation on every package, plus **Undo** for the last change |
@@ -59,7 +59,7 @@ curl -X POST localhost:8000/api/parse-request -H "content-type: application/json
   city per 3 nights, treat plans within 120 minutes of the best transit time as equal, then pick the best quality (stars, family fit, direct flights,
   sights, time) that fits the budget.
 - **Your choices win.** Anything the traveler picks is never dropped silently — including when switching city plans; conflicts are explained and the traveler decides.
-- **Three packages.** *Cheapest* = lowest total. *Fastest* = least flight + city-transfer time. *Best rated* = highest average hotel stars per night within budget (guest rating ignored).
+- **Package variants.** *Cheapest* = lowest total. *Best rated* = highest average hotel stars per night within budget (guest rating ignored).
 
 ## The API (15 endpoints)
 

@@ -56,7 +56,7 @@ traveler chose it — you may show a small "your choice" marker.
 | Feature | Calls | What to render |
 |---|---|---|
 | **Quick request box** (S1) | `POST /api/parse-request {text}` | A text box above the form. Fill the form from `fields`; highlight `missing` inputs; show `notes` (assumptions) and, when `ready` is false, ask the traveler to check. |
-| **Three packages** (G4) | `POST /api/packages/variants` with the 7 fields | Cards/tabs: *Recommended*, *Cheapest*, *Fastest*, *Best rated* (`variant`, `pricing`, `metrics.transit_minutes`, `metrics.avg_hotel_stars`, city strip). Picking one opens `/packages/:package_id`. Show `notes`. `OVER_BUDGET`/`NO_PACKAGE` come back as in the normal build. |
+| **Package variants** (G4) | `POST /api/packages/variants` with the 7 fields | Cards/tabs: *Recommended*, *Cheapest*, *Best rated* (`variant`, `pricing`, `metrics.transit_minutes`, `metrics.avg_hotel_stars`, city strip). Picking one opens `/packages/:package_id`. Show `notes`. `OVER_BUDGET`/`NO_PACKAGE` come back as in the normal build. |
 | **Change cities** (G3) | `GET …/options/city-plans` → `POST …/changes {op:"CHANGE_CITY_PLAN", plan}` | A plan chooser: each plan's cities, nights, `total_inr`, `price_delta_inr`, `warnings`; mark `current` and `preferred`; grey/flag `fits_budget:false` ("needs +₹…"). Handle `BUDGET_EXCEEDED` and `PINNED_CONFLICT` like any other change. |
 | **Undo** | `POST …/undo` | An "Undo" button/toast after every applied change (`undo_available`); replace the package with `package`. |
 | **"Why this plan"** (S3) | in the package: `rationale` | A short panel: `headline` and the `reasons` list. |

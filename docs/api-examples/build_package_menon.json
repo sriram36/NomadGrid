@@ -3,18 +3,20 @@
   "body": {
     "outcome": "PACKAGE",
     "package": {
-      "package_id": "pkg_189d84cd78f6",
+      "package_id": "pkg_90c061f118d2",
       "status": "PLANNED",
       "variant": "DEFAULT",
       "traveler": {
         "name": "Traveler",
         "home_airport": "BLR",
+        "departure_city": "Bengaluru",
         "adults": 2,
         "children": 1,
         "child_ages": [
           6
         ]
       },
+      "nights": 6,
       "request": {
         "departure_city": "Bengaluru",
         "country": "Japan",
@@ -25,7 +27,8 @@
           6
         ],
         "budget_inr": 350000,
-        "traveler_name": "Traveler"
+        "traveler_name": "Traveler",
+        "interests": []
       },
       "country": "Japan",
       "start_date": "2027-04-10",
@@ -82,6 +85,18 @@
             "DIRECT"
           ],
           "pinned": false,
+          "details": {
+            "isArrival": true,
+            "isReturn": false,
+            "airline": "AirVeda",
+            "flightNumber": "AV 832",
+            "from": "BLR",
+            "to": "KIX",
+            "durationMinutes": 490,
+            "stops": 0,
+            "pricePerSeat": 34440,
+            "seatsLeft": 5
+          },
           "day": "2027-04-10",
           "room_id": null,
           "image": null,
@@ -104,6 +119,15 @@
           "leg": "AIRPORT_ARRIVAL",
           "title": "Kansai limousine bus to Umeda",
           "subtitle": "3 traveller(s) · priced per person",
+          "details": {
+            "isAirportTransfer": true,
+            "transferType": "AIRPORT_BUS",
+            "durationMinutes": 75,
+            "pricing": "PER_PERSON",
+            "fromPoint": "KIX",
+            "toPoint": "Umeda area hotels",
+            "maxPassengers": 99
+          },
           "day": "2027-04-10",
           "room_id": null,
           "badges": [],
@@ -135,6 +159,18 @@
           "image": "/images/attractions/ATT-OSA-007.jpg",
           "pinned": false,
           "day": "2027-04-10",
+          "details": {
+            "category": "DISTRICT",
+            "visitMinutes": 60,
+            "openHours": "10:00 - 22:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FOOD_MARKETS"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i3",
           "status": "PLANNED",
@@ -161,6 +197,21 @@
           ],
           "image": "/images/hotels/HOTEL-LUXURY-1.jpg",
           "pinned": false,
+          "details": {
+            "hotelName": "Umeda Grand Hotel",
+            "roomType": "Family Room",
+            "roomCategory": "FAMILY",
+            "area": "Umeda",
+            "stars": 5,
+            "rating": 9.0,
+            "pricePerNight": 21168,
+            "roomsNeeded": 1,
+            "nights": 4,
+            "checkInFrom": "15:00",
+            "checkOutUntil": "11:00",
+            "familyFriendly": true,
+            "refundable": true
+          },
           "day": "2027-04-10",
           "item_id": "i4",
           "status": "PLANNED",
@@ -188,6 +239,18 @@
           "image": "/images/attractions/ATT-OSA-002.jpg",
           "pinned": false,
           "day": "2027-04-11",
+          "details": {
+            "category": "MARKET",
+            "visitMinutes": 60,
+            "openHours": "09:00 - 18:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FOOD_MARKETS"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i5",
           "status": "PLANNED",
@@ -214,6 +277,18 @@
           "image": "/images/attractions/ATT-OSA-003.jpg",
           "pinned": false,
           "day": "2027-04-11",
+          "details": {
+            "category": "CASTLE",
+            "visitMinutes": 90,
+            "openHours": "09:00 - 17:00",
+            "pricePerPerson": 336,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "HISTORY_CULTURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i6",
           "status": "PLANNED",
@@ -240,6 +315,18 @@
           "image": "/images/attractions/ATT-OSA-006.jpg",
           "pinned": false,
           "day": "2027-04-12",
+          "details": {
+            "category": "VIEWPOINT",
+            "visitMinutes": 60,
+            "openHours": "09:30 - 22:30",
+            "pricePerPerson": 840,
+            "childPrice": 392,
+            "childFriendly": true,
+            "interestTags": [
+              "VIEWS_ADVENTURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i7",
           "status": "PLANNED",
@@ -267,6 +354,18 @@
           "image": "/images/attractions/ATT-OSA-001.jpg",
           "pinned": false,
           "day": "2027-04-12",
+          "details": {
+            "category": "DISTRICT",
+            "visitMinutes": 90,
+            "openHours": "10:00 - 23:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FOOD_MARKETS"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i8",
           "status": "PLANNED",
@@ -293,6 +392,18 @@
           "image": "/images/attractions/ATT-OSA-009.jpg",
           "pinned": false,
           "day": "2027-04-13",
+          "details": {
+            "category": "MUSEUM",
+            "visitMinutes": 90,
+            "openHours": "09:30 - 17:00",
+            "pricePerPerson": 224,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FAMILY"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i9",
           "status": "PLANNED",
@@ -319,6 +430,18 @@
           "image": "/images/attractions/ATT-OSA-005.jpg",
           "pinned": false,
           "day": "2027-04-13",
+          "details": {
+            "category": "AQUARIUM",
+            "visitMinutes": 150,
+            "openHours": "10:00 - 20:00",
+            "pricePerPerson": 1512,
+            "childPrice": 784,
+            "childFriendly": true,
+            "interestTags": [
+              "FAMILY"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i10",
           "status": "PLANNED",
@@ -339,6 +462,15 @@
           "leg": "INTERCITY",
           "title": "Osaka → Kyoto",
           "subtitle": "3 traveller(s) · priced per person",
+          "details": {
+            "isAirportTransfer": false,
+            "transferType": "TRAIN",
+            "durationMinutes": 15,
+            "pricing": "PER_PERSON",
+            "fromPoint": "Shin-Osaka Station",
+            "toPoint": "Kyoto Station",
+            "maxPassengers": 99
+          },
           "day": "2027-04-14",
           "room_id": null,
           "badges": [],
@@ -370,6 +502,18 @@
           "image": "/images/attractions/ATT-KYO-005.jpg",
           "pinned": false,
           "day": "2027-04-14",
+          "details": {
+            "category": "MARKET",
+            "visitMinutes": 60,
+            "openHours": "10:00 - 17:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FOOD_MARKETS"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i12",
           "status": "PLANNED",
@@ -396,6 +540,21 @@
           ],
           "image": "/images/hotels/HOTEL-RYOKAN-1.jpg",
           "pinned": false,
+          "details": {
+            "hotelName": "Arashiyama River Ryokan",
+            "roomType": "Family Room",
+            "roomCategory": "FAMILY",
+            "area": "Arashiyama",
+            "stars": 4,
+            "rating": 9.2,
+            "pricePerNight": 22680,
+            "roomsNeeded": 1,
+            "nights": 2,
+            "checkInFrom": "15:00",
+            "checkOutUntil": "11:00",
+            "familyFriendly": true,
+            "refundable": false
+          },
           "day": "2027-04-14",
           "item_id": "i13",
           "status": "PLANNED",
@@ -423,6 +582,18 @@
           "image": "/images/attractions/ATT-KYO-002.jpg",
           "pinned": false,
           "day": "2027-04-15",
+          "details": {
+            "category": "SHRINE",
+            "visitMinutes": 120,
+            "openHours": "06:00 - 19:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "HISTORY_CULTURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i14",
           "status": "PLANNED",
@@ -450,6 +621,18 @@
           "image": "/images/attractions/ATT-KYO-004.jpg",
           "pinned": false,
           "day": "2027-04-15",
+          "details": {
+            "category": "NATURE",
+            "visitMinutes": 60,
+            "openHours": "07:00 - 18:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "NATURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i15",
           "status": "PLANNED",
@@ -470,6 +653,15 @@
           "leg": "AIRPORT_DEPARTURE",
           "title": "Kansai limousine bus to Kyoto",
           "subtitle": "3 traveller(s) · priced per person",
+          "details": {
+            "isAirportTransfer": true,
+            "transferType": "AIRPORT_BUS",
+            "durationMinutes": 100,
+            "pricing": "PER_PERSON",
+            "fromPoint": "KIX",
+            "toPoint": "Kyoto hotels (all areas)",
+            "maxPassengers": 99
+          },
           "day": "2027-04-16",
           "room_id": null,
           "badges": [],
@@ -498,6 +690,18 @@
             "DIRECT"
           ],
           "pinned": false,
+          "details": {
+            "isArrival": false,
+            "isReturn": true,
+            "airline": "AirVeda",
+            "flightNumber": "AV 515",
+            "from": "KIX",
+            "to": "BLR",
+            "durationMinutes": 570,
+            "stops": 0,
+            "pricePerSeat": 26040,
+            "seatsLeft": 9
+          },
           "day": "2027-04-16",
           "room_id": null,
           "image": null,
@@ -735,10 +939,103 @@
           "Flights and city-to-city travel add up to 17h 55m including Osaka → Kyoto (0h 15m).",
           "You land at 9:20 am on day 1 (both flights are direct); you are at your hotel around 11:35 am.",
           "Hotels average 4.7★ (Umeda Grand Hotel in Osaka, Arashiyama River Ryokan in Kyoto) and are all family friendly.",
+          "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+          "Rooms: 1 × Family Room in Osaka, 1 × Family Room in Kyoto — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
           "The holiday costs ₹3,26,662 of your ₹3,50,000 budget (93%), leaving ₹23,338.",
           "10 sight(s) planned across 6 day(s) — a mix of aquarium, castle, district, market."
         ],
         "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
+      "route": {
+        "origin": {
+          "city": "Bengaluru",
+          "airport": "BLR",
+          "airport_name": "Kempegowda International Airport",
+          "lat": 13.1986,
+          "lng": 77.7066
+        },
+        "stops": [
+          {
+            "order": 1,
+            "city": "Osaka",
+            "nights": 4,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-14",
+            "hotel": "Umeda Grand Hotel",
+            "lat": 34.7025,
+            "lng": 135.4959
+          },
+          {
+            "order": 2,
+            "city": "Kyoto",
+            "nights": 2,
+            "check_in": "2027-04-14",
+            "check_out": "2027-04-16",
+            "hotel": "Arashiyama River Ryokan",
+            "lat": 35.0094,
+            "lng": 135.6668
+          }
+        ],
+        "legs": [
+          {
+            "kind": "FLIGHT",
+            "direction": "OUT",
+            "mode": "FLIGHT",
+            "from": "Bengaluru",
+            "to": "Osaka",
+            "from_code": "BLR",
+            "to_code": "KIX",
+            "label": "AirVeda AV 832",
+            "stops": 0,
+            "duration_minutes": 490,
+            "duration_label": "8h 10m",
+            "depart": "2027-04-09T21:40:00",
+            "arrive": "2027-04-10T09:20:00",
+            "side": "start",
+            "order": 1
+          },
+          {
+            "kind": "INTERCITY",
+            "direction": "ONWARD",
+            "mode": "TRAIN",
+            "from": "Osaka",
+            "to": "Kyoto",
+            "label": "Shinkansen Osaka to Kyoto",
+            "duration_minutes": 15,
+            "duration_label": "0h 15m",
+            "order": 2
+          },
+          {
+            "kind": "FLIGHT",
+            "direction": "BACK",
+            "mode": "FLIGHT",
+            "from": "Osaka",
+            "to": "Bengaluru",
+            "from_code": "KIX",
+            "to_code": "BLR",
+            "label": "AirVeda AV 515",
+            "stops": 0,
+            "duration_minutes": 570,
+            "duration_label": "9h 30m",
+            "depart": "2027-04-16T12:00:00",
+            "arrive": "2027-04-16T18:00:00",
+            "side": "end",
+            "order": 3
+          }
+        ],
+        "path": [
+          "Bengaluru",
+          "Osaka",
+          "Kyoto",
+          "Bengaluru"
+        ],
+        "summary": {
+          "cities": 2,
+          "nights": 6,
+          "travel_minutes": 1075,
+          "travel_label": "17h 55m",
+          "label": "Bengaluru → Osaka → Kyoto → Bengaluru"
+        }
       },
       "reservation": null
     }

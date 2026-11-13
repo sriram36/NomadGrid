@@ -39,13 +39,12 @@ def test_fuzz_three_packages_are_always_valid_and_within_budget(cat, seed):
             continue
         seen += 1
         pk = {k: p for k, p in j["variants"].items() if p}
-        assert set(pk) == {"cheapest", "fastest", "best_rated"}
+        assert set(pk) == {"cheapest", "best_rated"}
         for name, p in pk.items():
             assert validate_trip(to_trip_format(p), cat) == [], (name, body)
             assert p["pricing"]["total_inr"] <= body["budget_inr"], (name, body)
         cheapest = pk["cheapest"]["pricing"]["total_inr"]
         assert cheapest <= min(p["pricing"]["total_inr"] for p in pk.values())
-        assert pk["fastest"]["metrics"]["transit_minutes"] <= min(p["metrics"]["transit_minutes"] for p in pk.values())
         assert pk["best_rated"]["metrics"]["avg_hotel_stars"] >= max(p["metrics"]["avg_hotel_stars"] for p in pk.values())
         if j["recommended"]:
             assert cheapest <= j["recommended"]["pricing"]["total_inr"]

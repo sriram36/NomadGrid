@@ -35,7 +35,7 @@ persistence (FR-P), JSON export, the budget-first flow, Docker packaging and the
 | **G1** Changes that affect other parts | ✅ shifted visits, moved airport pickups ("knock-on"), check-in time, day-load warnings | change and edge tests |
 | **G2** Price difference on every option | ✅ `price_delta_inr` | option tests |
 | **G3** Change cities | ✅ options for every valid plan, `CHANGE_CITY_PLAN`, the traveler's picks kept | every option applies at exactly its promised price (fuzz) |
-| **G4** Three packages | ✅ cheapest / fastest / best rated (+ recommended) | each wins at its promise; all valid and within budget (fuzz) |
+| **G4** Three packages | ✅ cheapest / best rated (+ recommended); *fastest dropped by decision* | each wins at its promise; all valid and within budget (fuzz) |
 | **S1** Quick request | ✅ rules only, reports what is missing | 60+ phrasings, hostile text, no slow regex |
 | **S2** Booking uses up seats and rooms | ✅ atomic in the database | 8-way race → exactly one winner; 70-booking stream never oversold |
 | **S3** Own idea | ✅ "Why this plan" on every package | numbers checked against the package |
@@ -93,6 +93,8 @@ Real payments, login/accounts, real supplier inventory, online deployment, curre
 ## 3A. Problem-statement compliance (non-negotiable)
 
 Everything the statement asks for is built exactly as written. This matrix maps each statement item to where this PRD builds it. **Before every push, re-read the statement rows for the features just built and tick them off** (compliance check, alongside the break-it session).
+
+> **Decision (Nov 2026): the *fastest* variant is dropped.** G4 now offers *Cheapest* and *Best rated* plus the *Recommended* package; every later mention of *fastest* in this document is superseded by this note.
 
 | Statement item | What it requires (short) | Built in | Owner |
 |---|---|---|---|

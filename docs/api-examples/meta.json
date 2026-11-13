@@ -44,6 +44,32 @@
       "first_night": "2027-04-01",
       "last_departure": "2027-04-20",
       "child_age_max": 17
-    }
+    },
+    "interests": [
+      {
+        "id": "HISTORY_CULTURE",
+        "label": "History & Culture"
+      },
+      {
+        "id": "NATURE",
+        "label": "Nature & Outdoors"
+      },
+      {
+        "id": "FAMILY",
+        "label": "Family Fun"
+      },
+      {
+        "id": "ART",
+        "label": "Art & Design"
+      },
+      {
+        "id": "FOOD_MARKETS",
+        "label": "Food & Markets"
+      },
+      {
+        "id": "VIEWS_ADVENTURE",
+        "label": "Views & Adventure"
+      }
+    ]
   }
 }

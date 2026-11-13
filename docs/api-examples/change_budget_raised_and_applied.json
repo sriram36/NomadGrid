@@ -3,18 +3,20 @@
   "body": {
     "result": "APPLIED",
     "package": {
-      "package_id": "pkg_92f9cbe005f3",
+      "package_id": "pkg_a8fd7f4d5485",
       "status": "PLANNED",
       "variant": "DEFAULT",
       "traveler": {
         "name": "Traveler",
         "home_airport": "BLR",
+        "departure_city": "Bengaluru",
         "adults": 2,
         "children": 1,
         "child_ages": [
           6
         ]
       },
+      "nights": 6,
       "request": {
         "departure_city": "Bengaluru",
         "country": "Japan",
@@ -25,7 +27,8 @@
           6
         ],
         "budget_inr": 225036,
-        "traveler_name": "Traveler"
+        "traveler_name": "Traveler",
+        "interests": []
       },
       "country": "Japan",
       "start_date": "2027-04-10",
@@ -76,6 +79,18 @@
             "DIRECT"
           ],
           "pinned": false,
+          "details": {
+            "isArrival": true,
+            "isReturn": false,
+            "airline": "AirVeda",
+            "flightNumber": "AV 520",
+            "from": "BLR",
+            "to": "NRT",
+            "durationMinutes": 430,
+            "stops": 0,
+            "pricePerSeat": 25200,
+            "seatsLeft": 9
+          },
           "day": "2027-04-10",
           "room_id": null,
           "image": null,
@@ -98,6 +113,15 @@
           "leg": "AIRPORT_ARRIVAL",
           "title": "Narita limousine bus to Asakusa",
           "subtitle": "3 traveller(s) · priced per person",
+          "details": {
+            "isAirportTransfer": true,
+            "transferType": "AIRPORT_BUS",
+            "durationMinutes": 95,
+            "pricing": "PER_PERSON",
+            "fromPoint": "NRT",
+            "toPoint": "Asakusa area hotels",
+            "maxPassengers": 99
+          },
           "day": "2027-04-10",
           "room_id": null,
           "badges": [],
@@ -128,6 +152,21 @@
           ],
           "image": "/images/hotels/HOTEL-BUSINESS-2.jpg",
           "pinned": true,
+          "details": {
+            "hotelName": "Asakusa River Hotel",
+            "roomType": "Family Room",
+            "roomCategory": "FAMILY",
+            "area": "Asakusa",
+            "stars": 3,
+            "rating": 8.4,
+            "pricePerNight": 10416,
+            "roomsNeeded": 1,
+            "nights": 6,
+            "checkInFrom": "15:00",
+            "checkOutUntil": "11:00",
+            "familyFriendly": true,
+            "refundable": false
+          },
           "day": "2027-04-10",
           "item_id": "i3",
           "status": "PLANNED",
@@ -155,6 +194,18 @@
           "image": "/images/attractions/ATT-TYO-008.jpg",
           "pinned": false,
           "day": "2027-04-11",
+          "details": {
+            "category": "PARK",
+            "visitMinutes": 90,
+            "openHours": "05:00 - 23:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "NATURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i4",
           "status": "PLANNED",
@@ -182,6 +233,18 @@
           "image": "/images/attractions/ATT-TYO-004.jpg",
           "pinned": false,
           "day": "2027-04-12",
+          "details": {
+            "category": "TEMPLE",
+            "visitMinutes": 60,
+            "openHours": "06:00 - 17:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "HISTORY_CULTURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i5",
           "status": "PLANNED",
@@ -209,6 +272,16 @@
           "image": "/images/attractions/ATT-TYO-011.jpg",
           "pinned": false,
           "day": "2027-04-13",
+          "details": {
+            "category": "DISTRICT",
+            "visitMinutes": 30,
+            "openHours": "00:00 - 24:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i6",
           "status": "PLANNED",
@@ -236,6 +309,18 @@
           "image": "/images/attractions/ATT-TYO-009.jpg",
           "pinned": false,
           "day": "2027-04-14",
+          "details": {
+            "category": "MARKET",
+            "visitMinutes": 60,
+            "openHours": "10:00 - 20:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "FOOD_MARKETS"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i7",
           "status": "PLANNED",
@@ -263,6 +348,18 @@
           "image": "/images/attractions/ATT-TYO-010.jpg",
           "pinned": false,
           "day": "2027-04-15",
+          "details": {
+            "category": "SHRINE",
+            "visitMinutes": 60,
+            "openHours": "06:00 - 17:00",
+            "pricePerPerson": 0,
+            "childPrice": 0,
+            "childFriendly": true,
+            "interestTags": [
+              "HISTORY_CULTURE"
+            ],
+            "matchedInterests": []
+          },
           "room_id": null,
           "item_id": "i8",
           "status": "PLANNED",
@@ -283,6 +380,15 @@
           "leg": "AIRPORT_DEPARTURE",
           "title": "Haneda limousine bus to Asakusa",
           "subtitle": "3 traveller(s) · priced per person",
+          "details": {
+            "isAirportTransfer": true,
+            "transferType": "AIRPORT_BUS",
+            "durationMinutes": 55,
+            "pricing": "PER_PERSON",
+            "fromPoint": "HND",
+            "toPoint": "Asakusa area hotels",
+            "maxPassengers": 99
+          },
           "day": "2027-04-16",
           "room_id": null,
           "badges": [],
@@ -311,6 +417,18 @@
             "DIRECT"
           ],
           "pinned": false,
+          "details": {
+            "isArrival": false,
+            "isReturn": true,
+            "airline": "Nippon Sky",
+            "flightNumber": "NS 806",
+            "from": "HND",
+            "to": "BLR",
+            "durationMinutes": 600,
+            "stops": 0,
+            "pricePerSeat": 26880,
+            "seatsLeft": 9
+          },
           "day": "2027-04-16",
           "room_id": null,
           "image": null,
@@ -484,11 +602,82 @@
           "Flights and city-to-city travel add up to 17h 10m.",
           "You land at 10:30 am on day 1 (both flights are direct); you are at your hotel around 1:05 pm.",
           "Hotels average 3.0★ (Asakusa River Hotel in Tokyo) and are all family friendly.",
+          "Safety margins are met: your airport pickup is 60 min after landing (rule: at least 60), and you reach the airport 195 min before the flight home (rule: at least 180).",
+          "Rooms: 1 × Family Room in Tokyo — the fewest rooms of that type that fit all 3 traveller(s) (2 adult(s), 1 child(ren)).",
           "The holiday costs ₹2,25,036 of your ₹2,25,036 budget (100%), leaving ₹0.",
           "5 sight(s) planned across 5 day(s) — a mix of district, market, park, shrine.",
           "Kept exactly as you chose: your hotel in Tokyo."
         ],
         "alternatives_hint": "Curious about a different mix of cities? Open the city-plan options to compare each plan's price and travel time."
+      },
+      "route": {
+        "origin": {
+          "city": "Bengaluru",
+          "airport": "BLR",
+          "airport_name": "Kempegowda International Airport",
+          "lat": 13.1986,
+          "lng": 77.7066
+        },
+        "stops": [
+          {
+            "order": 1,
+            "city": "Tokyo",
+            "nights": 6,
+            "check_in": "2027-04-10",
+            "check_out": "2027-04-16",
+            "hotel": "Asakusa River Hotel",
+            "lat": 35.712,
+            "lng": 139.796
+          }
+        ],
+        "legs": [
+          {
+            "kind": "FLIGHT",
+            "direction": "OUT",
+            "mode": "FLIGHT",
+            "from": "Bengaluru",
+            "to": "Tokyo",
+            "from_code": "BLR",
+            "to_code": "NRT",
+            "label": "AirVeda AV 520",
+            "stops": 0,
+            "duration_minutes": 430,
+            "duration_label": "7h 10m",
+            "depart": "2027-04-09T23:50:00",
+            "arrive": "2027-04-10T10:30:00",
+            "side": "start",
+            "order": 1
+          },
+          {
+            "kind": "FLIGHT",
+            "direction": "BACK",
+            "mode": "FLIGHT",
+            "from": "Tokyo",
+            "to": "Bengaluru",
+            "from_code": "HND",
+            "to_code": "BLR",
+            "label": "Nippon Sky NS 806",
+            "stops": 0,
+            "duration_minutes": 600,
+            "duration_label": "10h 00m",
+            "depart": "2027-04-16T11:00:00",
+            "arrive": "2027-04-16T17:30:00",
+            "side": "end",
+            "order": 2
+          }
+        ],
+        "path": [
+          "Bengaluru",
+          "Tokyo",
+          "Bengaluru"
+        ],
+        "summary": {
+          "cities": 1,
+          "nights": 6,
+          "travel_minutes": 1030,
+          "travel_label": "17h 10m",
+          "label": "Bengaluru → Tokyo → Bengaluru"
+        }
       },
       "reservation": null
     },

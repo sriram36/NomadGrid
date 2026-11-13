@@ -7,7 +7,7 @@ import SwapModal from '../components/SwapModal';
 import { useApp } from '../context/AppContext';
 
 const VARIANT_LABEL = {
-  CHEAPEST: 'Cheapest', FASTEST: 'Fastest', BEST_RATED: 'Best rated', RECOMMENDED: 'Recommended',
+  CHEAPEST: 'Cheapest', BEST_RATED: 'Best rated', RECOMMENDED: 'Recommended',
   ALTERNATIVE: 'Fits your budget',
 };
 

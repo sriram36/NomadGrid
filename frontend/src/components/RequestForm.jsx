@@ -561,7 +561,7 @@ export default function RequestForm({
                 className="w-full sm:w-auto px-6 py-3 text-sm font-extrabold text-[#006ce4] bg-white border-2 border-[#006ce4] hover:bg-[#006ce4]/10 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Layers className="w-4 h-4" />
-                Compare Cheapest · Fastest · Best Rated
+                Compare Cheapest · Best Rated
               </button>
               <button
                 type="submit"
