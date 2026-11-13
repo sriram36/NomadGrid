@@ -5,7 +5,8 @@ import { buildPlanInsights } from '../lib/planInsights';
 // "Why this plan": the backend's own reasons, plus a rule and trade-off check worked out from this package.
 export default function WhyThisPlan({ tripPackage }) {
   const [open, setOpen] = useState(true);
-  const reasons = tripPackage.rationale?.reasons || [];
+  // the margins and room lines are shown in the check below, so they are not repeated in the plain list
+  const reasons = (tripPackage.rationale?.reasons || []).filter((r) => !r.startsWith('Safety margins') && !r.startsWith('Rooms:'));
   const insights = useMemo(() => buildPlanInsights(tripPackage), [tripPackage]);
   if (!reasons.length && !insights.length) return null;
 

@@ -3,7 +3,7 @@
 Enter a trip — departure city, destination country, first day, nights, adults, children's ages and a budget — and get **one complete,
 rule-correct holiday package**: flights, hotels, airport and city transfers, and a day-by-day plan of attractions, priced in INR.
 Change the hotel, a flight, the attractions or even the **city plan** and the whole package is re-checked. Compare the **cheapest and
-best-rated** packages, or just **type the trip in plain words**. Confirm to get a **10-digit reservation number** that reopens the summary
+best-rated** packages (the API can also read a trip typed in plain words; the UI no longer shows that box). Confirm to get a **10-digit reservation number** that reopens the summary
 later, even after a restart — and booking really **uses up seats and rooms**, so the last seat can't be sold twice.
 
 > Hackathon "Problem 1 — Holiday Package". The problem statement is the contract; every must-have, good-to-have and stretch feature is built and verified.
