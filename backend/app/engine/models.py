@@ -14,6 +14,7 @@ class TripRequest:
     child_ages: Tuple[int, ...]
     budget_inr: int
     traveler_name: str = "Traveler"
+    interests: Tuple[str, ...] = ()     # S1: optional interest tags (see app/interests.py)
 
     @property
     def children(self) -> int:
@@ -35,7 +36,7 @@ class TripRequest:
             "departure_city": self.departure_city, "country": self.country,
             "start_date": self.start_date.isoformat(), "nights": self.nights,
             "adults": self.adults, "child_ages": list(self.child_ages),
-            "budget_inr": self.budget_inr, "traveler_name": self.traveler_name,
+            "budget_inr": self.budget_inr, "traveler_name": self.traveler_name, "interests": list(self.interests),
         }
 
 

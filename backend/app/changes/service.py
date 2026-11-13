@@ -15,6 +15,7 @@ from app.changes.rebuild import parse_date, recompute_metrics, itinerary_from_pa
 from app.core.pricing import attraction_price, flight_price, hotel_price, rooms_needed
 from app.engine import attractions as attr
 from app.engine.alternatives import inr
+from app.interests import matched
 from app.engine.models import Itinerary
 from app.export.package import time_label, to_package, to_trip_format
 from app.validator.validate import validate_trip
@@ -197,11 +198,13 @@ def attraction_options_for(pkg: dict, day_text: str, cat, inv) -> dict:
         if not choices:
             continue
         price = attraction_price(a, req.adults, req.children)
+        mine = matched(a, req.interests)
         out.append({"attraction_id": a["attraction_id"], "name": a["name"], "category": a["category"],
+                    "matches_interests": bool(mine), "matched_interests": list(mine),
                     "duration_minutes": a["visit_minutes"], "price_inr": price, "price_delta_inr": price,
                     "child_friendly": a.get("child_friendly", False), "image": ("/" + a["image"]) if a.get("image") else None,
                     "start_choices": [f"{s // 60:02d}:{s % 60:02d}" for s in choices[:16]],
                     "available": True, "fits_budget": total + price <= budget,
                     "budget_needed_inr": max(0, total + price - budget)})
-    out.sort(key=lambda o: (o["price_inr"], o["attraction_id"]))
+    out.sort(key=lambda o: (0 if o["matches_interests"] else 1, o["price_inr"], o["attraction_id"]))
     return {"date": day.isoformat(), "city": city, "options": out}

@@ -1,0 +1,731 @@
+{
+ "disclaimer": "Illustrative suggestions with estimated prices per person. These are out-of-pocket meals: they are NOT bookable here and are NOT included in the package total.",
+ "source": "NomadGrid editorial notes: general travel guidance, not part of the provided catalog.",
+ "cities": {
+  "Tokyo": {
+   "Asakusa": [
+    {
+     "name": "Asakusa Tempura House",
+     "cuisine": "Tempura",
+     "dietary_tags": [
+      "SEAFOOD",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1600,
+     "note": "Set lunches near the temple street."
+    },
+    {
+     "name": "Nakamise Street Snacks",
+     "cuisine": "Street snacks",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 500,
+     "note": "Rice crackers, melon bread and sweet buns."
+    },
+    {
+     "name": "Kappabashi Ramen Stand",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 750,
+     "note": "Quick, filling bowls; a vegetarian broth is usually offered."
+    }
+   ],
+   "Ginza": [
+    {
+     "name": "Ginza Sushi Counter",
+     "cuisine": "Sushi",
+     "dietary_tags": [
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 4500,
+     "note": "Counter seating and set courses."
+    },
+    {
+     "name": "Ginza Department Store Food Hall",
+     "cuisine": "Mixed Japanese",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Bento and ready meals from many stalls."
+    },
+    {
+     "name": "Ginza Soba Kitchen",
+     "cuisine": "Soba noodles",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 900,
+     "note": "Cold and hot buckwheat noodles."
+    }
+   ],
+   "Shibuya": [
+    {
+     "name": "Shibuya Izakaya Alley",
+     "cuisine": "Izakaya",
+     "dietary_tags": [
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 2200,
+     "note": "Small plates in a casual evening setting."
+    },
+    {
+     "name": "Shibuya Kaiten Sushi",
+     "cuisine": "Conveyor sushi",
+     "dietary_tags": [
+      "SEAFOOD",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1200,
+     "note": "Pay by plate; easy with children."
+    },
+    {
+     "name": "Shibuya Plant Cafe",
+     "cuisine": "Vegan Japanese",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1000,
+     "note": "Plant-based set meals."
+    }
+   ],
+   "Shinagawa": [
+    {
+     "name": "Shinagawa Station Ramen Street",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Several ramen shops under one roof."
+    },
+    {
+     "name": "Shinagawa Tonkatsu Diner",
+     "cuisine": "Pork cutlet",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Set meals with unlimited rice and cabbage."
+    },
+    {
+     "name": "Shinagawa Halal Curry Kitchen",
+     "cuisine": "Curry",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 900,
+     "note": "Halal-certified curry with vegetable options."
+    }
+   ],
+   "Shinjuku": [
+    {
+     "name": "Shinjuku Yakitori Lane",
+     "cuisine": "Yakitori",
+     "dietary_tags": [],
+     "estimated_price_per_person_inr": 1800,
+     "note": "Grilled skewers in a lively lane."
+    },
+    {
+     "name": "Shinjuku Vegetarian Ramen",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 950,
+     "note": "Vegetable-based broth."
+    },
+    {
+     "name": "Shinjuku Okonomiyaki Grill",
+     "cuisine": "Okonomiyaki",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1300,
+     "note": "Savoury pancakes cooked at your table."
+    }
+   ],
+   "Ueno": [
+    {
+     "name": "Ameyoko Seafood Bowls",
+     "cuisine": "Seafood rice bowls",
+     "dietary_tags": [
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 1300,
+     "note": "Fresh bowls near the market street."
+    },
+    {
+     "name": "Ueno Park Tea House",
+     "cuisine": "Cafe",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 600,
+     "note": "Light lunches next to the park."
+    },
+    {
+     "name": "Ueno Gyoza Corner",
+     "cuisine": "Dumplings",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Pan-fried gyoza sets."
+    }
+   ]
+  },
+  "Kyoto": {
+   "Arashiyama": [
+    {
+     "name": "Arashiyama Yudofu Restaurant",
+     "cuisine": "Tofu cuisine",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 1500,
+     "note": "Kyoto-style simmered tofu sets."
+    },
+    {
+     "name": "Bamboo Path Soba Shop",
+     "cuisine": "Soba noodles",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Light noodles near the grove."
+    },
+    {
+     "name": "Togetsukyo Riverside Cafe",
+     "cuisine": "Cafe",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 650,
+     "note": "Sweets and tea with a river view."
+    }
+   ],
+   "Gion": [
+    {
+     "name": "Gion Kaiseki Dining",
+     "cuisine": "Kaiseki",
+     "dietary_tags": [
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 6500,
+     "note": "Multi-course seasonal meal; book ahead."
+    },
+    {
+     "name": "Hanamikoji Matcha Parlour",
+     "cuisine": "Tea and sweets",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Matcha desserts and light snacks."
+    },
+    {
+     "name": "Gion Udon House",
+     "cuisine": "Udon",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Hot noodle soups; a vegetarian broth is available."
+    }
+   ],
+   "Higashiyama": [
+    {
+     "name": "Kiyomizu Slope Tofu Shop",
+     "cuisine": "Tofu cuisine",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Set meals on the temple approach."
+    },
+    {
+     "name": "Higashiyama Obanzai Kitchen",
+     "cuisine": "Kyoto home cooking",
+     "dietary_tags": [
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 1400,
+     "note": "Small plates of seasonal vegetables."
+    },
+    {
+     "name": "Ninenzaka Dango Stand",
+     "cuisine": "Street snacks",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 400,
+     "note": "Grilled rice dumplings and sweets."
+    }
+   ],
+   "Kawaramachi": [
+    {
+     "name": "Kawaramachi Ramen Alley",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 850,
+     "note": "Late-opening noodle shops."
+    },
+    {
+     "name": "Pontocho Grill",
+     "cuisine": "Yakiniku",
+     "dietary_tags": [],
+     "estimated_price_per_person_inr": 3000,
+     "note": "Grilled meats in a narrow lane by the river."
+    },
+    {
+     "name": "Teramachi Vegetarian Cafe",
+     "cuisine": "Vegetarian",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1000,
+     "note": "Lunch sets under the covered arcade."
+    }
+   ],
+   "Kyoto Station": [
+    {
+     "name": "Station Tower Ramen Street",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 850,
+     "note": "Ramen shops on the upper floor."
+    },
+    {
+     "name": "Kyoto Station Bento Hall",
+     "cuisine": "Bento",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Ready meals for the train."
+    },
+    {
+     "name": "Station Halal Kitchen",
+     "cuisine": "Japanese halal",
+     "dietary_tags": [
+      "HALAL"
+     ],
+     "estimated_price_per_person_inr": 1300,
+     "note": "Halal-friendly set meals; check the menu on arrival."
+    }
+   ]
+  },
+  "Osaka": {
+   "Namba": [
+    {
+     "name": "Dotonbori Takoyaki Stand",
+     "cuisine": "Takoyaki",
+     "dietary_tags": [
+      "SEAFOOD",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 450,
+     "note": "Octopus balls; the local classic."
+    },
+    {
+     "name": "Namba Okonomiyaki Grill",
+     "cuisine": "Okonomiyaki",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Cooked on the table griddle."
+    },
+    {
+     "name": "Namba Kushikatsu Shop",
+     "cuisine": "Fried skewers",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1200,
+     "note": "Crisp skewers; one dip in the shared sauce only."
+    }
+   ],
+   "Shin-Osaka": [
+    {
+     "name": "Shin-Osaka Station Food Street",
+     "cuisine": "Mixed Japanese",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 900,
+     "note": "Many small counters under one roof."
+    },
+    {
+     "name": "Shin-Osaka Udon Bar",
+     "cuisine": "Udon",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Quick bowls before a train."
+    },
+    {
+     "name": "Shin-Osaka Curry House",
+     "cuisine": "Curry",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 850,
+     "note": "Halal-certified curry with vegetable choices."
+    }
+   ],
+   "Tennoji": [
+    {
+     "name": "Tennoji Zoo Road Diner",
+     "cuisine": "Casual Japanese",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Easy family meals near the park."
+    },
+    {
+     "name": "Shinsekai Kushikatsu Row",
+     "cuisine": "Fried skewers",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Old-town streets full of skewer shops."
+    },
+    {
+     "name": "Tennoji Vegan Cafe",
+     "cuisine": "Vegan",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 950,
+     "note": "Plant-based lunches."
+    }
+   ],
+   "Umeda": [
+    {
+     "name": "Umeda Sky Rooftop Grill",
+     "cuisine": "Grill",
+     "dietary_tags": [],
+     "estimated_price_per_person_inr": 2800,
+     "note": "Evening dining with city views."
+    },
+    {
+     "name": "Umeda Underground Ramen",
+     "cuisine": "Ramen",
+     "dietary_tags": [
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Many shops in the underground mall."
+    },
+    {
+     "name": "Umeda Seafood Counter",
+     "cuisine": "Seafood",
+     "dietary_tags": [
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 2000,
+     "note": "Fresh sashimi sets."
+    }
+   ]
+  },
+  "Dubai": {
+   "Al Barsha": [
+    {
+     "name": "Barsha Mall Food Court",
+     "cuisine": "Mixed international",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 600,
+     "note": "Many choices for a mixed group."
+    },
+    {
+     "name": "Al Barsha Shawarma Cafe",
+     "cuisine": "Shawarma",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 450,
+     "note": "Quick wraps and grills."
+    },
+    {
+     "name": "Barsha Indian Kitchen",
+     "cuisine": "Indian",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Wide vegetarian menu."
+    }
+   ],
+   "Deira": [
+    {
+     "name": "Deira Creek Fish Grill",
+     "cuisine": "Grilled fish",
+     "dietary_tags": [
+      "HALAL",
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 1400,
+     "note": "Fresh catch by the creek."
+    },
+    {
+     "name": "Spice Souk Lunch House",
+     "cuisine": "Emirati and Indian",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Home-style curries near the souk."
+    },
+    {
+     "name": "Deira Falafel Corner",
+     "cuisine": "Falafel",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN",
+      "VEGAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 350,
+     "note": "Wraps and plates, quick and cheap."
+    }
+   ],
+   "Downtown": [
+    {
+     "name": "Downtown Fountain View Brasserie",
+     "cuisine": "International",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 3500,
+     "note": "Terrace tables facing the fountain show."
+    },
+    {
+     "name": "Mall Courtyard Cafe",
+     "cuisine": "Cafe",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 900,
+     "note": "Light meals and desserts."
+    },
+    {
+     "name": "Downtown Lebanese Grill",
+     "cuisine": "Lebanese",
+     "dietary_tags": [
+      "HALAL"
+     ],
+     "estimated_price_per_person_inr": 1800,
+     "note": "Mezze and grills."
+    }
+   ],
+   "Dubai Marina": [
+    {
+     "name": "Marina Walk Seafood",
+     "cuisine": "Seafood",
+     "dietary_tags": [
+      "HALAL",
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 2600,
+     "note": "Waterfront tables."
+    },
+    {
+     "name": "Marina Vegan Bowl Bar",
+     "cuisine": "Healthy bowls",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1100,
+     "note": "Bowls and smoothies."
+    },
+    {
+     "name": "JBR Beachfront Burger Grill",
+     "cuisine": "Burgers",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1300,
+     "note": "Casual meals near the beach."
+    }
+   ]
+  },
+  "Abu Dhabi": {
+   "Al Maryah": [
+    {
+     "name": "Al Maryah Island Terrace",
+     "cuisine": "International",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 3000,
+     "note": "Dining by the waterfront promenade."
+    },
+    {
+     "name": "Galleria Food Hall",
+     "cuisine": "Mixed",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1000,
+     "note": "Many counters under one roof."
+    },
+    {
+     "name": "Maryah Mezze House",
+     "cuisine": "Lebanese",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 1700,
+     "note": "Shared plates."
+    }
+   ],
+   "Corniche": [
+    {
+     "name": "Corniche Fish Market Grill",
+     "cuisine": "Grilled seafood",
+     "dietary_tags": [
+      "HALAL",
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 1500,
+     "note": "Choose the fish, they grill it."
+    },
+    {
+     "name": "Corniche Cafe",
+     "cuisine": "Cafe",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 800,
+     "note": "Breakfast and light meals by the beach."
+    },
+    {
+     "name": "Old Town Shawarma Stop",
+     "cuisine": "Shawarma",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 400,
+     "note": "Quick and cheap."
+    }
+   ],
+   "Saadiyat": [
+    {
+     "name": "Saadiyat Museum Cafe",
+     "cuisine": "Cafe",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1200,
+     "note": "Lunch near the cultural district."
+    },
+    {
+     "name": "Saadiyat Beach Grill",
+     "cuisine": "Grill",
+     "dietary_tags": [
+      "HALAL",
+      "SEAFOOD"
+     ],
+     "estimated_price_per_person_inr": 2800,
+     "note": "Beachfront dining."
+    },
+    {
+     "name": "Saadiyat Plant Kitchen",
+     "cuisine": "Vegan",
+     "dietary_tags": [
+      "VEGETARIAN",
+      "VEGAN"
+     ],
+     "estimated_price_per_person_inr": 1300,
+     "note": "Plant-based plates."
+    }
+   ],
+   "Yas Island": [
+    {
+     "name": "Yas Waterfront Diner",
+     "cuisine": "International",
+     "dietary_tags": [
+      "HALAL",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 1800,
+     "note": "Family-friendly menu."
+    },
+    {
+     "name": "Yas Mall Food Court",
+     "cuisine": "Mixed",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN",
+      "FAMILY_FRIENDLY"
+     ],
+     "estimated_price_per_person_inr": 700,
+     "note": "Quick meals between rides."
+    },
+    {
+     "name": "Yas Indian Tandoor",
+     "cuisine": "Indian",
+     "dietary_tags": [
+      "HALAL",
+      "VEGETARIAN"
+     ],
+     "estimated_price_per_person_inr": 1000,
+     "note": "Wide vegetarian menu."
+    }
+   ]
+  }
+ }
+}

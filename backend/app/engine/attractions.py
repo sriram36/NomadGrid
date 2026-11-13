@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from app.config import DAY_END_MIN, DAY_START_MIN, SETTLE_MIN, VISIT_GAP_MIN
 from app.core.pricing import attraction_price
 from app.core.timeutil import hm, weekday_code
+from app.interests import matched
 
 # date -> [(attraction, start_min, end_min)]
 DayPlan = Dict[date, List[Tuple[dict, int, int]]]
@@ -48,12 +49,14 @@ def place_sequence(seq: List[dict], lo: int = DAY_START_MIN, hi: int = DAY_END_M
     return out
 
 
-def _rank(a: dict, used_cats: Set[str], adults: int, children: int, mode: str):
+def _rank(a: dict, used_cats: Set[str], adults: int, children: int, mode: str, interests: Tuple[str, ...] = ()):
     price = attraction_price(a, adults, children)
     if mode == "MIN":
         return (price, a["attraction_id"])
     kid_penalty = 0 if (children == 0 or a.get("child_friendly")) else 1
-    return (kid_penalty, 1 if a["category"] in used_cats else 0, price, a["attraction_id"])
+    # S1: a traveler's interests come right after child suitability and before variety and price
+    interest_miss = 0 if (not interests or matched(a, interests)) else 1
+    return (kid_penalty, interest_miss, 1 if a["category"] in used_cats else 0, price, a["attraction_id"])
 
 
 def _can_match(days: List[date], cands: Dict[date, List[dict]], taken: Set[str]) -> bool:
@@ -75,7 +78,7 @@ def _can_match(days: List[date], cands: Dict[date, List[dict]], taken: Set[str])
 
 
 def plan_full_days(cat, full_days: List[Tuple[date, str]], adults: int, children: int,
-                   mode: str) -> Optional[DayPlan]:
+                   mode: str, interests: Tuple[str, ...] = ()) -> Optional[DayPlan]:
     """Attractions for every FULL day.
 
     mode "MIN": exactly one cheapest attraction per day (smallest possible cost).
@@ -90,7 +93,7 @@ def plan_full_days(cat, full_days: List[Tuple[date, str]], adults: int, children
     chosen: Dict[date, dict] = {}
     for d in order:
         pool = sorted((a for a in cands[d] if a["attraction_id"] not in taken),
-                      key=lambda a: _rank(a, used_cats, adults, children, mode))
+                      key=lambda a: _rank(a, used_cats, adults, children, mode, interests))
         picked = None
         remaining = [x for x in days if x != d and x not in chosen]
         for a in pool:
@@ -115,7 +118,7 @@ def plan_full_days(cat, full_days: List[Tuple[date, str]], adults: int, children
         for d in sorted(days):
             a1 = chosen[d]
             pool = [a for a in cands[d] if a["attraction_id"] not in taken]
-            pool.sort(key=lambda a: _rank(a, used_cats, adults, children, mode))
+            pool.sort(key=lambda a: _rank(a, used_cats, adults, children, mode, interests))
             for a2 in pool:
                 best = None
                 for seq in ([a1, a2], [a2, a1]):
@@ -136,7 +139,7 @@ def plan_cost(plan: DayPlan, adults: int, children: int) -> int:
 
 
 def extra_visit(cat, city: str, day: date, ready_min: int, taken: Set[str], adults: int, children: int,
-                budget_left: int) -> Optional[Tuple[dict, int, int]]:
+                budget_left: int, interests: Tuple[str, ...] = ()) -> Optional[Tuple[dict, int, int]]:
     """One optional visit on an arrival/city-change day, starting after the traveler is ready.
 
     `ready_min` = minutes after midnight on `day` when the traveler reaches the city.
@@ -152,7 +155,7 @@ def extra_visit(cat, city: str, day: date, ready_min: int, taken: Set[str], adul
         placed = place_sequence([a], lo=lo)
         if not placed:
             continue
-        key = _rank(a, set(), adults, children, "RICH")
+        key = _rank(a, set(), adults, children, "RICH", interests)
         if best is None or key < best[0]:
             best = (key, a, placed[0])
     if not best:

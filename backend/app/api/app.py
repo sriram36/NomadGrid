@@ -13,6 +13,7 @@ from app import config
 from app.api.fallback_page import PAGE as FALLBACK_PAGE
 from app.api.routes import router
 from app.catalog.loader import Catalog
+from app.content import Content
 from app.engine.inventory import Inventory
 from app.store.db import Store
 
@@ -36,6 +37,7 @@ def create_app(data_dir=None, db_path=None, images_dir=None, frontend_dist=None)
     dist = Path(frontend_dist or config.FRONTEND_DIST)
     has_ui = (dist / "index.html").is_file()
     app.state.cat = Catalog(data_dir or config.DATA_DIR)
+    app.state.content = Content()
     app.state.store = open_store(db_path or config.DB_PATH)
     app.state.inventory = lambda: Inventory(app.state.cat, *app.state.store.used_maps())
 

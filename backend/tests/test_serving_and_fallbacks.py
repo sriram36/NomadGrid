@@ -76,12 +76,14 @@ def test_without_a_ui_the_api_and_docs_work_and_other_pages_are_404(without_ui):
 
 
 # ------------------------------------------------------------------ the database
-def test_an_unwritable_database_falls_back_to_a_temporary_one_and_warns(tmp_path, caplog):
+def test_an_unwritable_database_falls_back_to_a_temporary_one_and_warns(tmp_path, caplog, monkeypatch):
+    monkeypatch.setattr("tempfile.gettempdir", lambda: str(tmp_path / "scratch"))   # never share state between runs
     blocker = tmp_path / "a-file-not-a-folder"
     blocker.write_text("x", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="nomadgrid"):
         client = TestClient(create_app(db_path=blocker / "db.sqlite", frontend_dist=tmp_path / "none"))
     assert "Falling back" in caplog.text and "DB_PATH" in caplog.text
+    assert (tmp_path / "scratch" / "nomadgrid" / "nomadgrid.sqlite").exists()
     body = {"departure_city": "Bengaluru", "country": "Japan", "start_date": "2027-04-10", "nights": 6, "adults": 2,
             "child_ages": [6], "budget_inr": 350000}
     pkg = client.post("/api/packages", json=body).json()["package"]            # it still works end to end

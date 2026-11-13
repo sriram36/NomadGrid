@@ -78,7 +78,7 @@ class PlanCtx:
                 if d != req.start_date and d not in change:
                     self.full_days.append((d, city))
         for mode in ("MIN", "RICH"):
-            plan_days = attr.plan_full_days(s.cat, self.full_days, req.adults, req.children, mode)
+            plan_days = attr.plan_full_days(s.cat, self.full_days, req.adults, req.children, mode, req.interests)
             if plan_days is None:
                 s.diag.fail("NOT_ENOUGH_ATTRACTIONS", "There are not enough open attractions to fill every full day "
                                                       "of this city plan.")

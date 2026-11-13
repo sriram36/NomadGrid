@@ -1,0 +1,135 @@
+{
+ "source": "NomadGrid editorial notes: general travel guidance, not part of the provided catalog.",
+ "cities": {
+  "Tokyo": {
+   "country": "Japan",
+   "tagline": "Huge, safe and easy to get around once you have an IC card.",
+   "getting_around": [
+    "A rechargeable IC card (Suica or Pasmo) works on almost every train, subway and bus: load it once and tap in and out.",
+    "Trains and the subway are the fastest way around. The last trains run around midnight, so plan your evening return.",
+    "Rush hour (about 7:30-9:30 am and 5-7 pm) is very crowded: avoid it with small children or luggage.",
+    "Taxis are safe but pricey; the rear door opens and closes by itself, so don't touch it."
+   ],
+   "etiquette": [
+    "There is no tipping in Japan: leave the money, it can cause confusion.",
+    "Keep your voice low and phone calls off on trains.",
+    "Take your shoes off where you see a shoe rack or a raised floor.",
+    "Eating while walking is frowned on: stand by the stall or sit down.",
+    "Carry some cash: many small stalls and shrines do not take cards."
+   ],
+   "sightseeing_tips": [
+    "Visit Senso-ji and Meiji Jingu early in the morning for calm and cooler air.",
+    "Many museums close one weekday: check the opening days shown for each sight in your plan.",
+    "Popular timed-entry attractions are best booked ahead."
+   ],
+   "good_to_know": [
+    "Power sockets are type A at 100 V: bring an adapter.",
+    "Convenience stores are good for a cheap breakfast, snacks and cash machines that accept foreign cards.",
+    "Tap water is safe to drink."
+   ]
+  },
+  "Kyoto": {
+   "country": "Japan",
+   "tagline": "Temples, gardens and old streets: best explored early and on foot.",
+   "getting_around": [
+    "The subway has only two lines; buses reach most temples but get very crowded in the day.",
+    "Trains are quicker for Fushimi Inari (JR Nara line) and Arashiyama (JR Sagano line).",
+    "IC cards (Suica, ICOCA) work on Kyoto buses, trains and the subway.",
+    "The centre is flat and compact: cycling or walking is pleasant outside the hottest hours."
+   ],
+   "etiquette": [
+    "In Gion, do not chase or block geiko and maiko for photos; some private lanes ban photography.",
+    "Be quiet in temples and shrines and never touch anything that is roped off.",
+    "Bow slightly at a shrine gate and walk to the side of the path, the centre is for the deity.",
+    "No tipping; carry some cash for small shops and temple entry."
+   ],
+   "sightseeing_tips": [
+    "Arrive at Fushimi Inari or Kiyomizu-dera when they open to beat the crowds.",
+    "Most temples close in the late afternoon and stop admitting visitors earlier, so do them in the morning.",
+    "Leave an evening for a slow walk through Gion and the Kamo river bank."
+   ],
+   "good_to_know": [
+    "Power sockets are type A at 100 V: bring an adapter.",
+    "Coin lockers at Kyoto Station are handy on check-out day.",
+    "Tap water is safe to drink."
+   ]
+  },
+  "Osaka": {
+   "country": "Japan",
+   "tagline": "Japan's food capital: relaxed, loud and friendly.",
+   "getting_around": [
+    "The subway and JR loop line cover most sights; an IC card (ICOCA, Suica) works on both.",
+    "Namba, Umeda and Shin-Osaka are the big hubs; allow extra time to change between them.",
+    "Taxis are fairly priced for short hops, useful late at night."
+   ],
+   "etiquette": [
+    "On escalators, Osaka stands on the right (Tokyo stands on the left).",
+    "Do not eat while walking through crowded Dotonbori: stand by the stall.",
+    "No tipping; haggling is not done in shops.",
+    "Keep your voice low on trains."
+   ],
+   "sightseeing_tips": [
+    "Dotonbori is best after dark, when the neon signs are lit.",
+    "Go to Universal Studios Japan at opening time and on a weekday if you can.",
+    "Osaka Castle grounds are free to walk; keep time for the museum inside only if you enjoy history."
+   ],
+   "good_to_know": [
+    "Try takoyaki and okonomiyaki: they are the local specialities.",
+    "Power sockets are type A at 100 V: bring an adapter.",
+    "Tap water is safe to drink."
+   ]
+  },
+  "Dubai": {
+   "country": "United Arab Emirates",
+   "tagline": "Modern, spread out and air-conditioned: plan one area a day.",
+   "getting_around": [
+    "The Dubai Metro and tram are cheap and air-conditioned: use a rechargeable Nol card.",
+    "Taxis are metered and easy to find; ride-hailing apps also work.",
+    "Distances are large: group sights by area (Downtown, Old Dubai, Marina) rather than crossing the city repeatedly.",
+    "Walking outdoors in the middle of the day is hot: use malls and metro links."
+   ],
+   "etiquette": [
+    "Dress modestly in malls, souks and public places: covering shoulders and knees is a safe rule. Swimwear is for beaches and pools.",
+    "Public displays of affection and loud or rude behaviour are frowned on.",
+    "Ask before photographing people, and avoid photographing government buildings.",
+    "Alcohol is served only in licensed venues such as hotels.",
+    "Dress and behaviour expectations are stricter during the holy month of Ramadan; eating and drinking in public in daylight is discouraged then."
+   ],
+   "sightseeing_tips": [
+    "Book the Burj Khalifa observation deck ahead, ideally for a sunset slot.",
+    "The Gold Souk and Al Fahidi are most pleasant in the cooler evening.",
+    "Global Village and outdoor parks open only for part of the year: check the opening days shown in your plan."
+   ],
+   "good_to_know": [
+    "Power sockets are type G at 230 V: bring an adapter.",
+    "Carry a light layer: malls and the metro are strongly air-conditioned.",
+    "Tap water is safe but most visitors drink bottled water."
+   ]
+  },
+  "Abu Dhabi": {
+   "country": "United Arab Emirates",
+   "tagline": "Calmer than Dubai, with grand architecture and green spaces.",
+   "getting_around": [
+    "Taxis are metered and ride-hailing apps work well: the city is spread out and not built for walking between sights.",
+    "Public buses need a rechargeable Hafilat card, but taxis are simpler for a short stay.",
+    "Plan one area a day: Corniche and the city, Saadiyat (museums), Yas Island (parks)."
+   ],
+   "etiquette": [
+    "At Sheikh Zayed Grand Mosque cover arms and legs; women also cover their hair. Abayas can be borrowed at the entrance.",
+    "Visiting hours at the mosque change on Fridays: check before you go.",
+    "Speak softly inside the mosque and remove your shoes before entering the prayer halls.",
+    "Dress modestly in public places and ask before photographing people."
+   ],
+   "sightseeing_tips": [
+    "Go to the Grand Mosque in the late afternoon for the best light and cooler air.",
+    "Louvre Abu Dhabi and the other Saadiyat museums have set closing days: check the days shown in your plan.",
+    "Corniche Beach is best in the morning or evening; the midday sun is strong."
+   ],
+   "good_to_know": [
+    "Power sockets are type G at 230 V: bring an adapter.",
+    "Alcohol is served only in licensed venues such as hotels.",
+    "Carry a light layer for strong air-conditioning indoors."
+   ]
+  }
+ }
+}

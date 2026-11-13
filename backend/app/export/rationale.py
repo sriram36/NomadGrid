@@ -7,6 +7,7 @@ from app.engine.alternatives import inr
 from app.engine.cityplan import preferred_city_count
 from app.engine.models import Itinerary
 from app.export.package import time_label
+from app.interests import TAGS, matched
 
 
 def _hm(minutes: int) -> str:
@@ -49,6 +50,15 @@ def build_rationale(it: Itinerary, cat, total: int) -> dict:
     hotels = ", ".join(f"{l.hotel['name']} in {l.city}" for l in it.legs)
     reasons.append(f"Hotels average {stars:.1f}★ ({hotels})" + (" and are all family friendly." if fam else "."))
 
+    # buffers and room capacity, read from the actual plan
+    pickup_gap = int((it.arr_transfer.pickup - landing).total_seconds() // 60)
+    airport_gap = int((it.ret_flight["_dep"] - it.dep_transfer.arrive).total_seconds() // 60)
+    reasons.append(f"Safety margins are met: your airport pickup is {pickup_gap} min after landing (rule: at least 60), "
+                   f"and you reach the airport {airport_gap} min before the flight home (rule: at least 180).")
+    rooms = ", ".join(f"{l.rooms} × {l.room['name']} in {l.city}" for l in it.legs)
+    reasons.append(f"Rooms: {rooms} — the fewest rooms of that type that fit all {req.travelers} traveller(s) "
+                   f"({req.adults} adult(s), {req.children} child(ren)).")
+
     pct = round(100 * total / req.budget_inr)
     left = req.budget_inr - total
     reasons.append(f"The holiday costs ₹{inr(total)} of your ₹{inr(req.budget_inr)} budget ({pct}%)"
@@ -58,6 +68,16 @@ def build_rationale(it: Itinerary, cat, total: int) -> dict:
         cats = sorted({v.attraction["category"].replace("_", " ").lower() for v in it.visits})
         reasons.append(f"{len(it.visits)} sight(s) planned across {len({v.day for v in it.visits})} day(s) — a mix of "
                        f"{', '.join(cats[:4])}.")
+
+    if req.interests:
+        wanted = ", ".join(TAGS[t]["label"] for t in req.interests)
+        hits = [v.attraction["name"] for v in it.visits if matched(v.attraction, req.interests)]
+        if hits:
+            reasons.append(f"Your interests ({wanted}): {len(hits)} of {len(it.visits)} sight(s) match — "
+                           f"{', '.join(hits[:5])}{'…' if len(hits) > 5 else ''}.")
+        else:
+            reasons.append(f"Your interests ({wanted}): none of the sights open on your days match them, "
+                           f"so we chose the best-suited ones instead.")
 
     picks = [f"your hotel in {l.city}" for l in it.legs if l.pinned]
     picks += [f"your {t} flight" for t, p in (("arrival", it.arr_pinned), ("return", it.ret_pinned)) if p]
