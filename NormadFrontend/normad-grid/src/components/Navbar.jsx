@@ -6,27 +6,30 @@ import { useApp } from '../context/AppContext';
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { handleLookupReservation, bookings } = useApp();
-  const confirmedBookingsCount = bookings.length;
+  const { handleLookupReservation, reservationNumbers } = useApp();
+  const confirmedBookingsCount = reservationNumbers.length;
+  const [looking, setLooking] = useState(false);
 
   const [lookupId, setLookupId] = useState('');
   const [lookupError, setLookupError] = useState('');
 
   const currentView = location.pathname === '/bookings' ? 'bookings' : 'planner';
 
-  const handleLookupSubmit = (e) => {
+  const handleLookupSubmit = async (e) => {
     e.preventDefault();
     setLookupError('');
     const trimmed = lookupId.trim();
     if (!trimmed) { setLookupError('Please enter a 10-digit reservation number.'); return; }
     if (!/^\d{10}$/.test(trimmed)) { setLookupError('Reservation number must be exactly 10 digits.'); return; }
-    const found = handleLookupReservation(trimmed);
+    setLooking(true);
+    const found = await handleLookupReservation(trimmed);
+    setLooking(false);
     if (!found) {
-      setLookupError(`Reservation #${trimmed} not found in records.`);
+      setLookupError(`Reservation #${trimmed} was not found. Please check the number.`);
     } else {
       setLookupId('');
       setLookupError('');
-      navigate('/results');
+      navigate(`/packages/${found.package_id}`);
     }
   };
 
@@ -36,9 +39,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 gap-4">
 
           {/* Left: Logo + Nav */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6">
             <Link to="/" className="flex items-center gap-2 text-left group focus:outline-hidden">
-              <div className="text-2xl font-black tracking-tight flex items-baseline">
+              <div className="text-xl sm:text-2xl font-black tracking-tight flex items-baseline">
                 <span className="text-white">normad</span>
                 <span className="text-[#febb02]">.grid</span>
               </div>
@@ -48,29 +51,29 @@ export default function Navbar() {
             </Link>
 
             {/* Nav Tabs */}
-            <nav className="flex items-center gap-2 pl-4 border-l border-white/20">
+            <nav className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 border-l border-white/20">
               <Link
                 to="/"
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
+                className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
                   currentView === 'planner'
                     ? 'bg-white/20 text-white border-white'
                     : 'text-white/90 hover:bg-white/10 border-transparent'
                 }`}
               >
                 <PlaneTakeoff className="w-3.5 h-3.5 text-[#febb02]" />
-                <span>Build Package</span>
+                <span><span className="sm:hidden">Build</span><span className="hidden sm:inline">Build Package</span></span>
               </Link>
 
               <Link
                 to="/bookings"
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
+                className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
                   currentView === 'bookings'
                     ? 'bg-white/20 text-white border-white'
                     : 'text-white/90 hover:bg-white/10 border-transparent'
                 }`}
               >
                 <Bookmark className="w-3.5 h-3.5 text-[#febb02]" />
-                <span>My Bookings</span>
+                <span><span className="hidden sm:inline">My </span>Bookings</span>
                 {confirmedBookingsCount > 0 && (
                   <span className="ml-1 px-1.5 rounded-full text-[10px] font-extrabold bg-[#febb02] text-[#003580]">
                     {confirmedBookingsCount}
@@ -97,7 +100,7 @@ export default function Navbar() {
                   type="submit"
                   className="absolute right-1 px-3 py-1 text-xs font-bold bg-[#006ce4] hover:bg-[#0057b8] text-white rounded transition-colors"
                 >
-                  Find Trip
+                  {looking ? '…' : 'Find Trip'}
                 </button>
               </div>
               {lookupError && (

@@ -85,3 +85,6 @@ temp/
 
 # Private notes (never pushed)
 doubts.md
+
+# Browser test screenshots
+e2e/screens/

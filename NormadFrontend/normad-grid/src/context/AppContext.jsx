@@ -1,289 +1,194 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { generatePackage, validatePackage, calculateAttractionPrice, exportPackageJSON } from '../data/mockTripData';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { api, fieldErrors, NetworkError } from '../api/client';
+import { toView } from '../api/adapt';
 
 const AppContext = createContext(null);
+const RESERVATIONS_KEY = 'normad_reservations';
+
+function readSavedNumbers() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RESERVATIONS_KEY) || '[]');
+    return Array.isArray(saved) ? saved.filter((n) => /^\d{10}$/.test(n)) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function AppProvider({ children }) {
-  // Persistent bookings from localStorage
-  const [bookings, setBookings] = useState(() => {
-    try {
-      const saved = localStorage.getItem('normad_bookings');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  // Reservation numbers remembered on this device (the reservations themselves live on the server).
+  const [reservationNumbers, setReservationNumbers] = useState(readSavedNumbers);
 
-  // Active package & related state
-  const [currentPackage, setCurrentPackage] = useState(null);
-  const [lastRequest, setLastRequest] = useState(null);
-  const [generationError, setGenerationError] = useState(null);
+  const [meta, setMeta] = useState(null);
+  const [currentPackage, setCurrentPackageRaw] = useState(null);
+  const [lastRequest, setLastRequest] = useState(null);     // the last request sent, in the backend's field names
+  const [outcome, setOutcome] = useState(null);              // OVER_BUDGET / NO_PACKAGE details for the outcome page
+  const [variants, setVariants] = useState(null);            // the three-package comparison
   const [isGenerating, setIsGenerating] = useState(false);
-  const [overBudgetNotice, setOverBudgetNotice] = useState(null);
+  const [undoAvailable, setUndoAvailable] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [swapModalState, setSwapModalState] = useState({ isOpen: false, modalType: null, targetItem: null, targetDate: null });
 
-  // Swap modal state
-  const [swapModalState, setSwapModalState] = useState({
-    isOpen: false,
-    modalType: null,
-    targetItem: null,
-    targetDate: null
-  });
-
-  // Sync bookings to localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem('normad_bookings', JSON.stringify(bookings));
-    } catch (e) { console.error(e); }
-  }, [bookings]);
+    try { localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(reservationNumbers)); } catch { /* storage full or blocked */ }
+  }, [reservationNumbers]);
 
-  const showToast = (text, type = 'success') => {
+  // Dropdown values and rules come from the backend, never from the UI.
+  useEffect(() => {
+    api.meta().then(({ status, data }) => { if (status === 200) setMeta(data); }).catch(() => {});
+  }, []);
+
+  const showToast = useCallback((text, type = 'success') => {
     setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+    setTimeout(() => setToastMessage(null), 4500);
+  }, []);
 
-  // M1 & M2: Handle form submit — returns true so caller can navigate
-  const handleTripRequestSubmit = (request, onDone) => {
+  const setPackage = useCallback((pkg) => setCurrentPackageRaw(pkg ? toView(pkg) : null), []);
+
+  const failure = useCallback((e) => {
+    const message = e instanceof NetworkError ? e.message : 'Something went wrong. Please try again.';
+    showToast(message, 'error');
+    return { kind: 'ERROR', message };
+  }, [showToast]);
+
+  // ---- M1/M2/M8/G4: build a package (or the three-package comparison). Returns what happened; the caller navigates.
+  const submitTrip = useCallback(async (request, mode = 'single') => {
     setIsGenerating(true);
-    setGenerationError(null);
-    setOverBudgetNotice(null);
+    setOutcome(null);
+    setVariants(null);
     setLastRequest(request);
-
-    setTimeout(() => {
-      const result = generatePackage(request);
-
-      if (result.error) {
-        setGenerationError(result.error);
-        setCurrentPackage(null);
-        setIsGenerating(false);
-        if (onDone) onDone({ error: true });
-        return;
+    try {
+      const { status, data } = mode === 'compare' ? await api.variants(request) : await api.build(request);
+      if (status === 422) return { kind: 'INVALID', fields: fieldErrors(data), message: data?.error?.message };
+      if (status !== 200 || !data) return { kind: 'ERROR', message: data?.error?.message || 'The server could not build a package.' };
+      if (data.outcome === 'PACKAGE') {
+        setPackage(data.package);
+        setUndoAvailable(false);
+        return { kind: 'PACKAGE', id: data.package.package_id };
       }
-
-      const pkg = result.package;
-      setCurrentPackage(pkg);
+      if (data.outcome === 'VARIANTS') {
+        setVariants(data);
+        return { kind: 'VARIANTS' };
+      }
+      setOutcome({ ...data, kind: data.outcome, request });
+      return { kind: data.outcome };
+    } catch (e) {
+      return failure(e);
+    } finally {
       setIsGenerating(false);
+    }
+  }, [setPackage, failure]);
 
-      if (pkg.total_inr > request.budget) {
-        const excess = pkg.total_inr - request.budget;
-        setOverBudgetNotice({
-          totalCost: pkg.total_inr,
-          budget: request.budget,
-          excess,
-          suggestedAddition: excess,
-          reducedNights: Math.max(3, request.nights - 1)
-        });
+  // ---- open a saved package by id (works after a page refresh and a backend restart)
+  const loadPackage = useCallback(async (id) => {
+    try {
+      const { status, data } = await api.getPackage(id);
+      if (status !== 200) return null;
+      setPackage(data);
+      setUndoAvailable(false);
+      return data;
+    } catch (e) {
+      failure(e);
+      return null;
+    }
+  }, [setPackage, failure]);
+
+  // ---- M7: confirm
+  const handleConfirmBooking = useCallback(async () => {
+    if (!currentPackage) return { ok: false };
+    try {
+      const { status, data } = await api.confirm(currentPackage.package_id);
+      if (status === 200) {
+        setPackage(data.package);
+        setUndoAvailable(false);
+        setReservationNumbers((prev) => [data.reservation_number, ...prev.filter((n) => n !== data.reservation_number)]);
+        showToast(`Reservation #${data.reservation_number} confirmed! It is saved on the server.`);
+        return { ok: true, number: data.reservation_number };
+      }
+      const message = data?.error?.message || 'We could not confirm this booking.';
+      showToast(message, 'error');
+      return { ok: false, conflict: data?.error?.code === 'INVENTORY_CONFLICT', message };
+    } catch (e) {
+      return { ok: false, ...failure(e) };
+    }
+  }, [currentPackage, setPackage, showToast, failure]);
+
+  // ---- M7: look a reservation up by its 10-digit number. Returns the package or null ("not found").
+  const handleLookupReservation = useCallback(async (number) => {
+    try {
+      const { status, data } = await api.reservation(number);
+      if (status === 200) {
+        setPackage(data);
+        setUndoAvailable(false);
+        setReservationNumbers((prev) => (prev.includes(number) ? prev : [number, ...prev]));
+        return data;
+      }
+      return null;
+    } catch (e) {
+      failure(e);
+      return null;
+    }
+  }, [setPackage, failure]);
+
+  // ---- M6/G3: apply one change. The backend re-checks the whole package and answers APPLIED / REFUSED /
+  // BUDGET_EXCEEDED / PINNED_CONFLICT. APPLIED updates the screen; the others are returned for the dialog to explain.
+  const applyChange = useCallback(async (op) => {
+    if (!currentPackage) return null;
+    try {
+      const { data } = await api.change(currentPackage.package_id, op);
+      if (data?.result === 'APPLIED') {
+        setPackage(data.package);
+        setUndoAvailable(Boolean(data.undo_available));
+        const extra = (data.knock_on || []).join(' ');
+        showToast(`${data.summary}${extra ? ' ' + extra : ''}`);
+      }
+      return data;
+    } catch (e) {
+      failure(e);
+      return null;
+    }
+  }, [currentPackage, setPackage, showToast, failure]);
+
+  const handleRemoveAttraction = useCallback(async (item) => {
+    const res = await applyChange({ op: 'REMOVE_ATTRACTION', item_id: item.item_id });
+    if (res && res.result !== 'APPLIED') showToast(res.reason || res.message || 'That change could not be made.', 'error');
+  }, [applyChange, showToast]);
+
+  const handleUndo = useCallback(async () => {
+    if (!currentPackage) return;
+    try {
+      const { data } = await api.undo(currentPackage.package_id);
+      if (data?.result === 'UNDONE') {
+        setPackage(data.package);
+        setUndoAvailable(Boolean(data.undo_available));
+        showToast(data.summary);
       } else {
-        setOverBudgetNotice(null);
-        showToast('Holiday package successfully generated and validated!');
+        setUndoAvailable(false);
+        showToast(data?.reason || 'There is nothing to undo.', 'error');
       }
-
-      if (onDone) onDone({ error: false });
-    }, 300);
-  };
-
-  // M7: Confirm booking
-  const handleConfirmBooking = () => {
-    if (!currentPackage) return;
-    const randomDigits = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-    const confirmedPackage = {
-      ...currentPackage,
-      status: 'BOOKED',
-      booking: { reference: randomDigits },
-      items: currentPackage.items.map(item => ({
-        ...item,
-        status: 'BOOKED',
-        booking: { reference: randomDigits }
-      }))
-    };
-    const updatedBookings = [confirmedPackage, ...bookings.filter(b => b.booking?.reference !== randomDigits)];
-    setBookings(updatedBookings);
-    setCurrentPackage(confirmedPackage);
-    showToast(`Reservation #${randomDigits} Confirmed! Saved to My Bookings.`, 'success');
-  };
-
-  // M7: Lookup reservation by ID
-  const handleLookupReservation = (reservationId) => {
-    const found = bookings.find(b => b.booking?.reference === reservationId);
-    if (found) {
-      setCurrentPackage(found);
-      setOverBudgetNotice(null);
-      setGenerationError(null);
-      showToast(`Loaded confirmed reservation #${reservationId}!`);
-      return found;
+    } catch (e) {
+      failure(e);
     }
-    return null;
-  };
+  }, [currentPackage, setPackage, showToast, failure]);
 
-  // Reset trip builder
-  const handleResetTrip = () => {
-    setCurrentPackage(null);
-    setOverBudgetNotice(null);
-    setGenerationError(null);
-  };
+  const handleResetTrip = useCallback(() => {
+    setCurrentPackageRaw(null);
+    setOutcome(null);
+    setVariants(null);
+    setUndoAvailable(false);
+  }, []);
 
-  // M6: Swap flight
-  const handleConfirmSwapFlight = (oldFlightItem, newFlightCatalog) => {
-    if (!currentPackage) return;
-    const travelers = currentPackage.traveler.adults + currentPackage.traveler.children;
-    const newPrice = newFlightCatalog.price_per_seat.amount * travelers;
-
-    const updatedItems = currentPackage.items.map(item => {
-      if (item.item_id === oldFlightItem.item_id) {
-        return {
-          ...item,
-          name: `${newFlightCatalog.airline} ${newFlightCatalog.flight_number} (${newFlightCatalog.from} → ${newFlightCatalog.to})`,
-          catalog_id: newFlightCatalog.flight_id,
-          start: newFlightCatalog.departure_local.substring(0, 16),
-          end: newFlightCatalog.arrival_local.substring(0, 16),
-          price_inr: newPrice,
-          details: {
-            ...item.details,
-            flightNumber: newFlightCatalog.flight_number,
-            airline: newFlightCatalog.airline,
-            from: newFlightCatalog.from,
-            to: newFlightCatalog.to,
-            durationMinutes: newFlightCatalog.duration_minutes,
-            stops: newFlightCatalog.stops,
-            pricePerSeat: newFlightCatalog.price_per_seat.amount,
-            seatsLeft: newFlightCatalog.seats_left
-          }
-        };
-      }
-      return item;
-    });
-
-    const newTotal = updatedItems.reduce((sum, i) => sum + i.price_inr, 0);
-    const updatedPackage = { ...currentPackage, items: updatedItems, total_inr: newTotal, total_price_inr: newTotal };
-    const validation = validatePackage(updatedPackage);
-    if (!validation.isValid) {
-      showToast(`Rule Violation: ${validation.errors[0]}`, 'error');
-      return;
-    }
-    setCurrentPackage(updatedPackage);
-    showToast('Flight updated and schedule re-validated!');
-  };
-
-  // M6: Swap hotel
-  const handleConfirmSwapHotel = (oldHotelItem, newHotelCatalog, newRoomCatalog, roomsNeeded) => {
-    if (!currentPackage) return;
-    const stayNights = oldHotelItem.details?.nights || 3;
-    const newPrice = newRoomCatalog.price_per_night.amount * roomsNeeded * stayNights;
-
-    const updatedItems = currentPackage.items.map(item => {
-      if (item.item_id === oldHotelItem.item_id) {
-        return {
-          ...item,
-          name: `${newHotelCatalog.name} (${newRoomCatalog.name})`,
-          catalog_id: newHotelCatalog.hotel_id,
-          room_id: newRoomCatalog.room_id,
-          quantity: roomsNeeded,
-          price_inr: newPrice,
-          details: {
-            ...item.details,
-            hotelName: newHotelCatalog.name,
-            roomType: newRoomCatalog.name,
-            roomCategory: newRoomCatalog.room_type,
-            area: newHotelCatalog.area,
-            stars: newHotelCatalog.stars,
-            rating: newHotelCatalog.rating,
-            pricePerNight: newRoomCatalog.price_per_night.amount,
-            roomsNeeded
-          }
-        };
-      }
-      return item;
-    });
-
-    const newTotal = updatedItems.reduce((sum, i) => sum + i.price_inr, 0);
-    const updatedPackage = { ...currentPackage, items: updatedItems, total_inr: newTotal, total_price_inr: newTotal };
-    const validation = validatePackage(updatedPackage);
-    if (!validation.isValid) {
-      showToast(`Rule Violation: ${validation.errors[0]}`, 'error');
-      return;
-    }
-    setCurrentPackage(updatedPackage);
-    showToast('Hotel accommodations updated and room capacity confirmed!');
-  };
-
-  // M6: Add attraction
-  const handleConfirmAddAttraction = (attraction, dateStr, slot) => {
-    if (!currentPackage) return;
-    const travelers = currentPackage.traveler.adults + currentPackage.traveler.children;
-    const price = calculateAttractionPrice(attraction, currentPackage.traveler.adults, currentPackage.traveler.children);
-
-    const newItem = {
-      item_id: `item-att-${Date.now().toString().slice(-4)}`,
-      type: 'attraction',
-      name: attraction.name,
-      city: attraction.city,
-      status: currentPackage.status || 'PLANNED',
-      catalog_id: attraction.attraction_id,
-      room_id: null,
-      start: `${dateStr}T${slot.start}`,
-      end: `${dateStr}T${slot.end}`,
-      quantity: travelers,
-      price_inr: price,
-      booking: currentPackage.booking || null,
-      sources: [],
-      warnings: [],
-      details: {
-        category: attraction.category,
-        openHours: `${attraction.open_from} - ${attraction.open_until}`,
-        visitMinutes: attraction.visit_minutes,
-        slotName: 'Added Sightseeing',
-        pricePerPerson: attraction.price_per_person.amount,
-        childPrice: attraction.child_price ? attraction.child_price.amount : attraction.price_per_person.amount,
-        childFriendly: attraction.child_friendly
-      }
-    };
-
-    const updatedItems = [...currentPackage.items, newItem];
-    const newTotal = updatedItems.reduce((sum, i) => sum + i.price_inr, 0);
-    const updatedPackage = { ...currentPackage, items: updatedItems, total_inr: newTotal, total_price_inr: newTotal };
-    const validation = validatePackage(updatedPackage);
-    if (!validation.isValid) {
-      showToast(`Rule Violation: ${validation.errors[0]}`, 'error');
-      return;
-    }
-    setCurrentPackage(updatedPackage);
-    showToast(`Added "${attraction.name}" to itinerary!`);
-  };
-
-  // M6: Remove attraction
-  const handleRemoveAttraction = (attractionItem) => {
-    if (!currentPackage) return;
-    const updatedItems = currentPackage.items.filter(i => i.item_id !== attractionItem.item_id);
-    const newTotal = updatedItems.reduce((sum, i) => sum + i.price_inr, 0);
-    setCurrentPackage({ ...currentPackage, items: updatedItems, total_inr: newTotal, total_price_inr: newTotal });
-    showToast(`Removed "${attractionItem.name}".`);
-  };
-
-  // Delete booking
-  const handleDeleteBooking = (refNumber) => {
-    setBookings(prev => prev.filter(b => b.booking?.reference !== refNumber));
-    if (currentPackage?.booking?.reference === refNumber) setCurrentPackage(null);
-    showToast(`Deleted reservation #${refNumber}.`);
-  };
+  // "Delete" only forgets the number on this device; a confirmed reservation stays on the server.
+  const handleForgetReservation = useCallback((number) => {
+    setReservationNumbers((prev) => prev.filter((n) => n !== number));
+    showToast(`Removed #${number} from this device's list. The reservation itself is still on the server.`);
+  }, [showToast]);
 
   return (
     <AppContext.Provider value={{
-      bookings,
-      currentPackage, setCurrentPackage,
-      lastRequest,
-      generationError, setGenerationError,
-      isGenerating,
-      overBudgetNotice, setOverBudgetNotice,
-      toastMessage,
-      swapModalState, setSwapModalState,
-      showToast,
-      handleTripRequestSubmit,
-      handleConfirmBooking,
-      handleLookupReservation,
-      handleResetTrip,
-      handleConfirmSwapFlight,
-      handleConfirmSwapHotel,
-      handleConfirmAddAttraction,
-      handleRemoveAttraction,
-      handleDeleteBooking,
+      meta, currentPackage, lastRequest, outcome, variants, isGenerating, undoAvailable, toastMessage,
+      reservationNumbers, swapModalState, setSwapModalState,
+      showToast, submitTrip, loadPackage, handleConfirmBooking, handleLookupReservation,
+      applyChange, handleRemoveAttraction, handleUndo, handleResetTrip, handleForgetReservation,
     }}>
       {children}
     </AppContext.Provider>

@@ -1,415 +1,354 @@
-import React, { useState } from 'react';
-import { 
-  X, 
-  RefreshCw, 
-  Check, 
-  AlertCircle, 
-  Plane, 
-  Hotel, 
-  MapPin, 
-  Clock, 
-  Users, 
-  Star,
-  Plus,
-  ShieldAlert
-} from 'lucide-react';
-import { 
-  formatINR, 
-  getAlternativeFlights, 
-  getAlternativeHotels, 
-  getAvailableAttractionsForDay 
-} from '../data/mockTripData';
+import React, { useEffect, useState } from 'react';
+import { X, RefreshCw, AlertCircle, ShieldAlert, Star, Wallet, Undo2 } from 'lucide-react';
+import { api, NetworkError } from '../api/client';
+import { formatINR, signedINR, hoursMinutes } from '../lib/format';
 
-export default function SwapModal({
-  isOpen,
-  onClose,
-  modalType, // 'flight' | 'hotel' | 'add_attraction'
-  targetItem,
-  targetDate,
-  tripPackage,
-  onConfirmSwapFlight,
-  onConfirmSwapHotel,
-  onConfirmAddAttraction
-}) {
-  const [errorBanner, setErrorBanner] = useState(null);
+const TITLES = {
+  flight: 'Change flight',
+  hotel: 'Change hotel or room',
+  add_attraction: 'Add something to do',
+  city_plan: 'Compare city plans',
+};
+
+// Choices the traveler can actually take come first; the unavailable ones (with their reason) go last.
+const ordered = (list) => [...(list || [])].sort((a, b) => (Number(b.current) - Number(a.current)) || (Number(b.available) - Number(a.available)));
+
+function DeltaBadge({ delta, current }) {
+  if (current) return <span className="text-[10px] font-extrabold text-[#003580] bg-[#febb02]/40 px-1.5 py-0.5 rounded">Current</span>;
+  if (delta === null || delta === undefined) return null;
+  const cls = delta > 0 ? 'text-[#d4111e]' : delta < 0 ? 'text-[#008009]' : 'text-slate-400';
+  return <div className={`text-[10px] font-bold tabular-nums ${cls}`}>{signedINR(delta)}</div>;
+}
+
+function Unavailable({ option }) {
+  if (option.available) {
+    if (!option.fits_budget) {
+      return (
+        <div className="mt-2 text-[11px] text-[#b45309] font-bold flex items-center gap-1">
+          <Wallet className="w-3 h-3 shrink-0" />
+          <span>Needs +{formatINR(option.budget_needed_inr)} more budget</span>
+        </div>
+      );
+    }
+    return null;
+  }
+  return (
+    <div className="mt-2 text-[11px] text-[#d4111e] font-bold flex items-start gap-1">
+      <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
+      <span>{option.reason_unavailable || 'Not available.'}</span>
+    </div>
+  );
+}
+
+export default function SwapModal({ isOpen, onClose, modalType, targetItem, targetDate, tripPackage, onApply }) {
+  const [options, setOptions] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [pending, setPending] = useState(null);       // { op, result } when a change needs the traveler's decision
+  const [busy, setBusy] = useState(false);
+  const [startChoice, setStartChoice] = useState({});
+
+  const packageId = tripPackage?.package_id;
+
+  useEffect(() => {
+    if (!isOpen || !packageId) return undefined;
+    let cancelled = false;
+    setOptions(null);
+    setLoadError(null);
+    setPending(null);
+    setStartChoice({});
+    const load = async () => {
+      try {
+        let res;
+        if (modalType === 'flight') res = await api.flightOptions(packageId, targetItem?.details?.isArrival ? 'ARRIVAL' : 'RETURN');
+        else if (modalType === 'hotel') res = await api.hotelOptions(packageId, targetItem.city);
+        else if (modalType === 'add_attraction') res = await api.attractionOptions(packageId, targetDate);
+        else if (modalType === 'city_plan') res = await api.cityPlanOptions(packageId);
+        if (cancelled || !res) return;
+        if (res.status !== 200) setLoadError(res.data?.error?.message || 'We could not load the options.');
+        else setOptions(res.data.options || []);
+      } catch (e) {
+        if (!cancelled) setLoadError(e instanceof NetworkError ? e.message : 'We could not load the options.');
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [isOpen, packageId, modalType, targetItem, targetDate]);
 
   if (!isOpen || !tripPackage) return null;
 
-  // Render Flight Swapping
-  const renderFlightSwap = () => {
-    const isArrival = targetItem?.details?.isArrival;
-    const alternatives = getAlternativeFlights(targetItem, tripPackage);
+  const choose = async (op) => {
+    setBusy(true);
+    try {
+      const result = await onApply(op);
+      if (!result) return;
+      if (result.result === 'APPLIED') onClose();
+      else setPending({ op, result });
+    } finally {
+      setBusy(false);
+    }
+  };
 
-    const handleSelectFlight = (alt) => {
-      setErrorBanner(null);
-      if (!alt.canSwap) {
-        setErrorBanner(alt.conflictReason || 'This flight cannot be selected due to travel rule constraints.');
-        return;
-      }
-      onConfirmSwapFlight(targetItem, alt.flight);
-      onClose();
-    };
-
-    return (
-      <div className="space-y-4">
-        <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs">
-          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
-            Current Flight Selection
-          </span>
-          <div className="flex items-center justify-between font-extrabold text-[#003580]">
-            <span>{targetItem.name}</span>
-            <span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
+  const optionFlights = () => ordered(options).map((o) => (
+    <li key={o.flight_id} className={`p-3.5 rounded-lg border text-xs ${o.available ? 'border-slate-300 bg-white hover:border-[#006ce4]' : 'border-slate-200 bg-slate-50 opacity-80'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-extrabold text-[#003580]">{o.airline} {o.flight_number}</span>
+            <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">{o.from} → {o.to}</span>
+            <span className="text-[11px] text-slate-500">{o.stops === 0 ? 'Direct' : '1 stop'} · {hoursMinutes(o.duration_minutes)}</span>
           </div>
-          <div className="text-slate-600 text-[11px] mt-0.5">
-            Timing: {targetItem.start?.substring(11, 16)} → {targetItem.end?.substring(11, 16)} • {targetItem.details?.durationMinutes} mins
+          <div className="mt-1.5 text-slate-600 text-[11px]">
+            <span className="font-mono tabular-nums font-bold text-slate-800">{o.departure.replace('T', ' ')} → {o.arrival.replace('T', ' ')}</span>
+            <span className="ml-3">Seats left: <strong>{o.seats_left}</strong></span>
+          </div>
+          <Unavailable option={o} />
+        </div>
+        <div className="text-right shrink-0">
+          <div className="font-black text-[#003580] tabular-nums">{formatINR(o.price_inr)}</div>
+          <DeltaBadge delta={o.price_delta_inr} current={o.current} />
+          {!o.current && (
+            <button type="button" disabled={!o.available || busy}
+              onClick={() => choose({ op: 'CHANGE_FLIGHT', leg: targetItem.details.isArrival ? 'ARRIVAL' : 'RETURN', flight_id: o.flight_id })}
+              className={`mt-2 px-3 py-1 text-xs font-bold rounded ${o.available ? 'bg-[#006ce4] hover:bg-[#0057b8] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+              Select
+            </button>
+          )}
+        </div>
+      </div>
+    </li>
+  ));
+
+  const optionHotels = () => ordered(options).map((o) => (
+    <li key={`${o.hotel_id}-${o.room_id}`} className={`p-3.5 rounded-lg border text-xs ${o.available ? 'border-slate-300 bg-white hover:border-[#006ce4]' : 'border-slate-200 bg-slate-50 opacity-80'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex gap-3">
+          {o.image && <img src={o.image} alt="" loading="lazy" className="w-16 h-16 rounded object-cover shrink-0 border border-slate-200" />}
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold text-[#003580]">{o.name}</span>
+              <span className="flex items-center gap-0.5 text-[#b45309] font-bold text-[11px]"><Star className="w-3 h-3 fill-current" />{o.stars}</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#003580] text-white text-[10px] font-extrabold">{o.rating}</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold">{o.area}</span>
+            </div>
+            <div className="mt-1 text-slate-700 text-[11px]">
+              {o.room_name} × <strong>{o.rooms_needed}</strong>{o.family_friendly ? ' · family friendly' : ''}
+            </div>
+            <Unavailable option={o} />
           </div>
         </div>
+        <div className="text-right shrink-0">
+          <div className="font-black text-[#003580] tabular-nums">{formatINR(o.price_inr)}</div>
+          <DeltaBadge delta={o.price_delta_inr} current={o.current} />
+          {!o.current && (
+            <button type="button" disabled={!o.available || busy}
+              onClick={() => choose({ op: 'CHANGE_HOTEL', city: targetItem.city, hotel_id: o.hotel_id, room_id: o.room_id })}
+              className={`mt-2 px-3 py-1 text-xs font-bold rounded ${o.available ? 'bg-[#006ce4] hover:bg-[#0057b8] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+              Select
+            </button>
+          )}
+        </div>
+      </div>
+    </li>
+  ));
 
-        <h4 className="text-xs font-black uppercase tracking-wider text-[#003580]">
-          Available Alternative Flights ({isArrival ? 'Arrival to First City' : 'Homeward Return'})
-        </h4>
-
-        {alternatives.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-4 text-center">
-            No alternative flights found in the catalog for this date and route.
-          </p>
-        ) : (
-          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-            {alternatives.map((alt, idx) => (
-              <div
-                key={alt.flight.flight_id || idx}
-                className={`p-3.5 rounded-lg border text-xs transition-all ${
-                  alt.canSwap
-                    ? 'border-slate-300 hover:border-[#006ce4] bg-white hover:bg-[#f2f6fa]'
-                    : 'border-slate-200 bg-slate-50 opacity-80'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[#003580]">
-                        {alt.flight.airline} {alt.flight.flight_number}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">
-                        {alt.flight.from} → {alt.flight.to}
-                      </span>
-                      <span className="text-[11px] text-slate-500">
-                        {alt.flight.stops === 0 ? 'Direct' : '1 Stop'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mt-1.5 text-slate-600 text-[11px]">
-                      <span className="font-mono tabular-nums font-bold text-slate-800">
-                        {alt.flight.departure_local.substring(11, 16)} → {alt.flight.arrival_local.substring(11, 16)}
-                      </span>
-                      <span>
-                        Seats Left: <strong className={alt.hasEnoughSeats ? 'text-slate-900' : 'text-[#d4111e]'}>{alt.flight.seats_left}</strong>
-                      </span>
-                    </div>
-
-                    {!alt.canSwap && (
-                      <div className="mt-2 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3 shrink-0" />
-                        <span>Rule Conflict: {alt.conflictReason}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <div className="font-black text-[#003580] tabular-nums">
-                      {formatINR(alt.totalPrice)}
-                    </div>
-                    <div className={`text-[10px] font-bold tabular-nums ${
-                      alt.priceDiff > 0 ? 'text-[#d4111e]' : alt.priceDiff < 0 ? 'text-[#008009]' : 'text-slate-400'
-                    }`}>
-                      {alt.priceDiff > 0 ? `+${formatINR(alt.priceDiff)}` : alt.priceDiff < 0 ? `-${formatINR(Math.abs(alt.priceDiff))}` : 'Same Price'}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectFlight(alt)}
-                      className={`mt-2 px-3 py-1 text-xs font-bold rounded transition-colors ${
-                        alt.canSwap
-                          ? 'bg-[#006ce4] hover:bg-[#0057b8] text-white'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
-                    >
-                      Select
-                    </button>
-                  </div>
-                </div>
+  const optionAttractions = () => (options || []).map((o) => {
+    const start = startChoice[o.attraction_id] || o.start_choices[0];
+    return (
+      <li key={o.attraction_id} className="p-3.5 rounded-lg border text-xs border-slate-300 bg-white hover:border-[#008009]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex gap-3">
+            {o.image && <img src={o.image} alt="" loading="lazy" className="w-16 h-16 rounded object-cover shrink-0 border border-slate-200" />}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold text-[#003580]">{o.name}</span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-[#008009] border border-emerald-200 text-[10px] font-bold">{o.category.replaceAll('_', ' ')}</span>
+                {o.child_friendly && <span className="text-[10px] font-bold text-slate-500">child friendly</span>}
               </div>
-            ))}
+              <div className="mt-1 text-slate-500 text-[11px]">Visit: {o.duration_minutes} min</div>
+              <label className="mt-1.5 flex items-center gap-2 text-[11px] text-slate-700 font-semibold">
+                Start at
+                <select value={start} onChange={(e) => setStartChoice((p) => ({ ...p, [o.attraction_id]: e.target.value }))}
+                  aria-label={`Start time for ${o.name}`}
+                  className="px-1.5 py-0.5 border border-slate-300 rounded font-mono text-[11px] bg-white">
+                  {o.start_choices.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </label>
+              <Unavailable option={o} />
+            </div>
           </div>
-        )}
+          <div className="text-right shrink-0">
+            <div className="font-black text-[#003580] tabular-nums">{o.price_inr === 0 ? 'Free' : formatINR(o.price_inr)}</div>
+            <button type="button" disabled={busy}
+              onClick={() => choose({ op: 'ADD_ATTRACTION', attraction_id: o.attraction_id, date: targetDate, start })}
+              className="mt-2 px-3 py-1 text-xs font-bold rounded bg-[#008009] hover:bg-emerald-700 text-white">
+              Add
+            </button>
+          </div>
+        </div>
+      </li>
+    );
+  });
+
+  const optionCityPlans = () => (options || []).map((o, idx) => (
+    <li key={idx} className={`p-3.5 rounded-lg border text-xs ${o.current ? 'border-[#febb02] bg-[#fff9e6]' : 'border-slate-300 bg-white hover:border-[#006ce4]'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 flex-wrap font-extrabold text-[#003580]">
+            {o.plan.map((p) => `${p.city} · ${p.nights} nights`).join('  →  ')}
+            {o.preferred && <span className="px-1.5 py-0.5 rounded bg-[#008009]/10 text-[#008009] text-[10px] font-bold">Suits {tripPackage.nights} nights</span>}
+          </div>
+          <div className="mt-1 text-slate-600 text-[11px]">
+            Travel time {hoursMinutes(o.transit_minutes)} · hotels average {o.avg_hotel_stars}★
+          </div>
+          {o.warnings.filter((w) => !w.startsWith('OVER_BUDGET')).map((w, i) => (
+            <div key={i} className="mt-1 text-[11px] text-[#b45309] font-semibold">{w.replace(/^[A-Z_]+: /, '')}</div>
+          ))}
+          {!o.fits_budget && (
+            <div className="mt-1 text-[11px] text-[#b45309] font-bold flex items-center gap-1">
+              <Wallet className="w-3 h-3" /> Needs +{formatINR(o.budget_needed_inr)} more budget
+            </div>
+          )}
+        </div>
+        <div className="text-right shrink-0">
+          <div className="font-black text-[#003580] tabular-nums">{formatINR(o.total_inr)}</div>
+          <DeltaBadge delta={o.price_delta_inr} current={o.current} />
+          {!o.current && (
+            <button type="button" disabled={busy}
+              onClick={() => choose({ op: 'CHANGE_CITY_PLAN', plan: o.plan })}
+              className="mt-2 px-3 py-1 text-xs font-bold rounded bg-[#006ce4] hover:bg-[#0057b8] text-white">
+              Use this plan
+            </button>
+          )}
+        </div>
+      </div>
+    </li>
+  ));
+
+  const renderBanner = () => {
+    if (!pending) return null;
+    const { op, result } = pending;
+    if (result.result === 'BUDGET_EXCEEDED') {
+      return (
+        <div className="mb-4 p-3 rounded bg-[#fff9e6] border-2 border-[#febb02] text-xs text-slate-800" role="alert">
+          <p className="font-black text-[#003580] flex items-center gap-1.5"><Wallet className="w-4 h-4" /> This would go over your budget</p>
+          <p className="mt-1">{result.message}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" disabled={busy} onClick={() => choose({ ...op, raise_budget: true })}
+              className="px-3 py-1.5 font-bold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded">
+              Raise my budget to {formatINR(result.new_total_inr)} and apply
+            </button>
+            <button type="button" onClick={() => setPending(null)} className="px-3 py-1.5 font-bold text-slate-700 bg-white border border-slate-300 rounded">
+              Keep my budget
+            </button>
+          </div>
+        </div>
+      );
+    }
+    if (result.result === 'PINNED_CONFLICT') {
+      return (
+        <div className="mb-4 p-3 rounded bg-[#fff9e6] border-2 border-[#febb02] text-xs text-slate-800" role="alert">
+          <p className="font-black text-[#003580] flex items-center gap-1.5"><Star className="w-4 h-4" /> This would undo a choice you made</p>
+          <p className="mt-1">{result.reason}</p>
+          {result.suggestion && <p className="mt-0.5 text-slate-600">{result.suggestion}</p>}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" onClick={() => setPending(null)} className="px-3 py-1.5 font-bold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded flex items-center gap-1">
+              <Undo2 className="w-3.5 h-3.5" /> Keep my current plan
+            </button>
+            <button type="button" disabled={busy} onClick={() => choose({ ...op, remove_pinned_conflicts: true })}
+              className="px-3 py-1.5 font-bold text-slate-800 bg-white border border-slate-300 rounded">
+              Apply anyway and let those go
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mb-4 p-3 rounded bg-red-50 border border-[#d4111e] text-[#d4111e] text-xs font-semibold flex items-start gap-2" role="alert">
+        <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-bold">We couldn't make that change</p>
+          <p>{result.reason || result.message}</p>
+          {result.suggestion && <p className="text-slate-700 font-medium mt-0.5">{result.suggestion}</p>}
+        </div>
       </div>
     );
   };
 
-  // Render Hotel Swapping
-  const renderHotelSwap = () => {
-    const stayNights = targetItem.details?.nights || 3;
-    const travelersCount = tripPackage.traveler.adults + tripPackage.traveler.children;
-    const alternatives = getAlternativeHotels(
-      targetItem,
-      targetItem.city,
-      targetItem.start,
-      stayNights,
-      travelersCount,
-      tripPackage.traveler.adults,
-      tripPackage.traveler.children
-    );
-
-    const handleSelectHotel = (alt) => {
-      setErrorBanner(null);
-      if (!alt.canSwap) {
-        setErrorBanner(alt.conflictReason || 'This hotel cannot accommodate your party or lacks availability.');
-        return;
-      }
-      onConfirmSwapHotel(targetItem, alt.hotel, alt.room, alt.roomsNeeded);
-      onClose();
-    };
-
-    return (
-      <div className="space-y-4">
-        <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs">
-          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">
-            Current Hotel in {targetItem.city}
-          </span>
+  const renderCurrent = () => {
+    if (modalType === 'flight') {
+      return (
+        <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs mb-4">
+          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Your {targetItem.details?.isArrival ? 'arrival' : 'return'} flight now</span>
           <div className="flex items-center justify-between font-extrabold text-[#003580]">
-            <span>{targetItem.name}</span>
-            <span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
-          </div>
-          <div className="text-slate-600 text-[11px] mt-0.5">
-            {stayNights} Nights • Area: {targetItem.details?.area} • {targetItem.quantity} Room(s)
+            <span>{targetItem.name}</span><span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
           </div>
         </div>
-
-        <h4 className="text-xs font-black uppercase tracking-wider text-[#003580]">
-          Available Alternative Hotels in {targetItem.city}
-        </h4>
-
-        {alternatives.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-4 text-center">
-            No other hotels found in {targetItem.city}.
-          </p>
-        ) : (
-          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-            {alternatives.map((alt, idx) => (
-              <div
-                key={alt.hotel.hotel_id || idx}
-                className={`p-3.5 rounded-lg border text-xs transition-all ${
-                  alt.canSwap
-                    ? 'border-slate-300 hover:border-[#006ce4] bg-white hover:bg-[#f2f6fa]'
-                    : 'border-slate-200 bg-slate-50 opacity-80'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[#003580]">
-                        {alt.hotel.name}
-                      </span>
-                      <div className="w-6 h-6 rounded-t rounded-br bg-[#003580] text-white font-extrabold text-[10px] flex items-center justify-center">
-                        {(alt.hotel.stars * 1.8).toFixed(1)}
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold">
-                        {alt.hotel.area}
-                      </span>
-                    </div>
-
-                    {alt.room && (
-                      <div className="mt-1 text-slate-700 text-[11px]">
-                        Room Type: <strong>{alt.room.name}</strong> ({alt.roomsNeeded} room needed)
-                      </div>
-                    )}
-
-                    {!alt.canSwap && (
-                      <div className="mt-2 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3 shrink-0" />
-                        <span>Rule Conflict: {alt.conflictReason}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <div className="font-black text-[#003580] tabular-nums">
-                      {formatINR(alt.totalPrice)}
-                    </div>
-                    <div className={`text-[10px] font-bold tabular-nums ${
-                      alt.priceDiff > 0 ? 'text-[#d4111e]' : alt.priceDiff < 0 ? 'text-[#008009]' : 'text-slate-400'
-                    }`}>
-                      {alt.priceDiff > 0 ? `+${formatINR(alt.priceDiff)}` : alt.priceDiff < 0 ? `-${formatINR(Math.abs(alt.priceDiff))}` : 'Same Price'}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectHotel(alt)}
-                      className={`mt-2 px-3 py-1 text-xs font-bold rounded transition-colors ${
-                        alt.canSwap
-                          ? 'bg-[#006ce4] hover:bg-[#0057b8] text-white'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
-                    >
-                      Select
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+      );
+    }
+    if (modalType === 'hotel') {
+      return (
+        <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs mb-4">
+          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Your hotel in {targetItem.city} now</span>
+          <div className="flex items-center justify-between font-extrabold text-[#003580]">
+            <span>{targetItem.name}</span><span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
           </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render Add Attraction
-  const renderAddAttraction = () => {
-    const available = getAvailableAttractionsForDay(targetDate, tripPackage);
-
-    const handleSelectAttraction = (cand) => {
-      setErrorBanner(null);
-      if (!cand.canAdd) {
-        setErrorBanner(cand.conflictReason || 'This attraction cannot be scheduled due to opening hours or schedule conflicts.');
-        return;
-      }
-      onConfirmAddAttraction(cand.attraction, targetDate, cand.availableSlot);
-      onClose();
-    };
-
+        </div>
+      );
+    }
+    if (modalType === 'add_attraction') {
+      return (
+        <div className="bg-[#f2f6fa] p-3 rounded-lg border border-slate-300 text-xs mb-4">
+          <span className="text-slate-700 font-bold">Adding something to do on <strong className="text-[#003580]">{targetDate}</strong></span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Only attractions that are open that day and fit your schedule are listed.</p>
+        </div>
+      );
+    }
     return (
-      <div className="space-y-4">
-        <div className="bg-[#f2f6fa] p-3 rounded-lg border border-slate-300 text-xs">
-          <span className="text-slate-700 font-bold">
-            Adding Sightseeing for Date: <strong className="text-[#003580]">{targetDate}</strong>
-          </span>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Verified for opening days, operating hours, and zero overlap with existing activities.
-          </p>
-        </div>
-
-        <h4 className="text-xs font-black uppercase tracking-wider text-[#003580]">
-          Available Attractions in Catalog
-        </h4>
-
-        {available.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-4 text-center">
-            No more available attractions in this city that fit the remaining time slots.
-          </p>
-        ) : (
-          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-            {available.map((cand, idx) => (
-              <div
-                key={cand.attraction.attraction_id || idx}
-                className={`p-3.5 rounded-lg border text-xs transition-all ${
-                  cand.canAdd
-                    ? 'border-slate-300 hover:border-[#008009] bg-white hover:bg-emerald-50/20'
-                    : 'border-slate-200 bg-slate-50 opacity-80'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[#003580]">
-                        {cand.attraction.name}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-[#008009] border border-emerald-200 text-[10px] font-bold">
-                        {cand.attraction.category}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mt-1 text-slate-500 text-[11px]">
-                      <span>Hours: {cand.attraction.open_from} - {cand.attraction.open_until}</span>
-                      <span>Visit: {cand.attraction.visit_minutes}m</span>
-                      {cand.canAdd && (
-                        <span className="text-[#006ce4] font-bold">
-                          Slot: {cand.availableSlot.start} - {cand.availableSlot.end}
-                        </span>
-                      )}
-                    </div>
-
-                    {!cand.canAdd && (
-                      <div className="mt-2 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3 shrink-0" />
-                        <span>Rule Conflict: {cand.conflictReason}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <div className="font-black text-[#003580] tabular-nums">
-                      {formatINR(cand.price)}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectAttraction(cand)}
-                      className={`mt-2 px-3 py-1 text-xs font-bold rounded transition-colors ${
-                        cand.canAdd
-                          ? 'bg-[#008009] hover:bg-emerald-700 text-white'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                      }`}
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="bg-[#f2f6fa] p-3 rounded-lg border border-slate-300 text-xs mb-4">
+        <span className="text-slate-700 font-bold">Every valid way to split your {tripPackage.nights} nights between cities</span>
+        <p className="text-[11px] text-slate-500 mt-0.5">Prices are what the whole holiday would cost. Things you chose yourself are kept where they still fit.</p>
       </div>
     );
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#003580]/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-slate-300 max-w-xl w-full p-6 animate-in fade-in zoom-in-95 duration-150">
-        
-        {/* Modal Header */}
+    <div className="fixed inset-0 z-50 bg-[#003580]/50 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={TITLES[modalType]}>
+      <div className="bg-white rounded-xl shadow-2xl border border-slate-300 max-w-2xl w-full p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded bg-[#006ce4]/10 text-[#006ce4]">
-              <RefreshCw className="w-4 h-4" />
-            </span>
-            <h3 className="text-base font-extrabold text-[#003580]">
-              {modalType === 'flight' && 'Change Flight (Rule Re-Validation)'}
-              {modalType === 'hotel' && 'Change Room / Hotel (Booking.com Rules)'}
-              {modalType === 'add_attraction' && 'Add Sightseeing (Schedule Check)'}
-            </h3>
+            <span className="p-1.5 rounded bg-[#006ce4]/10 text-[#006ce4]"><RefreshCw className="w-4 h-4" /></span>
+            <h3 className="text-base font-extrabold text-[#003580]">{TITLES[modalType]}</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
-          >
+          <button onClick={onClose} aria-label="Close" className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Conflict Alert Banner */}
-        {errorBanner && (
-          <div className="mb-4 p-3 rounded bg-red-50 border border-[#d4111e] text-[#d4111e] text-xs font-semibold flex items-start gap-2">
-            <ShieldAlert className="w-4 h-4 shrink-0 text-[#d4111e] mt-0.5" />
-            <div>
-              <p className="font-bold">Edit Refused (Booking Rule Conflict):</p>
-              <p>{errorBanner}</p>
-            </div>
-          </div>
+        {renderBanner()}
+        {renderCurrent()}
+
+        {loadError && <p className="text-xs text-[#d4111e] font-bold py-4 text-center">{loadError}</p>}
+        {!loadError && options === null && (
+          <div className="py-8 flex justify-center"><div className="w-8 h-8 border-4 border-[#003580] border-t-[#febb02] rounded-full animate-spin" /></div>
+        )}
+        {options !== null && options.length === 0 && (
+          <p className="text-xs text-slate-500 italic py-4 text-center">Nothing else is available here.</p>
+        )}
+        {options !== null && options.length > 0 && (
+          <ul className="space-y-2.5 max-h-[50vh] overflow-y-auto pr-1" data-testid="options-list">
+            {modalType === 'flight' && optionFlights()}
+            {modalType === 'hotel' && optionHotels()}
+            {modalType === 'add_attraction' && optionAttractions()}
+            {modalType === 'city_plan' && optionCityPlans()}
+          </ul>
         )}
 
-        {/* Modal Content */}
-        {modalType === 'flight' && renderFlightSwap()}
-        {modalType === 'hotel' && renderHotelSwap()}
-        {modalType === 'add_attraction' && renderAddAttraction()}
-
-        {/* Modal Footer */}
         <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded transition-colors"
-          >
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded transition-colors flex items-center gap-1">
             Close
           </button>
         </div>
-
       </div>
     </div>
   );

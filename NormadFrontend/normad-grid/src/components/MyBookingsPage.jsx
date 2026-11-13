@@ -14,7 +14,8 @@ import {
   Luggage,
   Check
 } from 'lucide-react';
-import { formatINR, exportPackageJSON } from '../data/mockTripData';
+import { formatINR } from '../lib/format';
+import { api } from '../api/client';
 
 export default function MyBookingsPage({
   bookings = [],
@@ -43,7 +44,7 @@ export default function MyBookingsPage({
             </h2>
           </div>
           <p className="text-xs text-slate-600 mt-1">
-            Review and manage all your confirmed holiday packages saved in local records.
+            Your confirmed holidays are saved on the server, so they are here even after a restart.
           </p>
         </div>
 
@@ -157,18 +158,19 @@ export default function MyBookingsPage({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => exportPackageJSON(booking)}
+                    <a
+                      href={api.exportUrl(booking.package_id)}
+                      download
                       className="p-2 text-slate-600 hover:text-[#006ce4] hover:bg-[#f2f6fa] rounded border border-slate-200 transition-colors"
                       title="Download Package JSON"
                     >
                       <Download className="w-4 h-4" />
-                    </button>
+                    </a>
 
                     <button
                       onClick={() => onDeleteBooking(refNumber)}
                       className="p-2 text-slate-400 hover:text-[#d4111e] hover:bg-red-50 rounded border border-slate-200 transition-colors"
-                      title="Delete Record"
+                      title="Remove from this device's list (the reservation stays on the server)"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

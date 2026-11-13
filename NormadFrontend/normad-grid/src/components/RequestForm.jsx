@@ -1,470 +1,309 @@
-import React, { useState } from 'react';
-import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search } from 'lucide-react';
-import { sampleTrips, formatINR } from '../data/mockTripData';
+import React, { useEffect, useState } from 'react';
+import {
+  Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search,
+  Wand2, Layers,
+} from 'lucide-react';
+import { api, NetworkError } from '../api/client';
+import { sampleTrips } from '../lib/samples';
+import { formatINR } from '../lib/format';
+import { useApp } from '../context/AppContext';
 
-export default function RequestForm({
-  onSubmit,
-  initialData = null,
-  isLoading = false
-}) {
-  // 7 traveler fields - starts empty by default
-  const [formData, setFormData] = useState({
-    departureCity: '',
-    destinationCountry: '',
-    startDate: '',
-    nights: '',
-    adults: '',
-    childrenCount: 0,
-    childrenAges: [],
-    budget: ''
-  });
+const EMPTY = {
+  departureCity: '', destinationCountry: '', startDate: '', nights: '', adults: '',
+  childrenCount: 0, childrenAges: [], budget: '',
+};
 
+// The backend's field names -> this form's keys (so the backend's own message shows next to the right input).
+const FIELD_KEY = {
+  departure_city: 'departureCity', country: 'destinationCountry', start_date: 'startDate', nights: 'nights',
+  adults: 'adults', child_ages: 'childrenAges', budget_inr: 'budget',
+};
+
+function fromRequest(r) {
+  const ages = r.child_ages || [];
+  return {
+    departureCity: r.departure_city || '', destinationCountry: r.country || '', startDate: r.start_date || '',
+    nights: r.nights ?? '', adults: r.adults ?? '', childrenCount: ages.length, childrenAges: [...ages],
+    budget: r.budget_inr ?? '',
+  };
+}
+
+function Field({ label, icon: Icon, error, hint, children, className = '' }) {
+  return (
+    <div className={className}>
+      <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+        <Icon className="w-3.5 h-3.5 text-[#006ce4]" />
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1" role="alert">
+          <AlertCircle className="w-3 h-3 shrink-0" />
+          {error}
+        </p>
+      ) : hint ? (
+        <p className="mt-1 text-[10px] text-slate-500 font-medium">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+const inputClass = (error) =>
+  `w-full px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
+    error ? 'border-[#d4111e] bg-red-50/20' : 'border-slate-300 focus:border-[#006ce4]'
+  }`;
+
+export default function RequestForm({ onSubmit, initialData = null, isLoading = false }) {
+  const { meta } = useApp();
+  const [formData, setFormData] = useState(initialData ? fromRequest(initialData) : EMPTY);
   const [errors, setErrors] = useState({});
+  const [quickText, setQuickText] = useState('');
+  const [quick, setQuick] = useState(null);       // result of reading the sentence
+  const [quickBusy, setQuickBusy] = useState(false);
 
-  // Handle child count change and dynamically manage child age inputs
+  useEffect(() => { if (initialData) setFormData(fromRequest(initialData)); }, [initialData]);
+
+  const set = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
   const handleChildrenCountChange = (count) => {
     const num = Math.max(0, parseInt(count, 10) || 0);
-    const newAges = [...formData.childrenAges];
-    if (num > newAges.length) {
-      for (let i = newAges.length; i < num; i++) {
-        newAges.push(6);
-      }
-    } else if (num < newAges.length) {
-      newAges.splice(num);
-    }
-    setFormData(prev => ({
-      ...prev,
-      childrenCount: num,
-      childrenAges: newAges
-    }));
+    const ages = [...formData.childrenAges];
+    while (ages.length < num) ages.push(6);
+    ages.length = num;
+    setFormData((prev) => ({ ...prev, childrenCount: num, childrenAges: ages }));
+    if (errors.childrenAges) setErrors((prev) => ({ ...prev, childrenAges: null }));
   };
 
   const handleChildAgeChange = (index, age) => {
-    const updatedAges = [...formData.childrenAges];
-    updatedAges[index] = Math.max(0, Math.min(17, parseInt(age, 10) || 0));
-    setFormData(prev => ({ ...prev, childrenAges: updatedAges }));
+    const ages = [...formData.childrenAges];
+    ages[index] = age === '' ? '' : parseInt(age, 10);
+    setFormData((prev) => ({ ...prev, childrenAges: ages }));
+    if (errors.childrenAges) setErrors((prev) => ({ ...prev, childrenAges: null }));
   };
 
-  // Quick-Fill Handlers
-  const handleFillSample = () => {
+  const fillSample = (s) => {
     setFormData({
-      departureCity: sampleTrips.standardSample.departureCity,
-      destinationCountry: sampleTrips.standardSample.destinationCountry,
-      startDate: sampleTrips.standardSample.startDate,
-      nights: sampleTrips.standardSample.nights,
-      adults: sampleTrips.standardSample.adults,
-      childrenCount: sampleTrips.standardSample.children.length,
-      childrenAges: [...sampleTrips.standardSample.children],
-      budget: sampleTrips.standardSample.budget
+      departureCity: s.departureCity, destinationCountry: s.destinationCountry, startDate: s.startDate,
+      nights: s.nights, adults: s.adults, childrenCount: s.children.length, childrenAges: [...s.children],
+      budget: s.budget,
     });
     setErrors({});
   };
 
-  const handleFillOverBudget = () => {
-    setFormData({
-      departureCity: sampleTrips.overBudgetSample.departureCity,
-      destinationCountry: sampleTrips.overBudgetSample.destinationCountry,
-      startDate: sampleTrips.overBudgetSample.startDate,
-      nights: sampleTrips.overBudgetSample.nights,
-      adults: sampleTrips.overBudgetSample.adults,
-      childrenCount: sampleTrips.overBudgetSample.children.length,
-      childrenAges: [...sampleTrips.overBudgetSample.children],
-      budget: sampleTrips.overBudgetSample.budget
-    });
-    setErrors({});
-  };
-
-  const handleFillImpossible = () => {
-    setFormData({
-      departureCity: sampleTrips.impossibleTripSample.departureCity,
-      destinationCountry: sampleTrips.impossibleTripSample.destinationCountry,
-      startDate: sampleTrips.impossibleTripSample.startDate,
-      nights: sampleTrips.impossibleTripSample.nights,
-      adults: sampleTrips.impossibleTripSample.adults,
-      childrenCount: sampleTrips.impossibleTripSample.children.length,
-      childrenAges: [...sampleTrips.impossibleTripSample.children],
-      budget: sampleTrips.impossibleTripSample.budget
-    });
-    setErrors({});
-  };
-
-  // Form Validation
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.departureCity) {
-      newErrors.departureCity = 'Please select a departure city in India.';
-    }
-
-    if (!formData.destinationCountry) {
-      newErrors.destinationCountry = 'Please select a destination country.';
-    }
-
-    if (!formData.startDate) {
-      newErrors.startDate = 'Please pick a holiday start date.';
-    } else {
-      if (formData.startDate < '2027-04-01' || formData.startDate > '2027-04-17') {
-        newErrors.startDate = 'Start date must be between 1 April 2027 and 17 April 2027.';
+  // S1: read a sentence with the backend's fixed rules and fill the form from it.
+  const readSentence = async () => {
+    if (!quickText.trim()) return;
+    setQuickBusy(true);
+    try {
+      const { status, data } = await api.parseRequest(quickText);
+      if (status !== 200) {
+        setQuick({ error: data?.error?.fields?.[0]?.message || data?.error?.message || 'Please type a short request.' });
+        return;
       }
-    }
-
-    const n = parseInt(formData.nights, 10);
-    if (!formData.nights || isNaN(n)) {
-      newErrors.nights = 'Please enter duration (3–10 nights).';
-    } else if (n < 3 || n > 10) {
-      newErrors.nights = 'Holiday must be between 3 and 10 nights.';
-    }
-
-    if (formData.startDate && n >= 3 && n <= 10) {
-      const [y, m, d] = formData.startDate.split('-').map(Number);
-      const start = new Date(Date.UTC(y, m - 1, d));
-      start.setUTCDate(start.getUTCDate() + n);
-      const endDateStr = start.toISOString().split('T')[0];
-      if (endDateStr > '2027-04-20') {
-        newErrors.nights = `Return flight on ${endDateStr} violates the 20 April 2027 catalog cutoff. Maximum nights for this start date is ${20 - d}.`;
-      }
-    }
-
-    const a = parseInt(formData.adults, 10);
-    if (!formData.adults || isNaN(a) || a < 1) {
-      newErrors.adults = 'At least 1 adult traveler is required.';
-    }
-
-    if (formData.childrenCount > 0) {
-      for (let i = 0; i < formData.childrenAges.length; i++) {
-        const age = formData.childrenAges[i];
-        if (age === '' || isNaN(age) || age < 0 || age > 17) {
-          newErrors[`child_${i}`] = 'Child age must be between 0 and 17.';
-        }
-      }
-    }
-
-    const b = Number(formData.budget);
-    if (!formData.budget || isNaN(b) || b <= 0) {
-      newErrors.budget = 'Please enter a valid budget in INR (greater than 0).';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validate()) {
-      onSubmit({
-        departureCity: formData.departureCity,
-        destinationCountry: formData.destinationCountry,
-        startDate: formData.startDate,
-        nights: parseInt(formData.nights, 10),
-        adults: parseInt(formData.adults, 10),
-        children: formData.childrenAges,
-        budget: Number(formData.budget)
-      });
+      setQuick(data);
+      const f = data.fields || {};
+      setFormData((prev) => ({
+        departureCity: f.departure_city ?? prev.departureCity,
+        destinationCountry: f.country ?? prev.destinationCountry,
+        startDate: f.start_date ?? prev.startDate,
+        nights: f.nights ?? prev.nights,
+        adults: f.adults ?? prev.adults,
+        childrenCount: f.child_ages ? f.child_ages.length : prev.childrenCount,
+        childrenAges: f.child_ages ?? prev.childrenAges,
+        budget: f.budget_inr ?? prev.budget,
+      }));
+      setErrors({});
+    } catch (e) {
+      setQuick({ error: e instanceof NetworkError ? e.message : 'Could not read that request.' });
+    } finally {
+      setQuickBusy(false);
     }
   };
+
+  const submit = async (mode) => {
+    // Only "is it filled in?" is checked here; every real rule is answered by the backend, in its own words.
+    const missing = {};
+    if (!formData.departureCity) missing.departureCity = 'Please choose where you are flying from.';
+    if (!formData.destinationCountry) missing.destinationCountry = 'Please choose a destination country.';
+    if (!formData.startDate) missing.startDate = 'Please pick the first day of your holiday.';
+    if (formData.nights === '' || formData.nights === null) missing.nights = 'Please enter the number of nights.';
+    if (formData.adults === '' || formData.adults === null) missing.adults = 'Please enter the number of adults.';
+    if (formData.budget === '' || formData.budget === null) missing.budget = 'Please enter your total budget in rupees.';
+    if (Object.keys(missing).length) { setErrors(missing); return; }
+
+    const request = {
+      departure_city: formData.departureCity,
+      country: formData.destinationCountry,
+      start_date: formData.startDate,
+      nights: Number(formData.nights),
+      adults: Number(formData.adults),
+      child_ages: formData.childrenAges.map((a) => (a === '' ? null : Number(a))),
+      budget_inr: Number(formData.budget),
+    };
+    const result = await onSubmit(request, mode);
+    if (result?.kind === 'INVALID') {
+      const mapped = {};
+      for (const [field, message] of Object.entries(result.fields || {})) mapped[FIELD_KEY[field] || field] = message;
+      setErrors(mapped);
+    }
+  };
+
+  const rules = meta?.rules;
+  const departureCities = meta?.departure_cities || [];
+  const countries = meta?.countries || [];
 
   return (
     <div className="space-y-4">
-      
-      {/* Booking.com Hero Banner */}
-      <div className="bg-[#003580] text-white rounded-2xl p-6 sm:p-8 shadow-md">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          Find your next holiday package
-        </h1>
-        <p className="text-sm text-white/90 mt-1 max-w-2xl">
-          Search all-inclusive packages with flights, hand-picked hotels, ground transfers, and attractions in Japan and the UAE.
-        </p>
 
-        {/* Quick Filter Deals Bar (Booking.com style) */}
+      {/* Hero banner */}
+      <div className="bg-[#003580] text-white rounded-2xl p-6 sm:p-8 shadow-md">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Find your next holiday package</h1>
+        <p className="text-sm text-white/90 mt-1 max-w-2xl">
+          Tell us the trip and your budget — we choose the cities and build flights, hotels, transfers and attractions
+          that fit, then you can change anything.
+        </p>
         <div className="flex items-center gap-2 mt-4 flex-wrap">
           <span className="text-xs font-bold text-[#febb02] flex items-center gap-1 mr-1">
             <Tag className="w-3.5 h-3.5" />
-            Quick Test Deals:
+            Try an example:
           </span>
-          <button
-            type="button"
-            onClick={handleFillSample}
-            className="px-3 py-1 text-xs font-bold bg-[#febb02] text-[#003580] hover:bg-[#e5a700] rounded transition-colors flex items-center gap-1 shadow-sm"
-          >
+          <button type="button" onClick={() => fillSample(sampleTrips.standardSample)}
+            className="px-3 py-1 text-xs font-bold bg-[#febb02] text-[#003580] hover:bg-[#e5a700] rounded transition-colors flex items-center gap-1 shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-[#003580]" />
-            Menon Family Sample (Japan, 6N)
+            Menon family (Japan, 6 nights)
           </button>
-          <button
-            type="button"
-            onClick={handleFillOverBudget}
-            className="px-3 py-1 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded border border-white/40 transition-colors"
-          >
-            Test Over-Budget
+          <button type="button" onClick={() => fillSample(sampleTrips.overBudgetSample)}
+            className="px-3 py-1 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded border border-white/40 transition-colors">
+            Budget too small
           </button>
-          <button
-            type="button"
-            onClick={handleFillImpossible}
-            className="px-3 py-1 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded border border-white/40 transition-colors"
-          >
-            Test Impossible Dates
+          <button type="button" onClick={() => fillSample(sampleTrips.impossibleTripSample)}
+            className="px-3 py-1 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded border border-white/40 transition-colors">
+            Dates we can't do
           </button>
         </div>
       </div>
 
-      {/* Booking.com Iconic Yellow-Framed Search Box */}
+      {/* S1: type it in plain words */}
+      <div className="bg-white rounded-2xl border border-slate-300 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <Wand2 className="w-4 h-4 text-[#006ce4]" />
+          <h2 className="text-sm font-extrabold text-[#003580]">Or just type your trip</h2>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            value={quickText}
+            onChange={(e) => setQuickText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); readSentence(); } }}
+            placeholder="e.g. Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh"
+            aria-label="Describe your trip in plain words"
+            className="flex-1 px-3 py-2 text-xs font-semibold rounded border-2 border-slate-300 focus:border-[#006ce4] focus:outline-hidden"
+          />
+          <button type="button" onClick={readSentence} disabled={quickBusy || !quickText.trim()}
+            className="px-4 py-2 text-xs font-bold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded disabled:opacity-50">
+            {quickBusy ? 'Reading…' : 'Fill the form'}
+          </button>
+        </div>
+        {quick && (
+          <div className="mt-2 space-y-1 text-[11px]" data-testid="quick-feedback">
+            {quick.error && <p className="text-[#d4111e] font-bold">{quick.error}</p>}
+            {!quick.error && quick.missing?.length === 0 && quick.ready && (
+              <p className="text-[#008009] font-bold flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Understood everything — check the form below, then search.</p>
+            )}
+            {!quick.error && quick.missing?.length > 0 && (
+              <p className="text-[#b45309] font-bold">Still needed: {quick.missing.join(', ').replaceAll('_', ' ')}.</p>
+            )}
+            {(quick.notes || []).map((n, i) => <p key={i} className="text-slate-600">• {n}</p>)}
+          </div>
+        )}
+      </div>
+
+      {/* The 7-field form */}
       <div className="bg-white rounded-2xl border-4 border-[#febb02] shadow-xl p-5 sm:p-7">
-        
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <h2 className="text-base font-extrabold text-[#003580] flex items-center gap-2">
             <Compass className="w-5 h-5 text-[#006ce4]" />
-            Trip Builder • 7 Required Parameters
+            Your trip
           </h2>
           <span className="text-xs font-bold text-[#008009] flex items-center gap-1 bg-[#008009]/10 px-2 py-0.5 rounded">
             <Check className="w-3.5 h-3.5" />
-            Catalog Guaranteed
+            Every rule checked for you
           </span>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={(e) => { e.preventDefault(); submit('single'); }} noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            {/* 1. Departure City */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#006ce4]" />
-                1. Departure City (India)
-              </label>
-              <select
-                value={formData.departureCity}
-                onChange={(e) => {
-                  setFormData({ ...formData, departureCity: e.target.value });
-                  if (errors.departureCity) setErrors({ ...errors, departureCity: null });
-                }}
-                className={`w-full px-3 py-2.5 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
-                  errors.departureCity
-                    ? 'border-[#d4111e] bg-red-50/20'
-                    : 'border-slate-300 focus:border-[#006ce4]'
-                }`}
-              >
+            <Field label="Flying from" icon={MapPin} error={errors.departureCity}>
+              <select value={formData.departureCity} onChange={(e) => set('departureCity', e.target.value)}
+                aria-label="Flying from" className={inputClass(errors.departureCity)}>
                 <option value="">Where are you flying from?</option>
-                <option value="Bengaluru">Bengaluru (BLR)</option>
-                <option value="Mumbai">Mumbai (BOM)</option>
-                <option value="Delhi">Delhi (DEL)</option>
-                <option value="Hyderabad">Hyderabad (HYD - No direct catalog flights)</option>
-                <option value="Chennai">Chennai (MAA)</option>
+                {departureCities.map((c) => (
+                  <option key={c.city} value={c.city}>{c.city} ({c.airport})</option>
+                ))}
               </select>
-              {errors.departureCity && (
-                <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
-                  {errors.departureCity}
-                </p>
-              )}
-            </div>
+            </Field>
 
-            {/* 2. Destination Country */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Plane className="w-3.5 h-3.5 text-[#006ce4]" />
-                2. Destination Country
-              </label>
-              <select
-                value={formData.destinationCountry}
-                onChange={(e) => {
-                  setFormData({ ...formData, destinationCountry: e.target.value });
-                  if (errors.destinationCountry) setErrors({ ...errors, destinationCountry: null });
-                }}
-                className={`w-full px-3 py-2.5 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
-                  errors.destinationCountry
-                    ? 'border-[#d4111e] bg-red-50/20'
-                    : 'border-slate-300 focus:border-[#006ce4]'
-                }`}
-              >
+            <Field label="Going to" icon={Plane} error={errors.destinationCountry}>
+              <select value={formData.destinationCountry} onChange={(e) => set('destinationCountry', e.target.value)}
+                aria-label="Going to" className={inputClass(errors.destinationCountry)}>
                 <option value="">Where are you going?</option>
-                <option value="Japan">Japan (Tokyo, Kyoto, Osaka)</option>
-                <option value="United Arab Emirates">United Arab Emirates (Dubai, Abu Dhabi)</option>
+                {countries.map((c) => (
+                  <option key={c.name} value={c.name}>{c.name} ({c.cities.join(', ')})</option>
+                ))}
               </select>
-              {errors.destinationCountry && (
-                <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
-                  {errors.destinationCountry}
-                </p>
-              )}
-            </div>
+            </Field>
 
-            {/* 3. Holiday Start Date */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-[#006ce4]" />
-                3. Check-in / Start Date (Landing Date)
-              </label>
-              <input
-                type="date"
-                min="2027-04-01"
-                max="2027-04-17"
-                value={formData.startDate}
-                onChange={(e) => {
-                  setFormData({ ...formData, startDate: e.target.value });
-                  if (errors.startDate) setErrors({ ...errors, startDate: null });
-                }}
-                className={`w-full px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
-                  errors.startDate
-                    ? 'border-[#d4111e] bg-red-50/20'
-                    : 'border-slate-300 focus:border-[#006ce4]'
-                }`}
-              />
-              {errors.startDate ? (
-                <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
-                  {errors.startDate}
-                </p>
-              ) : (
-                <p className="mt-1 text-[10px] text-slate-500 font-medium">
-                  Valid window: 1 Apr 2027 – 17 Apr 2027
-                </p>
-              )}
-            </div>
+            <Field label="First day there (landing day)" icon={Calendar} error={errors.startDate}
+              hint={rules ? `Our flights and rooms cover ${rules.first_night} to ${rules.last_departure}.` : undefined}>
+              <input type="date" value={formData.startDate} onChange={(e) => set('startDate', e.target.value)}
+                aria-label="First day there" className={inputClass(errors.startDate)} />
+            </Field>
 
-            {/* 4. Number of Nights */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-[#006ce4]" />
-                4. Number of Nights (3 to 10)
-              </label>
-              <input
-                type="number"
-                min="3"
-                max="10"
-                placeholder="e.g. 6"
-                value={formData.nights}
-                onChange={(e) => {
-                  setFormData({ ...formData, nights: e.target.value });
-                  if (errors.nights) setErrors({ ...errors, nights: null });
-                }}
-                className={`w-full px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
-                  errors.nights
-                    ? 'border-[#d4111e] bg-red-50/20'
-                    : 'border-slate-300 focus:border-[#006ce4]'
-                }`}
-              />
-              {errors.nights && (
-                <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
-                  {errors.nights}
-                </p>
-              )}
-            </div>
+            <Field label={`Nights${rules ? ` (${rules.min_nights} to ${rules.max_nights})` : ''}`} icon={Calendar} error={errors.nights}>
+              <input type="number" placeholder="e.g. 6" value={formData.nights} onChange={(e) => set('nights', e.target.value)}
+                aria-label="Nights" className={inputClass(errors.nights)} />
+            </Field>
 
-            {/* 5. Adults */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-[#006ce4]" />
-                5. Adults (Age 18+)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="8"
-                placeholder="e.g. 2"
-                value={formData.adults}
-                onChange={(e) => {
-                  setFormData({ ...formData, adults: e.target.value });
-                  if (errors.adults) setErrors({ ...errors, adults: null });
-                }}
-                className={`w-full px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 focus:outline-hidden transition-all bg-white ${
-                  errors.adults
-                    ? 'border-[#d4111e] bg-red-50/20'
-                    : 'border-slate-300 focus:border-[#006ce4]'
-                }`}
-              />
-              {errors.adults && (
-                <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
-                  {errors.adults}
-                </p>
-              )}
-            </div>
+            <Field label="Adults (18+)" icon={Users} error={errors.adults}>
+              <input type="number" min="1" placeholder="e.g. 2" value={formData.adults} onChange={(e) => set('adults', e.target.value)}
+                aria-label="Adults" className={inputClass(errors.adults)} />
+            </Field>
 
-            {/* 6. Children Count */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-[#006ce4]" />
-                6. Children Count (Age 0–17)
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="6"
-                placeholder="0"
-                value={formData.childrenCount}
-                onChange={(e) => handleChildrenCountChange(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-semibold text-slate-800 rounded border-2 border-slate-300 focus:border-[#006ce4] focus:outline-hidden bg-white"
-              />
-              <p className="mt-1 text-[10px] text-slate-500 font-medium">
-                {formData.childrenCount > 0 ? `${formData.childrenCount} child age input(s) rendered below` : 'No children added'}
-              </p>
-            </div>
+            <Field label="Children (0–17)" icon={Users} error={errors.childrenAges}
+              hint={formData.childrenCount > 0 ? `Enter each child's age below` : 'No children'}>
+              <input type="number" min="0" placeholder="0" value={formData.childrenCount}
+                onChange={(e) => handleChildrenCountChange(e.target.value)} aria-label="Children"
+                className={inputClass(errors.childrenAges)} />
+            </Field>
 
-            {/* 7. Total Budget in INR */}
             <div className="sm:col-span-2 lg:col-span-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5 text-[#006ce4]" />
-                    7. Total Budget in INR (₹)
-                  </label>
+                <Field label="Total budget for everything (₹)" icon={DollarSign} error={errors.budget}
+                  hint={formData.budget ? `Your budget: ${formatINR(formData.budget)}` : undefined}>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-xs font-extrabold text-slate-500">
-                      ₹
-                    </span>
-                    <input
-                      type="number"
-                      min="1"
-                      step="1000"
-                      placeholder="e.g. 350000"
-                      value={formData.budget}
-                      onChange={(e) => {
-                        setFormData({ ...formData, budget: e.target.value });
-                        if (errors.budget) setErrors({ ...errors, budget: null });
-                      }}
-                      className={`w-full pl-7 pr-3 py-2 text-xs font-extrabold text-slate-900 rounded border-2 focus:outline-hidden transition-all tabular-nums bg-white ${
-                        errors.budget
-                          ? 'border-[#d4111e] bg-red-50/20'
-                          : 'border-slate-300 focus:border-[#006ce4]'
-                      }`}
-                    />
+                    <span className="absolute left-3 top-2 text-xs font-extrabold text-slate-500">₹</span>
+                    <input type="number" step="1000" placeholder="e.g. 350000" value={formData.budget}
+                      onChange={(e) => set('budget', e.target.value)} aria-label="Total budget"
+                      className={`${inputClass(errors.budget)} pl-7 tabular-nums`} />
                   </div>
-                  {errors.budget ? (
-                    <p className="mt-1 text-[11px] text-[#d4111e] font-bold flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      {errors.budget}
-                    </p>
-                  ) : formData.budget ? (
-                    <p className="mt-1 text-[11px] text-[#003580] font-bold tabular-nums">
-                      Specified Budget: {formatINR(formData.budget)}
-                    </p>
-                  ) : null}
-                </div>
+                </Field>
 
-                {/* Child Age Inputs */}
                 {formData.childrenCount > 0 && (
                   <div className="bg-[#f2f6fa] p-3 rounded-lg border border-slate-300">
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#003580] mb-2">
-                      Child Age Inputs (0–17 years)
+                      Children's ages
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {formData.childrenAges.map((age, idx) => (
                         <div key={idx}>
-                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
-                            Child #{idx + 1} Age
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            max="17"
-                            value={age}
-                            onChange={(e) => handleChildAgeChange(idx, e.target.value)}
-                            className="w-full px-2 py-1 text-xs font-bold bg-white rounded border border-slate-300 focus:border-[#006ce4] focus:outline-hidden tabular-nums"
-                          />
-                          {errors[`child_${idx}`] && (
-                            <span className="text-[9px] text-[#d4111e] block mt-0.5 font-bold">
-                              {errors[`child_${idx}`]}
-                            </span>
-                          )}
+                          <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Child {idx + 1}</label>
+                          <input type="number" value={age} onChange={(e) => handleChildAgeChange(idx, e.target.value)}
+                            aria-label={`Child ${idx + 1} age`}
+                            className="w-full px-2 py-1 text-xs font-bold bg-white rounded border border-slate-300 focus:border-[#006ce4] focus:outline-hidden tabular-nums" />
                         </div>
                       ))}
                     </div>
@@ -472,37 +311,31 @@ export default function RequestForm({
                 )}
               </div>
             </div>
-
           </div>
 
-          {/* Submit Action */}
-          <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col lg:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
               <ShieldCheck className="w-4 h-4 text-[#008009]" />
-              <span>Free cancellation on eligible rooms • Instant package confirmation</span>
+              <span>Your budget comes first — we only show packages that fit it.</span>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full sm:w-auto px-10 py-3 text-sm font-extrabold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded-md shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Compass className="w-4 h-4 animate-spin" />
-                  Building Best Package...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Search className="w-4 h-4" />
-                  Search Holiday Packages
-                </span>
-              )}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+              <button type="button" disabled={isLoading} onClick={() => submit('compare')}
+                className="px-6 py-3 text-sm font-extrabold text-[#006ce4] bg-white border-2 border-[#006ce4] hover:bg-[#006ce4]/10 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                <Layers className="w-4 h-4" />
+                Compare cheapest · fastest · best rated
+              </button>
+              <button type="submit" disabled={isLoading}
+                className="px-10 py-3 text-sm font-extrabold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded-md shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                {isLoading ? (
+                  <span className="flex items-center gap-2"><Compass className="w-4 h-4 animate-spin" /> Building your holiday…</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Search className="w-4 h-4" /> Build my holiday</span>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
-
     </div>
   );
 }
