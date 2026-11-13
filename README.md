@@ -74,7 +74,7 @@ backend/            FastAPI app (api · engine · changes · validator · export
 frontend/           the UI (separate developer's work — not touched by the backend)
 docs/               ARCHITECTURE.md · API.md · FRONTEND_HANDOFF.md · break-it-log.md · api-examples/
 hackathon-problem-1-holiday-package/   the provided statement, data dictionary, catalog and photos (read-only)
-PRD.md              product requirements, rules and decisions
+docs/PRD.md          product requirements, rules and decisions
 Dockerfile · docker-compose.yml
 ```
 
@@ -82,7 +82,7 @@ Dockerfile · docker-compose.yml
 
 | Document | For |
 |---|---|
-| [PRD.md](PRD.md) | What we build and why; requirements, decisions, delivery status |
+| [PRD.md](docs/PRD.md) | What we build and why; requirements, decisions, delivery status |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it works: modules, data, the search, the two rule engines, changes, extras, deployment |
 | [docs/API.md](docs/API.md) | Every endpoint, outcome and error code |
 | [docs/FRONTEND_HANDOFF.md](docs/FRONTEND_HANDOFF.md) | How to build the UI against this API |

@@ -38,7 +38,7 @@ produce `frontend/dist/index.html`**. Unknown non-API paths fall back to `index.
 | **Confirm** | `POST …/confirm` | Show `reservation_number` large with a copy button; link to `/reservations/:number`. Booked packages are read-only (`status: BOOKED`). |
 | **Reservation lookup** | `GET /api/reservations/{number}` | Read-only summary using the same timeline. 404 → "Reservation not found". |
 | **Export** | `GET …/export` | Plain link/button; the response downloads as a file. |
-| **Photo credits** | — | If you show photos, also show the credits from `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md` (a `/credits` page + footer link). |
+| **Photo credits** | — | The UI currently shows no photos (the API still serves them at `/images/...`). If photos are added, also show the credits from `hackathon-problem-1-holiday-package/images/ATTRIBUTIONS.md`. |
 
 ## 4. Reading a package
 

@@ -1,6 +1,6 @@
 # Architecture
 
-How NomadGrid "Build My Holiday" is put together, and why. Companion documents: [`../PRD.md`](../PRD.md) (what and why),
+How NomadGrid "Build My Holiday" is put together, and why. Companion documents: [`PRD.md`](PRD.md) (what and why),
 [`API.md`](API.md) (endpoint reference), [`FRONTEND_HANDOFF.md`](FRONTEND_HANDOFF.md) (for the UI developer),
 [`break-it-log.md`](break-it-log.md) (what was attacked and what broke).
 

@@ -57,3 +57,10 @@ single-city plan has no transfer and uses the same flights, so a two-city plan c
 - Undo: step-by-step restoring, the 20-step cap, restart survival, and refusal after booking.
 
 **Static analysis:** pyright 0 errors, ruff clean after the new modules; 369 tests passing.
+
+## Cycle: frontend connection and packaging
+- **Found:** opening "Change Flight" right after "Change Room / Hotel" crashed the page (`Cannot read properties of undefined (reading 'replace')`): the flight dialog rendered the previous hotel options for one frame. **Fixed:** options are now tied to the dialog they were loaded for (`SwapModal.jsx`).
+- **Found:** a phone-sized screen scrolled sideways by 43px because of the top bar. **Fixed** with spacing-only responsive classes.
+- **Found:** with the UI built, a catch-all route turned `GET /api/packages` into a 404 instead of 405. **Fixed:** the SPA fallback now lives in the 404 handler and never touches `/api/*` or `/images/*`.
+- **Added tests** (14): UI served, deep links, path traversal attempts, API answers unchanged, no-UI page, unwritable database fallback, missing catalog message.
+- **Not re-run after the last fix:** the full browser flow (`e2e/ui_flow.py`, last result 17/23 before the dialog fix). Run it with `python e2e/ui_flow.py http://localhost:8000`.

@@ -7,7 +7,7 @@
 ## 🚀 Quick Start (1 Command)
 
 ```bash
-cd NormadFrontend/normad-grid
+cd frontend
 npm install
 npm run dev
 ```

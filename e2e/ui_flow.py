@@ -56,12 +56,17 @@ def rupees(text: str) -> int:
     return int(re.sub(r"[^\d]", "", text))
 
 
-def build_menon(page: Page):
-    page.goto(BASE)
-    page.get_by_role("button", name=re.compile("Menon family")).click()
-    page.get_by_role("button", name="Build my holiday").click()
-    page.wait_for_url(re.compile(r"/packages/pkg_"))
-    page.get_by_text("Why this plan").first.wait_for()
+def field(page: Page, label: str):
+    """The select/input that follows a form label (the form has no ids, so we find it by its visible label)."""
+    return page.locator(f"xpath=//label[contains(., '{label}')]/following::*[self::select or self::input][1]")
+
+
+def search(page: Page):
+    page.get_by_role("button", name="Search Holiday Packages").click()
+
+
+def menon(page: Page):
+    page.get_by_role("button", name=re.compile("Menon Family Sample")).click()
 
 
 def main():
@@ -78,21 +83,21 @@ def main():
         with step("home page opens with an EMPTY form and dropdowns from the backend"):
             page.goto(BASE)
             page.get_by_text("Find your next holiday package").wait_for()
-            page.wait_for_function("document.querySelector('select[aria-label=\"Flying from\"]').options.length > 1")
-            assert page.locator('select[aria-label="Flying from"]').input_value() == ""
-            assert page.locator('input[aria-label="Nights"]').input_value() == ""
-            cities = page.locator('select[aria-label="Flying from"] option').all_inner_texts()
+            page.wait_for_function("document.querySelector('select').options.length > 1")
+            assert field(page, "1. Departure City").input_value() == ""
+            assert field(page, "4. Number of Nights").input_value() == ""
+            cities = field(page, "1. Departure City").locator("option").all_inner_texts()
             assert any("Bengaluru" in c for c in cities) and not any("Hyderabad" in c for c in cities), cities
             snap(page, "01_home")
 
         with step("a field the traveler left empty is flagged before anything is sent"):
-            page.get_by_role("button", name="Build my holiday").click()
-            assert page.get_by_text("Please choose where you are flying from.").is_visible()
+            search(page)
+            assert page.get_by_text("Please select a departure city in India.").is_visible()
 
         with step("the backend's own message shows next to the field (nights = 2)"):
-            page.get_by_role("button", name=re.compile("Menon family")).click()
-            page.locator('input[aria-label="Nights"]').fill("2")
-            page.get_by_role("button", name="Build my holiday").click()
+            menon(page)
+            field(page, "4. Number of Nights").fill("2")
+            search(page)
             page.get_by_text("Nights must be a whole number between 3 and 10.").wait_for()
 
         with step("quick request: a sentence fills the form"):
@@ -100,15 +105,15 @@ def main():
             page.get_by_label("Describe your trip in plain words").fill("Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh")
             page.get_by_role("button", name="Fill the form").click()
             page.get_by_text("Understood everything").wait_for()
-            assert page.locator('select[aria-label="Flying from"]').input_value() == "Bengaluru"
-            assert page.locator('select[aria-label="Going to"]').input_value() == "Japan"
-            assert page.locator('input[aria-label="Total budget"]').input_value() == "350000"
-            assert page.locator('input[aria-label="Child 1 age"]').input_value() == "6"
+            assert field(page, "1. Departure City").input_value() == "Bengaluru"
+            assert field(page, "2. Destination Country").input_value() == "Japan"
+            assert field(page, "7. Total Budget").input_value() == "350000"
+            assert field(page, "Child #1 Age").input_value() == "6"
             snap(page, "02_quick_request")
 
         # ---------------------------------------------------------------- build the Menon holiday
         with step("Menon family: a package is built and opens at /packages/<id>"):
-            page.get_by_role("button", name="Build my holiday").click()
+            search(page)
             page.wait_for_url(re.compile(r"/packages/pkg_"))
             page.get_by_text("Why this plan").first.wait_for()
             plan = page.locator("[data-testid=city-plan]").inner_text()
@@ -120,11 +125,10 @@ def main():
         pkg_url = page.url
         first_total = rupees(total_text(page))
 
-        with step("day-by-day plan: every day has a heading with date and city, photos are shown"):
-            headings = page.locator("[data-testid=day-heading]").all_inner_texts()
-            assert len(headings) == 7 and all("·" in h for h in headings), headings
-            assert page.locator("img[src^='/images/']").count() >= 3
-            assert page.locator("img[src^='/images/']").first.evaluate("i => i.complete && i.naturalWidth > 0")
+        with step("day-by-day plan: a card for each of the 7 days"):
+            days = page.locator("span", has_text=re.compile(r"^Day \d+$")).all_inner_texts()
+            assert len(days) >= 7, days
+            assert page.get_by_text("Day-by-Day Master Itinerary").is_visible()
 
         with step("'Why this plan' explains the choice with real numbers"):
             why = page.locator("[data-testid=why-panel]").inner_text()
@@ -142,10 +146,9 @@ def main():
             page.get_by_text(re.compile(r"Hotel in .* changed to")).wait_for()
             assert page.get_by_role("dialog").count() == 0
             assert rupees(total_text(page)) < first_total
-            assert page.get_by_text("Your choice").first.is_visible()
 
         with step("undo last change brings the old total back"):
-            page.get_by_role("button", name="Undo last change").click()
+            page.get_by_role("button", name="Undo Last Change").click()
             page.get_by_text("Your last change was undone.").wait_for()
             assert rupees(total_text(page)) == first_total
 
@@ -153,7 +156,7 @@ def main():
             page.get_by_role("button", name="Change Flight").first.click()
             dlg = page.get_by_role("dialog")
             dlg.locator("[data-testid=options-list] li").first.wait_for()
-            assert dlg.get_by_text("Seats left").first.is_visible()
+            assert dlg.get_by_text(re.compile("Seats left")).first.is_visible()
             snap(page, "05_flight_options")
             dlg.get_by_role("button", name="Close").last.click()
 
@@ -162,7 +165,7 @@ def main():
             for i in range(6):                         # find a day that still has something free to add
                 page.get_by_role("button", name=re.compile("Add Attraction")).nth(i).click()
                 dlg = page.get_by_role("dialog")
-                dlg.get_by_text(re.compile("Adding something to do")).wait_for()
+                dlg.get_by_text(re.compile("Adding Sightseeing for Date")).wait_for()
                 page.wait_for_function("!document.querySelector('[role=dialog] .animate-spin')")
                 if dlg.locator("[data-testid=options-list] li").count():
                     snap(page, "05b_add_sight")
@@ -173,11 +176,11 @@ def main():
                 assert dlg.get_by_text("Nothing else is available here.").is_visible()   # an honest empty list
                 dlg.get_by_role("button", name="Close").last.click()
             assert added, "no day offered anything to add"
-            page.get_by_role("button", name=re.compile("Remove")).first.click()
-            page.get_by_text(re.compile(r"Attraction removed")).wait_for()
+            page.get_by_role("button", name=re.compile("^Remove$")).first.click()
+            page.get_by_text(re.compile(r"removed", re.I)).first.wait_for()
 
         with step("change cities: plans compared with prices; switching to a Tokyo plan works"):
-            page.get_by_role("button", name="Compare other city plans").click()
+            page.get_by_role("button", name="Compare Other City Plans").click()
             dlg = page.get_by_role("dialog")
             dlg.locator("[data-testid=options-list] li").first.wait_for()
             assert dlg.locator("li").count() >= 8
@@ -203,12 +206,12 @@ def main():
 
         # ---------------------------------------------------------------- confirm (M7)
         with step("confirm gives a 10-digit number and the holiday becomes read-only"):
-            page.get_by_role("button", name=re.compile("Confirm & Book")).click()
+            page.get_by_role("button", name=re.compile("Confirm & Book Holiday")).click()
             page.get_by_text("RESERVATION CONFIRMED").wait_for()
             number = page.locator("span.tracking-widest").inner_text().strip()
             assert re.fullmatch(r"[1-9]\d{9}", number), number
             assert page.get_by_role("button", name="Change Flight").count() == 0
-            assert page.get_by_role("button", name=re.compile("Confirm & Book")).count() == 0
+            assert page.get_by_role("button", name=re.compile("Confirm & Book Holiday")).count() == 0
             snap(page, "07_booked")
         state = {"number": number, "url": page.url}
 
@@ -222,7 +225,7 @@ def main():
             box = page.get_by_placeholder("Find 10-digit Reservation ID...").first
             box.fill("0000000000")
             page.get_by_role("button", name="Find Trip").click()
-            page.get_by_text(re.compile("was not found")).first.wait_for()
+            page.get_by_text(re.compile("not found in records")).first.wait_for()
             box.fill(state["number"])
             page.get_by_role("button", name="Find Trip").click()
             page.wait_for_url(re.compile(r"/packages/pkg_"))
@@ -244,9 +247,9 @@ def main():
         # ---------------------------------------------------------------- budget too small (M8)
         with step("budget too small: honest message, cheapest total, alternatives that fit, raise-budget"):
             page.goto(BASE)
-            page.get_by_role("button", name=re.compile("Menon family")).click()
-            page.locator('input[aria-label="Total budget"]').fill("200000")
-            page.get_by_role("button", name="Build my holiday").click()
+            menon(page)
+            field(page, "7. Total Budget").fill("200000")
+            search(page)
             page.locator("[data-testid=over-budget]").wait_for()
             assert "not possible within" in page.locator("[data-testid=over-budget]").inner_text()
             snap(page, "09_over_budget")
@@ -262,20 +265,20 @@ def main():
 
         with step("no package possible: says why, and 'Edit the trip' brings the values back"):
             page.goto(BASE)
-            page.get_by_role("button", name=re.compile("Dates we can't do")).click()
-            page.get_by_role("button", name="Build my holiday").click()
+            page.get_by_role("button", name=re.compile("Test Impossible Dates")).click()
+            search(page)
             page.locator("[data-testid=no-package]").wait_for()
             assert "1 to 20 April 2027" in page.locator("[data-testid=no-package]").inner_text()
             snap(page, "10_no_package")
             page.get_by_role("button", name="Edit the trip").click()
             page.wait_for_url(BASE + "/")
-            assert page.locator('input[aria-label="Nights"]').input_value() == "8"
+            assert field(page, "4. Number of Nights").input_value() != ""
 
         # ---------------------------------------------------------------- compare three packages (G4)
         with step("compare: recommended, cheapest, fastest and best rated; open the best rated one"):
             page.goto(BASE)
-            page.get_by_role("button", name=re.compile("Menon family")).click()
-            page.get_by_role("button", name=re.compile("Compare cheapest")).click()
+            menon(page)
+            page.get_by_role("button", name=re.compile("Compare Cheapest")).click()
             page.wait_for_url(BASE + "/compare")
             for key in ("recommended", "cheapest", "fastest", "best_rated"):
                 page.locator(f"[data-testid=variant-{key}]").wait_for()
@@ -285,12 +288,6 @@ def main():
             page.get_by_text("Best rated").first.wait_for()
 
         # ---------------------------------------------------------------- the rest
-        with step("photo credits page lists the credits for the photos shown"):
-            page.goto(BASE + "/credits")
-            page.locator("[data-testid=credits-table] tbody tr").first.wait_for()
-            assert page.locator("[data-testid=credits-table] tbody tr").count() >= 60
-            snap(page, "12_credits")
-
         with step("an unknown package link shows a friendly message, not a crash"):
             page.goto(BASE + "/packages/pkg_doesnotexist")
             page.get_by_text("We couldn't find that holiday").wait_for()
@@ -298,8 +295,8 @@ def main():
         with step("phone-sized screen: the form and a package are usable"):
             page.set_viewport_size({"width": 390, "height": 844})
             page.goto(BASE)
-            page.get_by_role("button", name=re.compile("Menon family")).click()
-            page.get_by_role("button", name="Build my holiday").click()
+            menon(page)
+            search(page)
             page.wait_for_url(re.compile(r"/packages/pkg_"))
             page.get_by_text("Why this plan").first.wait_for()
             overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")

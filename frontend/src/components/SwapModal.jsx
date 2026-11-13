@@ -41,18 +41,20 @@ function Unavailable({ option }) {
 }
 
 export default function SwapModal({ isOpen, onClose, modalType, targetItem, targetDate, tripPackage, onApply }) {
-  const [options, setOptions] = useState(null);
+  const [loaded, setLoaded] = useState(null);       // { key, list }: options are only shown for the dialog they were loaded for
   const [loadError, setLoadError] = useState(null);
   const [pending, setPending] = useState(null);       // { op, result } when a change needs the traveler's decision
   const [busy, setBusy] = useState(false);
   const [startChoice, setStartChoice] = useState({});
 
   const packageId = tripPackage?.package_id;
+  const viewKey = [modalType, packageId, targetItem?.item_id ?? '', targetItem?.city ?? '', targetDate ?? ''].join('|');
+  const options = loaded && loaded.key === viewKey ? loaded.list : null;
 
   useEffect(() => {
     if (!isOpen || !packageId) return undefined;
     let cancelled = false;
-    setOptions(null);
+    setLoaded(null);
     setLoadError(null);
     setPending(null);
     setStartChoice({});
@@ -65,14 +67,14 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
         else if (modalType === 'city_plan') res = await api.cityPlanOptions(packageId);
         if (cancelled || !res) return;
         if (res.status !== 200) setLoadError(res.data?.error?.message || 'We could not load the options.');
-        else setOptions(res.data.options || []);
+        else setLoaded({ key: viewKey, list: res.data.options || [] });
       } catch (e) {
         if (!cancelled) setLoadError(e instanceof NetworkError ? e.message : 'We could not load the options.');
       }
     };
     load();
     return () => { cancelled = true; };
-  }, [isOpen, packageId, modalType, targetItem, targetDate]);
+  }, [isOpen, packageId, modalType, targetItem, targetDate, viewKey]);
 
   if (!isOpen || !tripPackage) return null;
 
