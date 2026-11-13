@@ -305,3 +305,24 @@ def test_data_files_are_never_modified():
     c = TestClient(create_app(db_path=__import__("tempfile").mkdtemp() + "/x.sqlite"))
     c.post("/api/packages", json=MENON)
     assert data_fingerprint(DATA_DIR) == before
+
+
+# ============================================================ regressions found by break-it sessions
+def test_start_date_at_the_end_of_the_calendar_is_out_of_window_not_a_500(client):
+    for start in ("9999-12-31", "9999-12-25", "0001-01-01"):
+        r = post(client, start_date=start, nights=10)
+        assert r.status_code == 200, (start, r.text)
+        assert r.json()["outcome"] == "NO_PACKAGE" and r.json()["reason_code"] == "OUT_OF_WINDOW"
+
+
+def test_odd_urls_and_methods_get_our_error_format(client):
+    assert client.get("/api/packages").json()["error"]["code"] == "METHOD_NOT_ALLOWED"
+    assert client.get("/api/nothing-here").json()["error"]["code"] == "NOT_FOUND"
+    assert client.get("/api/reservations/1234567890/").json()["error"]["code"] == "RESERVATION_NOT_FOUND"
+
+
+def test_nan_and_infinity_are_rejected_not_crashed(client):
+    base = '{"departure_city":"Bengaluru","country":"Japan","start_date":"2027-04-10","nights":%s,"adults":2,"child_ages":[6],"budget_inr":%s}'
+    for nights, budget in (("6", "NaN"), ("Infinity", "350000"), ("6", "-Infinity")):
+        r = client.post("/api/packages", content=(base % (nights, budget)).encode(), headers={"content-type": "application/json"})
+        assert r.status_code == 422

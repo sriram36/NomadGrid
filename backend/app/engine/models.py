@@ -25,7 +25,10 @@ class TripRequest:
 
     @property
     def end_date(self) -> date:
-        return self.start_date + timedelta(days=self.nights)
+        try:
+            return self.start_date + timedelta(days=self.nights)
+        except OverflowError:          # a start date at the very end of the calendar: far outside our window
+            return date.max
 
     def to_dict(self) -> dict:
         return {
