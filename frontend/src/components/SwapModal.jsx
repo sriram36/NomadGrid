@@ -4,10 +4,10 @@ import { api, NetworkError } from '../api/client';
 import { formatINR, signedINR, hoursMinutes } from '../lib/format';
 
 const TITLES = {
-  flight: 'Change flight',
-  hotel: 'Change hotel or room',
-  add_attraction: 'Add something to do',
-  city_plan: 'Compare city plans',
+  flight: 'Change Flight (Rule Re-Validation)',
+  hotel: 'Change Room / Hotel (Booking.com Rules)',
+  add_attraction: 'Add Sightseeing (Schedule Check)',
+  city_plan: 'Change City Plan (Rule Re-Validation)',
 };
 
 // Choices the traveler can actually take come first; the unavailable ones (with their reason) go last.
@@ -122,7 +122,6 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     <li key={`${o.hotel_id}-${o.room_id}`} className={`p-3.5 rounded-lg border text-xs ${o.available ? 'border-slate-300 bg-white hover:border-[#006ce4]' : 'border-slate-200 bg-slate-50 opacity-80'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-3">
-          {o.image && <img src={o.image} alt="" loading="lazy" className="w-16 h-16 rounded object-cover shrink-0 border border-slate-200" />}
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-extrabold text-[#003580]">{o.name}</span>
@@ -157,7 +156,6 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
       <li key={o.attraction_id} className="p-3.5 rounded-lg border text-xs border-slate-300 bg-white hover:border-[#008009]">
         <div className="flex items-start justify-between gap-3">
           <div className="flex gap-3">
-            {o.image && <img src={o.image} alt="" loading="lazy" className="w-16 h-16 rounded object-cover shrink-0 border border-slate-200" />}
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-extrabold text-[#003580]">{o.name}</span>
@@ -266,7 +264,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
       <div className="mb-4 p-3 rounded bg-red-50 border border-[#d4111e] text-[#d4111e] text-xs font-semibold flex items-start gap-2" role="alert">
         <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
         <div>
-          <p className="font-bold">We couldn't make that change</p>
+          <p className="font-bold">Edit Refused (Booking Rule Conflict):</p>
           <p>{result.reason || result.message}</p>
           {result.suggestion && <p className="text-slate-700 font-medium mt-0.5">{result.suggestion}</p>}
         </div>
@@ -278,7 +276,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     if (modalType === 'flight') {
       return (
         <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs mb-4">
-          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Your {targetItem.details?.isArrival ? 'arrival' : 'return'} flight now</span>
+          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Current Flight Selection</span>
           <div className="flex items-center justify-between font-extrabold text-[#003580]">
             <span>{targetItem.name}</span><span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
           </div>
@@ -288,7 +286,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     if (modalType === 'hotel') {
       return (
         <div className="bg-[#f2f6fa] p-3.5 rounded-lg border border-slate-300 text-xs mb-4">
-          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Your hotel in {targetItem.city} now</span>
+          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider block mb-1">Current Hotel in {targetItem.city}</span>
           <div className="flex items-center justify-between font-extrabold text-[#003580]">
             <span>{targetItem.name}</span><span className="text-slate-900 tabular-nums">{formatINR(targetItem.price_inr)}</span>
           </div>
@@ -298,8 +296,8 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     if (modalType === 'add_attraction') {
       return (
         <div className="bg-[#f2f6fa] p-3 rounded-lg border border-slate-300 text-xs mb-4">
-          <span className="text-slate-700 font-bold">Adding something to do on <strong className="text-[#003580]">{targetDate}</strong></span>
-          <p className="text-[11px] text-slate-500 mt-0.5">Only attractions that are open that day and fit your schedule are listed.</p>
+          <span className="text-slate-700 font-bold">Adding Sightseeing for Date: <strong className="text-[#003580]">{targetDate}</strong></span>
+          <p className="text-[11px] text-slate-500 mt-0.5">Verified for opening days, operating hours, and zero overlap with existing activities.</p>
         </div>
       );
     }
@@ -313,7 +311,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
 
   return (
     <div className="fixed inset-0 z-50 bg-[#003580]/50 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={TITLES[modalType]}>
-      <div className="bg-white rounded-xl shadow-2xl border border-slate-300 max-w-2xl w-full p-6">
+      <div className="bg-white rounded-xl shadow-2xl border border-slate-300 max-w-xl w-full p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded bg-[#006ce4]/10 text-[#006ce4]"><RefreshCw className="w-4 h-4" /></span>

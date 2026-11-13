@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api, fieldErrors, NetworkError } from '../api/client';
 import { toView } from '../api/adapt';
+import { toApiRequest } from '../lib/request';
 
 const AppContext = createContext(null);
 const RESERVATIONS_KEY = 'normad_reservations';
@@ -20,7 +21,7 @@ export function AppProvider({ children }) {
 
   const [meta, setMeta] = useState(null);
   const [currentPackage, setCurrentPackageRaw] = useState(null);
-  const [lastRequest, setLastRequest] = useState(null);     // the last request sent, in the backend's field names
+  const [lastRequest, setLastRequest] = useState(null);     // the last request sent, in the form's own shape
   const [outcome, setOutcome] = useState(null);              // OVER_BUDGET / NO_PACKAGE details for the outcome page
   const [variants, setVariants] = useState(null);            // the three-package comparison
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,7 +58,8 @@ export function AppProvider({ children }) {
     setVariants(null);
     setLastRequest(request);
     try {
-      const { status, data } = mode === 'compare' ? await api.variants(request) : await api.build(request);
+      const body = toApiRequest(request);
+      const { status, data } = mode === 'compare' ? await api.variants(body) : await api.build(body);
       if (status === 422) return { kind: 'INVALID', fields: fieldErrors(data), message: data?.error?.message };
       if (status !== 200 || !data) return { kind: 'ERROR', message: data?.error?.message || 'The server could not build a package.' };
       if (data.outcome === 'PACKAGE') {

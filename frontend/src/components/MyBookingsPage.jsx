@@ -44,7 +44,7 @@ export default function MyBookingsPage({
             </h2>
           </div>
           <p className="text-xs text-slate-600 mt-1">
-            Your confirmed holidays are saved on the server, so they are here even after a restart.
+            Review and manage all your confirmed holiday packages saved in local records.
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export default function MyBookingsPage({
                     <button
                       onClick={() => onDeleteBooking(refNumber)}
                       className="p-2 text-slate-400 hover:text-[#d4111e] hover:bg-red-50 rounded border border-slate-200 transition-colors"
-                      title="Remove from this device's list (the reservation stays on the server)"
+                      title="Delete Record"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

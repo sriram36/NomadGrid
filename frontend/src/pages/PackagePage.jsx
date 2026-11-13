@@ -69,7 +69,7 @@ export default function PackagePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
 
         <button onClick={goBack} className="flex items-center gap-2 text-xs font-bold text-[#006ce4] hover:underline">
-          <ArrowLeft className="w-4 h-4" /> New search
+          <ArrowLeft className="w-4 h-4" /> New Search
         </button>
 
         <div className="bg-[#003580] rounded-xl p-6 text-white shadow-md">
@@ -77,7 +77,7 @@ export default function PackagePage() {
             <div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[#febb02] text-[#003580]">
-                  {pkg.country} holiday
+                  {pkg.country} Holiday Package
                 </span>
                 {variantLabel && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-white text-[#003580]">{variantLabel}</span>
@@ -89,15 +89,16 @@ export default function PackagePage() {
                   {pkg.cityPlan.map((c) => `${c.city} (${c.nights}N)`).join(' • ')}
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight">{pkg.country} holiday</h2>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight">{pkg.country} All-Inclusive Itinerary</h2>
               <p className="text-xs text-white/80 mt-1 font-medium">
-                From {pkg.traveler.departure_city || 'India'} ({pkg.traveler.home_airport}) · {pkg.traveler.adults} adult{pkg.traveler.adults > 1 ? 's' : ''}
-                {pkg.traveler.children > 0 ? `, ${pkg.traveler.children} child${pkg.traveler.children > 1 ? 'ren' : ''}` : ''}
+                From {pkg.traveler.departure_city || 'India'} ({pkg.traveler.home_airport}) •{' '}
+                {pkg.traveler.adults} Adults
+                {pkg.traveler.children > 0 ? `, ${pkg.traveler.children} Child` : ''}
               </p>
             </div>
             <button onClick={goBack}
               className="px-4 py-2 text-xs font-bold bg-white text-[#003580] hover:bg-slate-100 rounded transition-colors self-start sm:self-auto shadow-sm">
-              Change search
+              Change Search
             </button>
           </div>
         </div>
@@ -155,9 +156,6 @@ export default function PackagePage() {
           </div>
         </div>
 
-        <p className="text-[11px] text-slate-500 text-center">
-          Photos are from Wikimedia Commons — <a href="/credits" onClick={(e) => { e.preventDefault(); navigate('/credits'); }} className="text-[#006ce4] hover:underline">see photo credits</a>.
-        </p>
       </div>
 
       <SwapModal

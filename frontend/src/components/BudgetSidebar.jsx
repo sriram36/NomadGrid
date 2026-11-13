@@ -212,7 +212,7 @@ export default function BudgetSidebar({
               <span>RESERVATION CONFIRMED</span>
             </div>
             <p className="text-[11px] text-slate-700 mb-2 font-medium">
-              Your 10-digit booking reference (saved on the server):
+              Your 10-digit booking reference is saved on the server:
             </p>
             <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-[#008009] font-mono text-sm font-black text-slate-900 shadow-sm">
               <span className="tracking-widest text-[#003580]">{reservationNumber}</span>
@@ -251,19 +251,19 @@ export default function BudgetSidebar({
           {!isBooked && onOpenCityPlans && (
             <button
               onClick={onOpenCityPlans}
-              className="w-full py-2.5 px-4 text-xs font-bold text-[#003580] bg-[#febb02]/30 hover:bg-[#febb02]/50 rounded border border-[#febb02] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 text-xs font-bold text-[#006ce4] hover:bg-[#006ce4]/10 rounded border border-[#006ce4] transition-colors flex items-center justify-center gap-2"
             >
               <Map className="w-3.5 h-3.5" />
-              <span>Compare other city plans</span>
+              <span>Compare Other City Plans</span>
             </button>
           )}
           {!isBooked && undoAvailable && onUndo && (
             <button
               onClick={onUndo}
-              className="w-full py-2.5 px-4 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded border border-slate-300 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 text-xs font-bold text-[#006ce4] hover:bg-[#006ce4]/10 rounded border border-[#006ce4] transition-colors flex items-center justify-center gap-2"
             >
               <Undo2 className="w-3.5 h-3.5" />
-              <span>Undo last change</span>
+              <span>Undo Last Change</span>
             </button>
           )}
           <a
@@ -290,20 +290,20 @@ export default function BudgetSidebar({
       <div className="bg-white rounded-xl p-4 border border-slate-300 text-xs text-slate-700 space-y-2">
         <div className="flex items-center gap-2 font-black text-[#003580] text-xs">
           <ShieldCheck className="w-4 h-4 text-[#008009]" />
-          <span>What we guarantee</span>
+          <span>Booking.com Package Guarantees</span>
         </div>
         <div className="text-[11px] text-slate-600 space-y-1">
           <p className="flex items-center gap-1.5">
             <Check className="w-3.5 h-3.5 text-[#008009] shrink-0" />
-            <span><strong>Every rule checked</strong> — flights, rooms, transfers and opening hours</span>
+            <span><strong>No hidden fees</strong> — catalog verified rates</span>
           </p>
           <p className="flex items-center gap-1.5">
             <Check className="w-3.5 h-3.5 text-[#008009] shrink-0" />
-            <span><strong>Your budget comes first</strong> — nothing goes over without your OK</span>
+            <span><strong>100% Rules Compliant</strong> — tested transfer buffers</span>
           </p>
           <p className="flex items-center gap-1.5">
             <Check className="w-3.5 h-3.5 text-[#008009] shrink-0" />
-            <span><strong>Prices from the catalog</strong> — no hidden fees</span>
+            <span><strong>Free cancellation</strong> on participating hotels</span>
           </p>
         </div>
       </div>

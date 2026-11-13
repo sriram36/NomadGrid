@@ -17,14 +17,7 @@ import {
   ArrowRight,
   Check
 } from 'lucide-react';
-import { formatINR, addDays, prettyDate } from '../lib/format';
-
-const BADGE_LABEL = {
-  DIRECT: 'Direct', ONE_STOP: '1 stop', FAMILY_FRIENDLY: 'Family friendly', FREE: 'Free entry',
-  CHILD_FRIENDLY: 'Child friendly',
-};
-
-const ratingWord = (r) => (r >= 9 ? 'Exceptional' : r >= 8.5 ? 'Wonderful' : r >= 8 ? 'Very good' : 'Good');
+import { formatINR, addDays } from '../lib/format';
 
 export default function Timeline({
   tripPackage,
@@ -187,13 +180,8 @@ export default function Timeline({
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-extrabold text-slate-900" data-testid="day-heading">
-                        {prettyDate(day.date)}
-                        {(tripPackage.days || []).find((d) => d.date === day.date)?.city && (
-                          <span className="ml-2 text-xs font-bold text-slate-500">
-                            · {(tripPackage.days || []).find((d) => d.date === day.date).city}
-                          </span>
-                        )}
+                      <h4 className="text-sm font-extrabold text-slate-900">
+                        {day.date}
                       </h4>
                       {day.isArrivalDay && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#006ce4]/10 text-[#006ce4]">
@@ -246,11 +234,6 @@ export default function Timeline({
                             : 'border-slate-300 bg-white hover:border-emerald-400'
                         }`}
                       >
-                        {item.image && (
-                          <img src={item.image} alt={item.name} loading="lazy"
-                            className="w-full h-32 object-cover rounded-lg mb-3 border border-slate-200" />
-                        )}
-
                         {/* Top Bar */}
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
                           <div>
@@ -285,20 +268,6 @@ export default function Timeline({
                             <h5 className="text-base font-extrabold text-[#003580] mt-1.5 tracking-tight">
                               {item.name}
                             </h5>
-                            {(item.badges?.length > 0 || item.pinned) && (
-                              <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
-                                {(item.badges || []).map((b) => (
-                                  <span key={b} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">
-                                    {BADGE_LABEL[b] || b}
-                                  </span>
-                                ))}
-                                {item.pinned && (
-                                  <span className="px-1.5 py-0.5 rounded bg-[#febb02]/30 text-[#003580] text-[10px] font-extrabold" title="You chose this, so it is kept when other things change">
-                                    ★ Your choice
-                                  </span>
-                                )}
-                              </div>
-                            )}
                           </div>
 
                           {/* Price & Booking.com style rating badge */}
@@ -307,14 +276,14 @@ export default function Timeline({
                               <div className="flex items-center gap-1.5 mb-1">
                                 <div className="text-right hidden sm:block">
                                   <span className="text-[11px] font-bold text-slate-800 block leading-tight">
-                                    {ratingWord(item.details.rating)}
+                                    {item.details.stars >= 4 ? 'Wonderful' : 'Very Good'}
                                   </span>
                                   <span className="text-[10px] text-slate-500">
                                     {item.details.stars}-star hotel
                                   </span>
                                 </div>
                                 <div className="w-8 h-8 rounded-t rounded-br bg-[#003580] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
-                                  {Number(item.details.rating).toFixed(1)}
+                                  {Number(item.details.rating ?? item.details.stars * 1.8).toFixed(1)}
                                 </div>
                               </div>
                             )}
@@ -372,12 +341,12 @@ export default function Timeline({
                                 <span className="text-slate-700 font-semibold">
                                   Area: <strong>{item.details.area}</strong>
                                 </span>
-                                {item.details.refundable ? (
+                                {item.details.refundable === false ? (
+                                  <span className="text-slate-500 font-semibold">Non-refundable</span>
+                                ) : (
                                   <span className="text-[#008009] font-bold flex items-center gap-1">
                                     <Check className="w-3.5 h-3.5" /> Free cancellation
                                   </span>
-                                ) : (
-                                  <span className="text-slate-500 font-semibold">Non-refundable</span>
                                 )}
                                 <span className="text-slate-500">
                                   {formatINR(item.details.pricePerNight)} / night

@@ -18,17 +18,17 @@ export default function OutcomePage() {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
         <button onClick={editTrip} className="flex items-center gap-2 text-xs font-bold text-[#006ce4] hover:underline">
-          <ArrowLeft className="w-4 h-4" /> Back to my trip
+          <ArrowLeft className="w-4 h-4" /> Back to Search
         </button>
         <div className="bg-red-50 border-2 border-[#d4111e] rounded-xl p-6 text-[#d4111e] shadow-sm" role="alert" data-testid="no-package">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-red-100 rounded-lg shrink-0"><ShieldAlert className="w-6 h-6" /></div>
             <div>
-              <h3 className="text-sm font-black">We can't build a holiday for this request</h3>
+              <h3 className="text-sm font-black text-[#d4111e]">No Valid Package Possible for This Request</h3>
               <p className="text-sm text-slate-800 mt-1 leading-relaxed font-medium">{outcome.message}</p>
               <button onClick={editTrip}
                 className="mt-4 px-4 py-2 text-xs font-bold text-white bg-[#006ce4] hover:bg-[#0057b8] rounded transition-colors">
-                Edit the trip
+                Modify Search
               </button>
             </div>
           </div>
@@ -59,7 +59,12 @@ export default function OutcomePage() {
         <div className="flex items-start gap-3">
           <div className="p-2 bg-[#febb02] rounded-lg text-[#003580] shrink-0"><Wallet className="w-6 h-6" /></div>
           <div>
-            <h3 className="text-base font-black text-[#003580]">This trip doesn't fit your budget as planned</h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2 py-0.5 rounded bg-[#003580] text-white text-[10px] font-black uppercase tracking-wider">
+                Insufficient Budget Notice
+              </span>
+              <h3 className="text-sm font-black text-[#003580]">This trip doesn't fit your budget as planned</h3>
+            </div>
             <p className="text-sm text-slate-800 mt-1 leading-relaxed">{outcome.message}</p>
             <p className="text-xs text-slate-600 mt-2">
               Cheapest possible: <strong className="text-[#003580]">{formatINR(outcome.cheapest_total_inr)}</strong> · over by{' '}

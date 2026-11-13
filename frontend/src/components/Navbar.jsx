@@ -25,7 +25,7 @@ export default function Navbar() {
     const found = await handleLookupReservation(trimmed);
     setLooking(false);
     if (!found) {
-      setLookupError(`Reservation #${trimmed} was not found. Please check the number.`);
+      setLookupError(`Reservation #${trimmed} not found in records.`);
     } else {
       setLookupId('');
       setLookupError('');
@@ -41,7 +41,7 @@ export default function Navbar() {
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-2 sm:gap-6">
             <Link to="/" className="flex items-center gap-2 text-left group focus:outline-hidden">
-              <div className="text-xl sm:text-2xl font-black tracking-tight flex items-baseline">
+              <div className="text-2xl font-black tracking-tight flex items-baseline">
                 <span className="text-white">normad</span>
                 <span className="text-[#febb02]">.grid</span>
               </div>
@@ -54,26 +54,26 @@ export default function Navbar() {
             <nav className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 border-l border-white/20">
               <Link
                 to="/"
-                className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
+                className={`px-2 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
                   currentView === 'planner'
                     ? 'bg-white/20 text-white border-white'
                     : 'text-white/90 hover:bg-white/10 border-transparent'
                 }`}
               >
                 <PlaneTakeoff className="w-3.5 h-3.5 text-[#febb02]" />
-                <span><span className="sm:hidden">Build</span><span className="hidden sm:inline">Build Package</span></span>
+                <span>Build Package</span>
               </Link>
 
               <Link
                 to="/bookings"
-                className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
+                className={`px-2 sm:px-3.5 py-1.5 text-xs font-bold rounded-full transition-all flex items-center gap-1.5 border ${
                   currentView === 'bookings'
                     ? 'bg-white/20 text-white border-white'
                     : 'text-white/90 hover:bg-white/10 border-transparent'
                 }`}
               >
                 <Bookmark className="w-3.5 h-3.5 text-[#febb02]" />
-                <span><span className="hidden sm:inline">My </span>Bookings</span>
+                <span>My Bookings</span>
                 {confirmedBookingsCount > 0 && (
                   <span className="ml-1 px-1.5 rounded-full text-[10px] font-extrabold bg-[#febb02] text-[#003580]">
                     {confirmedBookingsCount}
