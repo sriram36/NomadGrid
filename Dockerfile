@@ -4,6 +4,7 @@
 #   (or: docker compose up --build)       then open http://localhost:8000
 #
 # Fallbacks:
+#   (for live editing with auto-reload, use docker-compose.dev.yml instead)
 #   --build-arg WITH_UI=false   skip the Node build (API-only image; "/" then shows a page explaining that)
 #   the UI build also falls back to "npm install" if there is no usable lockfile, and a failed UI build never
 #   stops the image from being produced when WITH_UI=false.
@@ -16,6 +17,22 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN if [ "$WITH_UI" = "true" ]; then (npm ci || npm install); fi
 COPY frontend/ ./
 RUN mkdir -p dist && if [ "$WITH_UI" = "true" ]; then npm run build; fi
+
+# ---------- development stages (used only by docker-compose.dev.yml: code is mounted, servers reload on every save) ----------
+FROM node:22-alpine AS ui-dev
+WORKDIR /ui
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci || npm install
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+FROM python:3.12-slim AS api-dev
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 WATCHFILES_FORCE_POLLING=true
+WORKDIR /app
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app"]
 
 # ---------- stage 2: the runtime ----------
 FROM python:3.12-slim

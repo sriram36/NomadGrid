@@ -120,48 +120,53 @@ export default function Timeline({
   return (
     <div className="space-y-6">
 
-      {/* Booking.com Filter Bar */}
-      <div className="bg-white rounded-xl border border-slate-300 shadow-sm p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#006ce4]" />
-            <h3 className="text-base font-extrabold text-[#003580]">
-              Day-by-Day Master Itinerary
-            </h3>
-            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#febb02] text-[#003580]">
+      {/* Itinerary header: title and size first, then the day picker */}
+      <div className="bg-white rounded-xl border border-slate-300 shadow-sm overflow-hidden">
+        <div className="px-4 sm:px-5 pt-4 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#006ce4]" />
+              <h3 className="text-base font-extrabold text-[#003580]">
+                Day-by-Day Master Itinerary
+              </h3>
+            </div>
+            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#febb02] text-[#003580] shrink-0">
               {nights} Nights / {nights + 1} Days
             </span>
           </div>
-          <p className="text-xs text-slate-600 mt-0.5">
+          <p className="text-xs text-slate-600 mt-1">
             Verified schedule with 60-min post-landing and 180-min pre-flight buffers
           </p>
         </div>
 
-        {/* Day Filter Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-          <button
-            onClick={() => setSelectedDayFilter('ALL')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-full shrink-0 transition-colors ${
-              selectedDayFilter === 'ALL'
-                ? 'bg-[#003580] text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            All Days ({daysList.length})
-          </button>
-          {daysList.map(d => (
+        {/* Day Filter Buttons: they wrap, so every day is always visible */}
+        <div className="border-t border-slate-100 bg-[#f2f6fa] px-4 sm:px-5 py-3">
+          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1.5">Show</p>
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
-              key={d.dayNumber}
-              onClick={() => setSelectedDayFilter(`Day ${d.dayNumber}`)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-full shrink-0 transition-colors ${
-                selectedDayFilter === `Day ${d.dayNumber}`
-                  ? 'bg-[#006ce4] text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              onClick={() => setSelectedDayFilter('ALL')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${
+                selectedDayFilter === 'ALL'
+                  ? 'bg-[#003580] text-white'
+                  : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
               }`}
             >
-              Day {d.dayNumber}
+              All Days ({daysList.length})
             </button>
-          ))}
+            {daysList.map(d => (
+              <button
+                key={d.dayNumber}
+                onClick={() => setSelectedDayFilter(`Day ${d.dayNumber}`)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-full transition-colors ${
+                  selectedDayFilter === `Day ${d.dayNumber}`
+                    ? 'bg-[#006ce4] text-white'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                Day {d.dayNumber}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -235,6 +240,17 @@ export default function Timeline({
                             : 'border-slate-300 bg-white hover:border-emerald-400'
                         }`}
                       >
+                        {/* Photo from the catalog (hotels and sights only) */}
+                        {item.image && (isHotel || isAttraction) && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            loading="lazy"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            className={`w-full object-cover rounded-lg mb-3 ${isHotel ? 'h-40' : 'h-28'}`}
+                          />
+                        )}
+
                         {/* Top Bar */}
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
                           <div>

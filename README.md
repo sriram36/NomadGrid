@@ -12,6 +12,7 @@ later, even after a restart — and booking really **uses up seats and rooms**, 
 
 ```
 docker compose up --build          # http://localhost:8000      API docs: http://localhost:8000/docs
+docker compose -f docker-compose.dev.yml up --build   # live editing: UI http://localhost:5173, API :8000, both reload on save
 ```
 
 Without Docker (Python 3.12+):

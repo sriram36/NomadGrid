@@ -26,6 +26,17 @@ COUNTRY_ALIASES = {
     "united arab emirates": "United Arab Emirates", "uae": "United Arab Emirates", "emirates": "United Arab Emirates",
     "dubai": "United Arab Emirates", "abu dhabi": "United Arab Emirates",
 }
+# words that mean an interest tag (S1 own addition); bare "family" is NOT one: "family trip" says who travels
+INTEREST_WORDS = {
+    "history": "HISTORY_CULTURE", "historical": "HISTORY_CULTURE", "culture": "HISTORY_CULTURE",
+    "cultural": "HISTORY_CULTURE", "heritage": "HISTORY_CULTURE", "temples": "HISTORY_CULTURE",
+    "nature": "NATURE", "outdoors": "NATURE", "parks": "NATURE", "beaches": "NATURE", "beach": "NATURE",
+    "theme parks": "FAMILY", "theme park": "FAMILY", "family fun": "FAMILY", "aquariums": "FAMILY", "aquarium": "FAMILY",
+    "art": "ART", "design": "ART",
+    "food": "FOOD_MARKETS", "markets": "FOOD_MARKETS", "market": "FOOD_MARKETS", "street food": "FOOD_MARKETS",
+    "views": "VIEWS_ADVENTURE", "viewpoints": "VIEWS_ADVENTURE", "skyline": "VIEWS_ADVENTURE",
+    "adventure": "VIEWS_ADVENTURE",
+}
 NUMBER_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
                 "ten": 10, "a": 1, "an": 1}
 NUM = r"(\d+|" + "|".join(NUMBER_WORDS) + r")"
@@ -191,13 +202,28 @@ def parse_quick_request(text: str) -> dict:
                 notes.append(f"Read “{alias}” as a trip to {COUNTRY_ALIASES[alias]}; the app chooses the cities itself.")
             break
 
+    # ---- interests (optional): any number of the words above, in any order
+    found: List[Tuple[int, str, str]] = []
+    for word in sorted(INTEREST_WORDS, key=len, reverse=True):
+        m = re.search("(?<![a-z])" + re.escape(word) + "(?![a-z])", work)
+        if m:
+            found.append((m.start(), INTEREST_WORDS[word], word))
+            work = work[:m.start()] + " " * (m.end() - m.start()) + work[m.end():]
+    tags: List[str] = []
+    for _, tag, word in sorted(found):                  # in the order the traveler typed them
+        understood.append({"field": "interests", "text": word, "value": tag})
+        if tag not in tags:
+            tags.append(tag)
+    if tags:
+        fields["interests"] = tags
+
     # ---- results
     if "child_ages" not in fields and "adults" in fields:
         fields["child_ages"] = []                      # no children mentioned
     form_fields = ["departure_city", "country", "start_date", "nights", "adults", "child_ages", "budget_inr"]
     missing = [f for f in form_fields if f not in fields or (f == "child_ages" and fields.get("children_count"))]
     leftovers = [w for w in re.findall(r"[a-z][a-z'\-]{2,}", work) if w not in STOP]
-    clean = {k: v for k, v in fields.items() if k in form_fields}
+    clean = {k: v for k, v in fields.items() if k in form_fields or k == "interests"}
     return {"fields": clean, "understood": understood, "missing": missing, "unparsed": leftovers,
             "notes": notes, "ready": not missing and not notes_blocking(notes)}
 

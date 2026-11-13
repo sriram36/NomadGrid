@@ -100,16 +100,20 @@ def main():
             search(page)
             page.get_by_text("Nights must be a whole number between 3 and 10.").wait_for()
 
-        with step("the plain-words request bar is gone; the Menon sample fills the form"):
+        with step("quick request: a sentence fills the form, including interests"):
             page.goto(BASE)
-            assert page.get_by_text("Or just type your trip").count() == 0
-            assert page.get_by_label("Describe your trip in plain words").count() == 0
-            menon(page)
+            page.get_by_label("Describe your trip in plain words").fill(
+                "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru 3.5 lakh, we like history and nature")
+            page.get_by_role("button", name="Fill the form").click()
+            page.get_by_text("Understood everything").wait_for()
             assert field(page, "1. Departure City").input_value() == "Bengaluru"
             assert field(page, "2. Destination Country").input_value() == "Japan"
             assert field(page, "7. Total Budget").input_value() == "350000"
             assert field(page, "Child #1 Age").input_value() == "6"
-            snap(page, "02_menon_sample")
+            assert page.get_by_role("button", name="History & Culture").get_attribute("aria-pressed") == "true"
+            assert page.get_by_role("button", name="Nature & Outdoors").get_attribute("aria-pressed") == "true"
+            assert page.get_by_role("button", name="Art & Design").get_attribute("aria-pressed") == "false"
+            snap(page, "02_quick_request")
 
         # ---------------------------------------------------------------- build the Menon holiday
         with step("Menon family: a package is built and opens at /packages/<id>"):
@@ -129,6 +133,21 @@ def main():
             days = page.locator("span", has_text=re.compile(r"^Day \d+$")).all_inner_texts()
             assert len(days) >= 7, days
             assert page.get_by_text("Day-by-Day Master Itinerary").is_visible()
+
+        with step("photos: hotels and sights show their catalog photo; the credits are one click away"):
+            imgs = page.locator("img[src^='/images/']")
+            assert imgs.count() >= 4, imgs.count()
+            assert imgs.first.evaluate("i => i.complete && i.naturalWidth > 0")
+            assert page.locator("img[src^='/images/hotels/']").count() >= 1
+            assert page.locator("img[src^='/images/attractions/']").count() >= 1
+            assert page.get_by_role("link", name="Photo credits").is_visible()
+
+        with step("itinerary header and booking summary are laid out: every day button visible, total before the breakdown"):
+            for n in range(1, 8):
+                assert page.get_by_role("button", name=f"Day {n}", exact=True).is_visible(), n
+            sidebar = page.locator("div.sticky").first.inner_text()
+            assert sidebar.index("TOTAL PRICE") < sidebar.index("WHAT IS INCLUDED") or sidebar.upper().index("TOTAL PRICE") < sidebar.upper().index("WHAT IS INCLUDED")
+            snap(page, "03a_layout")
 
         with step("'Why this plan' explains the choice with real numbers"):
             why = page.locator("[data-testid=why-panel]").inner_text()
@@ -335,6 +354,14 @@ def main():
             page.get_by_text("Best rated").first.wait_for()
 
         # ---------------------------------------------------------------- the rest
+        with step("photo credits page lists every photo with source, author and license"):
+            page.goto(BASE)
+            page.get_by_role("link", name="Photo credits").click()
+            page.locator("[data-testid=credits-table] tbody tr").first.wait_for()
+            assert page.locator("[data-testid=credits-table] tbody tr").count() >= 60
+            assert page.get_by_text("Wikimedia Commons").first.is_visible()
+            snap(page, "12_credits")
+
         with step("an unknown package link shows a friendly message, not a crash"):
             page.goto(BASE + "/packages/pkg_doesnotexist")
             page.get_by_text("We couldn't find that holiday").wait_for()

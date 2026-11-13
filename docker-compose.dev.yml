@@ -1,0 +1,45 @@
+# Live-editing setup: save a file and the running app updates by itself.
+#
+#   docker compose -f docker-compose.dev.yml up --build
+#
+#   web  http://localhost:5173   the React UI with hot reload (edit frontend/src/...)   [change with WEB_PORT=...]
+#   api  http://localhost:8000   the API with auto-reload      (edit backend/app/...)   [change with API_PORT=...]
+#
+# The code is mounted from your folders, so nothing is rebuilt when you change it. Polling is switched on because
+# file-change events do not always cross from Windows/macOS into a container.
+services:
+  api:
+    build:
+      context: .
+      target: api-dev
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      DATA_DIR: /app/data
+      IMAGES_DIR: /app/images
+      DB_PATH: /app/storage/nomadgrid.sqlite
+      FRONTEND_DIST: /nonexistent          # the UI comes from the web service here
+      WATCHFILES_FORCE_POLLING: "true"
+    volumes:
+      - ./backend/app:/app/app
+      - ./hackathon-problem-1-holiday-package/data:/app/data:ro
+      - ./hackathon-problem-1-holiday-package/images:/app/images:ro
+      - nomadgrid-dev-db:/app/storage
+
+  web:
+    build:
+      context: .
+      target: ui-dev
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    environment:
+      API_TARGET: http://api:8000
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./frontend:/ui
+      - /ui/node_modules                     # keep the container's own installed packages
+    depends_on:
+      - api
+
+volumes:
+  nomadgrid-dev-db:

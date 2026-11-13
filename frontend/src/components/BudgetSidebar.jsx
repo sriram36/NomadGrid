@@ -88,25 +88,85 @@ export default function BudgetSidebar({
       {/* Booking.com Price Summary Card */}
       <div className="bg-white rounded-xl border border-slate-300 shadow-sm p-5 sm:p-6">
         
-        {/* Header */}
+        {/* Header: what this is, when, and for whom */}
         <div className="pb-4 mb-4 border-b border-slate-200">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-[#003580] bg-[#f2f6fa] px-2 py-0.5 rounded border border-slate-200">
-              Your Booking Summary
-            </span>
-            <span className="text-xs font-bold text-slate-600">
-              {nights} Nights • {traveler.adults} Adults{traveler.children > 0 ? `, ${traveler.children} Children` : ''}
-            </span>
-          </div>
-          <h3 className="text-lg font-extrabold text-[#003580] mt-1.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#003580] bg-[#f2f6fa] px-2 py-0.5 rounded border border-slate-200">
+            Your Booking Summary
+          </span>
+          <h3 className="text-lg font-extrabold text-[#003580] mt-2 leading-tight">
             {country} Holiday Package
           </h3>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             {start_date} to {end_date}
           </p>
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            <span className="px-2 py-0.5 rounded-full bg-[#003580]/10 text-[#003580] text-[11px] font-bold">{nights} Nights</span>
+            <span className="px-2 py-0.5 rounded-full bg-[#003580]/10 text-[#003580] text-[11px] font-bold">
+              {traveler.adults} {traveler.adults === 1 ? 'Adult' : 'Adults'}
+            </span>
+            {traveler.children > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-[#003580]/10 text-[#003580] text-[11px] font-bold">
+                {traveler.children} {traveler.children === 1 ? 'Child' : 'Children'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Itemized Subtotals */}
+        {/* Grand Total & Budget */}
+        <div className="space-y-2.5 pb-5 mb-5 border-b border-slate-200">
+          
+          <div className="flex items-baseline justify-between">
+            <div>
+              <span className="text-xs font-black uppercase tracking-wider text-slate-600 block">
+                Total Price (INR)
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">
+                Includes taxes and charges
+              </span>
+            </div>
+            <span className="text-2xl font-black text-[#003580] tabular-nums tracking-tight">
+              {formatINR(total_inr)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-700">
+            <span className="font-medium">Specified Target Budget:</span>
+            <span className="font-extrabold tabular-nums text-slate-900">
+              {formatINR(budget_inr)}
+            </span>
+          </div>
+
+          {/* How much of the budget is used */}
+          <div className="h-2 rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+            <div
+              className={`h-full rounded-full ${isOverBudget ? 'bg-[#d4111e]' : 'bg-[#008009]'}`}
+              style={{ width: `${Math.min(100, Math.round((total_inr / budget_inr) * 100))}%` }}
+            />
+          </div>
+
+          {/* Budget status badge */}
+          <div className="pt-1">
+            {isOverBudget ? (
+              <div className="flex items-center gap-2 p-2.5 rounded bg-red-50 border border-[#d4111e] text-[#d4111e] text-xs font-bold">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>
+                  {formatINR(Math.abs(remainingBudget))} Over Budget
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 p-2.5 rounded bg-emerald-50 border border-[#008009] text-[#008009] text-xs font-bold">
+                <Check className="w-4 h-4 shrink-0" />
+                <span>
+                  {formatINR(remainingBudget)} Remaining (Within Budget)
+                </span>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* What the price is made of */}
+        <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-2.5">What is included</p>
         <div className="space-y-3 pb-4 mb-4 border-b border-slate-200 text-xs">
           
           <div className="flex items-center justify-between text-slate-700">
@@ -155,51 +215,6 @@ export default function BudgetSidebar({
             <span className="font-extrabold text-slate-900 tabular-nums">
               {formatINR(attractionsSubtotal)}
             </span>
-          </div>
-
-        </div>
-
-        {/* Grand Total & Budget */}
-        <div className="space-y-2.5 pb-5 mb-5 border-b border-slate-200">
-          
-          <div className="flex items-baseline justify-between">
-            <div>
-              <span className="text-xs font-black uppercase tracking-wider text-slate-600 block">
-                Total Price (INR)
-              </span>
-              <span className="text-[10px] text-slate-500 font-medium">
-                Includes taxes and charges
-              </span>
-            </div>
-            <span className="text-2xl font-black text-[#003580] tabular-nums tracking-tight">
-              {formatINR(total_inr)}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-slate-700">
-            <span className="font-medium">Specified Target Budget:</span>
-            <span className="font-extrabold tabular-nums text-slate-900">
-              {formatINR(budget_inr)}
-            </span>
-          </div>
-
-          {/* Budget status badge */}
-          <div className="pt-1">
-            {isOverBudget ? (
-              <div className="flex items-center gap-2 p-2.5 rounded bg-red-50 border border-[#d4111e] text-[#d4111e] text-xs font-bold">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>
-                  {formatINR(Math.abs(remainingBudget))} Over Budget
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 p-2.5 rounded bg-emerald-50 border border-[#008009] text-[#008009] text-xs font-bold">
-                <Check className="w-4 h-4 shrink-0" />
-                <span>
-                  {formatINR(remainingBudget)} Remaining (Within Budget)
-                </span>
-              </div>
-            )}
           </div>
 
         </div>

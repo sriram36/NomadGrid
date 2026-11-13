@@ -124,6 +124,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
     <li key={`${o.hotel_id}-${o.room_id}`} className={`p-3.5 rounded-lg border text-xs ${o.available ? 'border-slate-300 bg-white hover:border-[#006ce4]' : 'border-slate-200 bg-slate-50 opacity-80'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-3">
+          {o.image && <img src={o.image} alt="" loading="lazy" className="w-20 h-16 rounded object-cover shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-extrabold text-[#003580]">{o.name}</span>
@@ -158,6 +159,7 @@ export default function SwapModal({ isOpen, onClose, modalType, targetItem, targ
       <li key={o.attraction_id} className="p-3.5 rounded-lg border text-xs border-slate-300 bg-white hover:border-[#008009]">
         <div className="flex items-start justify-between gap-3">
           <div className="flex gap-3">
+            {o.image && <img src={o.image} alt="" loading="lazy" className="w-20 h-16 rounded object-cover shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-extrabold text-[#003580]">{o.name}</span>

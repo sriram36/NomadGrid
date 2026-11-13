@@ -260,3 +260,29 @@ def test_booking_a_package_with_interests_works_and_is_read_only_afterwards(clie
     assert booked["package"]["request"]["interests"] == ["NATURE"] and booked["package"]["route"]
     r = client.post(f"/api/packages/{pkg['package_id']}/changes", json={"op": "REMOVE_ATTRACTION", "item_id": "i3"}).json()
     assert r["reason_code"] == "PACKAGE_LOCKED"
+
+
+# ------------------------------------------------------------------ S1 quick request understands interests
+def test_the_sentence_reader_picks_up_interests_in_typed_order(client):
+    r = client.post("/api/parse-request", json={"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru "
+                                                          "3.5 lakh, we like nature and history and street food"}).json()
+    assert r["fields"]["interests"] == ["NATURE", "HISTORY_CULTURE", "FOOD_MARKETS"]
+    assert r["ready"] and "nature" not in r["unparsed"] and "history" not in r["unparsed"]
+
+
+def test_a_plain_family_trip_is_not_read_as_an_interest(client):
+    r = client.post("/api/parse-request", json={"text": "family trip to Japan 10 Apr 6 nights 2 adults from Delhi 4 lakh"}).json()
+    assert "interests" not in r["fields"]
+
+
+def test_a_sentence_with_interests_builds_the_same_trip_as_the_form(client):
+    r = client.post("/api/parse-request", json={"text": "Japan 10 Apr 6 nights 2 adults 1 child 6 from Bengaluru "
+                                                          "3.5 lakh art"}).json()
+    out = client.post("/api/packages", json=r["fields"]).json()
+    assert out["outcome"] == "PACKAGE" and out["package"]["request"]["interests"] == ["ART"]
+
+
+@pytest.mark.parametrize("text", ["art " * 300, "history, ,, nature;;;  parks   BEACH", "ARTART art-art", "interests"])
+def test_odd_sentences_with_interest_words_never_crash(client, text):
+    r = client.post("/api/parse-request", json={"text": text[:1000]})
+    assert r.status_code in (200, 422)

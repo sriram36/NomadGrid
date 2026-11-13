@@ -1,11 +1,12 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import PackagePage from './pages/PackagePage';
 import OutcomePage from './pages/OutcomePage';
 import ComparePage from './pages/ComparePage';
+import CreditsPage from './pages/CreditsPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
@@ -41,6 +42,7 @@ function AppShell() {
           <Route path="/outcome" element={<OutcomePage />} />
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/reservations/:number" element={<ConfirmationPage />} />
+          <Route path="/credits" element={<CreditsPage />} />
           {/* Catch-all → home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -58,6 +60,8 @@ function AppShell() {
             <span className="font-medium">International Holiday Package System</span>
           </div>
           <div className="flex items-center gap-4 text-slate-500 font-semibold">
+            <Link to="/credits" className="hover:text-[#006ce4] hover:underline">Photo credits</Link>
+            <span>•</span>
             <span>Booking.com Theme Edition</span>
             <span>•</span>
             <span>React + Tailwind v4 • powered by the NomadGrid API</span>
