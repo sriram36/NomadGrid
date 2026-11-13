@@ -2,25 +2,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { api, fieldErrors, NetworkError } from '../api/client';
 import { toView } from '../api/adapt';
 import { toApiRequest } from '../lib/request';
-import { INTERESTS } from '../lib/interests';
 
 const AppContext = createContext(null);
-const INTERESTS_KEY = 'normad_interests';
-
-// S1: the interest tags picked on the form. They only steer suggestions in the UI; the backend never sees them.
-function readInterests() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(INTERESTS_KEY) || '[]');
-    const valid = INTERESTS.map((i) => i.key);
-    return Array.isArray(saved) ? saved.filter((k) => valid.includes(k)) : [];
-  } catch {
-    return [];
-  }
-}
 
 export function AppProvider({ children }) {
   const [meta, setMeta] = useState(null);
-  const [interests, setInterestsRaw] = useState(readInterests);
   const [currentPackage, setCurrentPackageRaw] = useState(null);
   const [lastRequest, setLastRequest] = useState(null);     // the last request sent, in the form's own shape
   const [outcome, setOutcome] = useState(null);              // OVER_BUDGET / NO_PACKAGE details for the outcome page
@@ -38,11 +24,6 @@ export function AppProvider({ children }) {
   const showToast = useCallback((text, type = 'success') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 4500);
-  }, []);
-
-  const setInterests = useCallback((list) => {
-    setInterestsRaw(list);
-    try { localStorage.setItem(INTERESTS_KEY, JSON.stringify(list)); } catch { /* storage full or blocked */ }
   }, []);
 
   const setPackage = useCallback((pkg) => setCurrentPackageRaw(pkg ? toView(pkg) : null), []);
@@ -181,7 +162,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      meta, interests, setInterests, currentPackage, lastRequest, outcome, variants, isGenerating, undoAvailable, toastMessage,
+      meta, currentPackage, lastRequest, outcome, variants, isGenerating, undoAvailable, toastMessage,
       swapModalState, setSwapModalState,
       showToast, submitTrip, loadPackage, handleConfirmBooking, handleLookupReservation,
       applyChange, handleRemoveAttraction, handleUndo, handleResetTrip,

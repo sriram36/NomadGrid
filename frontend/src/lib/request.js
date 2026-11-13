@@ -8,5 +8,6 @@ export function toApiRequest(r) {
     adults: Number(r.adults),
     child_ages: (r.children || []).map((a) => (a === '' || a === null || a === undefined ? null : Number(a))),
     budget_inr: Number(r.budget),
+    interests: r.interests || [],
   };
 }

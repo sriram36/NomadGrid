@@ -3,10 +3,10 @@ import { Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { buildPlanInsights } from '../lib/planInsights';
 
 // "Why this plan": the backend's own reasons, plus a rule and trade-off check worked out from this package.
-export default function WhyThisPlan({ tripPackage, interests }) {
+export default function WhyThisPlan({ tripPackage }) {
   const [open, setOpen] = useState(true);
   const reasons = tripPackage.rationale?.reasons || [];
-  const insights = useMemo(() => buildPlanInsights(tripPackage, interests), [tripPackage, interests]);
+  const insights = useMemo(() => buildPlanInsights(tripPackage), [tripPackage]);
   if (!reasons.length && !insights.length) return null;
 
   return (

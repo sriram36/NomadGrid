@@ -40,6 +40,8 @@ export const api = {
   undo: (id) => call('POST', `/api/packages/${enc(id)}/undo`),
   confirm: (id) => call('POST', `/api/packages/${enc(id)}/confirm`),
   reservation: (number) => call('GET', `/api/reservations/${enc(number)}`),
+  cityGuide: (city) => call('GET', `/api/cities/${enc(city)}/guide`),
+  dining: (id) => call('GET', `/api/packages/${enc(id)}/dining`),
   exportUrl: (id) => `/api/packages/${enc(id)}/export`,
 };
 

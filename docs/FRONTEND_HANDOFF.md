@@ -51,7 +51,9 @@ package.items[k]           → the full detail for that item_id (title, subtitle
 The arrival flight departs the evening before the first day, so it shows as "Land at …" on day 0. Item `pinned: true` means the
 traveler chose it — you may show a small "your choice" marker.
 
-## 5. Extra features (all available)
+## 5. Extra features (all available and wired in the UI)
+
+Interest chips (`RequestForm`), the route map (`RouteMap`), the city-guide and dining drawer (`CityInfoDrawer`) and the "Matches your interests" marks are all connected; `e2e/ui_flow.py` covers them (27 steps).
 
 | Feature | Calls | What to render |
 |---|---|---|

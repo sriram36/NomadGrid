@@ -4,9 +4,9 @@ import { ArrowLeft, AlertTriangle, SearchX } from 'lucide-react';
 import Timeline from '../components/Timeline';
 import BudgetSidebar from '../components/BudgetSidebar';
 import SwapModal from '../components/SwapModal';
-import VisualRoute from '../components/VisualRoute';
+import RouteMap from '../components/RouteMap';
 import WhyThisPlan from '../components/WhyThisPlan';
-import CityGuideDrawer from '../components/CityGuideDrawer';
+import CityInfoDrawer from '../components/CityInfoDrawer';
 import { useApp } from '../context/AppContext';
 
 const VARIANT_LABEL = {
@@ -22,10 +22,10 @@ export default function PackagePage() {
   const navigate = useNavigate();
   const {
     currentPackage, loadPackage, applyChange, handleConfirmBooking, handleRemoveAttraction, handleUndo,
-    undoAvailable, swapModalState, setSwapModalState, handleResetTrip, interests,
+    undoAvailable, swapModalState, setSwapModalState, handleResetTrip,
   } = useApp();
   const [state, setState] = useState(currentPackage?.package_id === id ? 'ready' : 'loading');
-  const [guide, setGuide] = useState(null);   // { city, area } while the read-only city guide is open
+  const [info, setInfo] = useState(null);      // { kind: 'guide' | 'dining', city, itemId }
 
   useEffect(() => {
     let cancelled = false;
@@ -120,18 +120,19 @@ export default function PackagePage() {
           </div>
         )}
 
-        <WhyThisPlan tripPackage={pkg} interests={interests} />
+        <WhyThisPlan tripPackage={pkg} />
+
+        <RouteMap route={pkg.route} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
-            <VisualRoute tripPackage={pkg} />
             <Timeline
               tripPackage={pkg}
               onOpenSwapFlight={booked ? undefined : (item) => open('flight', { targetItem: item })}
               onOpenSwapHotel={booked ? undefined : (item) => open('hotel', { targetItem: item })}
-              onOpenCityGuide={(item) => setGuide({ city: item.city, area: item.details?.area })}
               onRemoveAttraction={booked ? undefined : handleRemoveAttraction}
               onOpenAddAttraction={booked ? undefined : (date) => open('add_attraction', { targetDate: date })}
+              onOpenInfo={(kind, item) => setInfo({ kind, city: item.city, itemId: item.item_id })}
               readOnly={booked}
             />
           </div>
@@ -159,10 +160,9 @@ export default function PackagePage() {
         targetDate={swapModalState.targetDate}
         tripPackage={pkg}
         onApply={applyChange}
-        interests={interests}
       />
 
-      <CityGuideDrawer city={guide?.city} area={guide?.area} onClose={() => setGuide(null)} />
+      <CityInfoDrawer info={info} packageId={pkg.package_id} onClose={() => setInfo(null)} />
     </div>
   );
 }

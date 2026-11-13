@@ -1,7 +1,6 @@
 // S5: the "rule and trade-off" bullets for the Why This Plan card, worked out from the package itself.
 // Pure functions, no network and no AI. The backend still owns every rule: this only explains the result.
 import { formatINR } from './format';
-import { matchedInterests, interestLabel } from './interests';
 
 const toMinutes = (iso) => {
   const [d, t] = iso.split('T');
@@ -65,20 +64,12 @@ function budgetBullet(pkg) {
   return base;
 }
 
-function interestBullet(pkg, interests) {
-  if (!interests?.length) return 'Interests: none picked on the search form, so sights are not matched to any theme.';
-  const visits = (pkg.items || []).filter((i) => i.type === 'attraction');
-  const hits = visits.filter((v) => matchedInterests(v, interests).length > 0);
-  const tags = interests.map(interestLabel).join(', ');
-  return `Interests: ${hits.length} of ${plural(visits.length, 'sight')} match what you picked (${tags}).`;
-}
-
-export function buildPlanInsights(pkg, interests = []) {
+export function buildPlanInsights(pkg) {
   if (!pkg) return [];
   return [
     { title: 'Night split and city order', lines: [planBullet(pkg)] },
     { title: 'Room capacity', lines: roomBullets(pkg) },
     { title: 'Airport buffers', lines: bufferBullets(pkg) },
-    { title: 'Budget and interests', lines: [budgetBullet(pkg), interestBullet(pkg, interests)] },
+    { title: 'Budget', lines: [budgetBullet(pkg)] },
   ].filter((s) => s.lines.length > 0);
 }

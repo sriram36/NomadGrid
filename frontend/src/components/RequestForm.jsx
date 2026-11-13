@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Layers, Heart } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Users, DollarSign, AlertCircle, Compass, Plane, ShieldCheck, Tag, Check, Search, Layers } from 'lucide-react';
 import { sampleTrips } from '../lib/samples';
 import { formatINR } from '../lib/format';
 import { useApp } from '../context/AppContext';
-import { INTERESTS } from '../lib/interests';
 
 // Used only if the backend cannot be reached to tell us the real choices (these are the catalog's own).
 const FALLBACK_CITIES = [{ city: 'Bengaluru', airport: 'BLR' }, { city: 'Mumbai', airport: 'BOM' }, { city: 'Delhi', airport: 'DEL' }, { city: 'Chennai', airport: 'MAA' }];
@@ -15,7 +14,7 @@ const FIELD_KEY = { departure_city: 'departureCity', country: 'destinationCountr
 const fromRequest = (r) => ({
   departureCity: r.departureCity || '', destinationCountry: r.destinationCountry || '', startDate: r.startDate || '',
   nights: r.nights ?? '', adults: r.adults ?? '', childrenCount: (r.children || []).length, childrenAges: [...(r.children || [])],
-  budget: r.budget ?? ''
+  budget: r.budget ?? '', interests: r.interests || []
 });
 
 export default function RequestForm({
@@ -23,7 +22,7 @@ export default function RequestForm({
   initialData = null,
   isLoading = false
 }) {
-  const { meta, interests, setInterests } = useApp();
+  const { meta } = useApp();
   const departureCities = meta?.departure_cities || FALLBACK_CITIES;
   const countries = meta?.countries || FALLBACK_COUNTRIES;
 
@@ -36,12 +35,11 @@ export default function RequestForm({
     adults: '',
     childrenCount: 0,
     childrenAges: [],
-    budget: ''
+    budget: '',
+    interests: []
   });
 
   const [errors, setErrors] = useState({});
-  const [picked, setPicked] = useState(interests || []);
-  const toggleInterest = (key) => setPicked((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   // Handle child count change and dynamically manage child age inputs
   const handleChildrenCountChange = (count) => {
     const num = Math.max(0, parseInt(count, 10) || 0);
@@ -143,7 +141,6 @@ export default function RequestForm({
 
   const submit = async (mode) => {
     if (!validate()) return;
-    setInterests(picked);
     const result = await onSubmit({
       departureCity: formData.departureCity,
       destinationCountry: formData.destinationCountry,
@@ -151,7 +148,8 @@ export default function RequestForm({
       nights: formData.nights,
       adults: formData.adults,
       children: formData.childrenAges,
-      budget: formData.budget
+      budget: formData.budget,
+      interests: formData.interests || []
     }, mode);
     if (result?.kind === 'INVALID') {
       const mapped = {};
@@ -476,33 +474,36 @@ export default function RequestForm({
 
           </div>
 
-          {/* S1: optional interests (used to highlight and sort sights when you add them) */}
-          <div className="mt-6 pt-5 border-t border-slate-200" data-testid="interests">
-            <p className="text-xs font-bold text-slate-700 flex items-center gap-1">
-              <Heart className="size-3.5 text-[#006ce4]" />
-              Interests <span className="font-medium text-slate-500">(optional)</span>
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">We will highlight matching sights and list them first when you add sightseeing.</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {INTERESTS.map(({ key, label }) => {
-                const on = picked.includes(key);
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => toggleInterest(key)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-1 ${
-                      on ? 'bg-[#006ce4] text-white border-[#006ce4]' : 'bg-white text-slate-700 border-slate-300 hover:border-[#006ce4]'
-                    }`}
-                  >
-                    {on && <Check className="size-3" strokeWidth={3} />}
-                    {label}
-                  </button>
-                );
-              })}
+          {/* Optional interests: the backend prefers matching sights (never at the cost of a travel rule) */}
+          {(meta?.interests || []).length > 0 && (
+            <div className="mt-5 pt-4 border-t border-slate-200" data-testid="interests">
+              <label className="block text-xs font-bold text-slate-700 mb-2">
+                8. Interests (optional) — we will favour matching sights
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {meta.interests.map((t) => {
+                  const picked = formData.interests || [];
+                  const on = picked.includes(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setFormData({
+                        ...formData,
+                        interests: on ? picked.filter((x) => x !== t.id) : [...picked, t.id]
+                      })}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-full border-2 transition-colors ${
+                        on ? 'bg-[#003580] border-[#003580] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#006ce4]'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Submit Action */}
           <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
